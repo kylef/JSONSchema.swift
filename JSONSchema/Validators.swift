@@ -49,6 +49,10 @@ func validateType(type:[String])(value:AnyObject) -> Bool {
   return filter(results) { result in result }.count > 0
 }
 
+func validateNot(validator:Validator)(value:AnyObject) -> Bool {
+  return !validator(value)
+}
+
 // MARK: String
 
 func validateMaximumLength(maximumLength:Int)(value:AnyObject) -> Bool {

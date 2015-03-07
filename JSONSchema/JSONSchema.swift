@@ -40,6 +40,10 @@ func validators(schema:[String:AnyObject]) -> [Validator] {
     validators.append(oneOfValidator(oneOfValidators))
   }
 
+  if let not = schema["not"] as? [String:AnyObject] {
+    validators.append(validateNot(validate(JSONSchema.validators(not))))
+  }
+
   // String
 
   if let maxLength = schema["maxLength"] as? Int {
