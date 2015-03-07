@@ -121,3 +121,11 @@ func validateMinimum(minimum:NSNumber, exclusive:Bool?)(value:AnyObject) -> Bool
 
   return true
 }
+
+func validateArrayLength(rhs:Int, comparitor:((Int, Int) -> Bool))(value:AnyObject) -> Bool {
+  if let value = value as? [AnyObject] {
+    return comparitor(value.count, rhs)
+  }
+
+  return true
+}

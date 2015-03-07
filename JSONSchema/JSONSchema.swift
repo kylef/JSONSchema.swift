@@ -32,6 +32,8 @@ func validators(schema:[String:AnyObject]) -> [Validator] {
     validators.append(validatePattern(pattern))
   }
 
+  // Numerical
+
   if let multipleOf = schema["multipleOf"] as? NSNumber {
     validators.append(validateMultipleOf(multipleOf))
   }
@@ -42,6 +44,16 @@ func validators(schema:[String:AnyObject]) -> [Validator] {
 
   if let maximum = schema["maximum"] as? NSNumber {
     validators.append(validateMaximum(maximum, schema["exclusiveMaximum"] as? Bool))
+  }
+
+  // Array
+
+  if let minItems = schema["minItems"] as? Int {
+    validators.append(validateArrayLength(minItems, >=))
+  }
+
+  if let maxItems = schema["maxItems"] as? Int {
+    validators.append(validateArrayLength(maxItems, <=))
   }
 
   return validators
