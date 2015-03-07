@@ -18,6 +18,10 @@ func validators(schema:[String:AnyObject]) -> [Validator] {
     validators.append(validateType(type))
   }
 
+  if let allOf = schema["allOf"] as? [[String:AnyObject]] {
+    validators += reduce(map(allOf, JSONSchema.validators), [], +)
+  }
+
   // String
 
   if let maxLength = schema["maxLength"] as? Int {

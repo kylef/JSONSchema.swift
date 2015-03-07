@@ -33,6 +33,7 @@ class JSONSchemaCases: XCTestCase {
     let suites = filter(files) { (path) -> Bool in
       let whitelist = [
         "type.json",
+        "allOf.json",
 
         // String
         "maxLength.json",
