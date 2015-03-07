@@ -1,7 +1,7 @@
 Pod::Spec.new do |spec|
   spec.name = 'JSONSchema'
   spec.version = '0.1.0'
-  spec.summary = 'TODO.'
+  spec.summary = 'JSON Schema validator in Swift.'
   spec.homepage = 'https://github.com/kylef/JSONSchema.swift'
   spec.license = { :type => 'BSD', :file => 'LICENSE' }
   spec.author = { 'Kyle Fuller' => 'kyle@fuller.li' }
