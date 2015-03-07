@@ -53,6 +53,10 @@ func validateNot(validator:Validator)(value:AnyObject) -> Bool {
   return !validator(value)
 }
 
+func validateEnum(values:[AnyObject])(value:AnyObject) -> Bool {
+  return contains(values as [NSObject], value as NSObject)
+}
+
 // MARK: String
 
 func validateMaximumLength(maximumLength:Int)(value:AnyObject) -> Bool {

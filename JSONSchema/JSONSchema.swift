@@ -44,6 +44,10 @@ func validators(schema:[String:AnyObject]) -> [Validator] {
     validators.append(validateNot(validate(JSONSchema.validators(not))))
   }
 
+  if let enumValues = schema["enum"] as? [AnyObject] {
+    validators.append(validateEnum(enumValues))
+  }
+
   // String
 
   if let maxLength = schema["maxLength"] as? Int {

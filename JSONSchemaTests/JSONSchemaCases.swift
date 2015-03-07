@@ -37,6 +37,7 @@ class JSONSchemaCases: XCTestCase {
         "anyOf.json",
         "oneOf.json",
         "not.json",
+        "enum.json",
 
         // String
         "maxLength.json",
