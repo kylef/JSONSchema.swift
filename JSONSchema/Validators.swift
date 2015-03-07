@@ -94,3 +94,30 @@ func validateMultipleOf(number:NSNumber)(value:AnyObject) -> Bool {
 
   return true
 }
+
+func validateMaximum(maximum:NSNumber, exclusive:Bool?)(value:AnyObject) -> Bool {
+  if let value = value as? NSNumber {
+    if let exclusive = exclusive {
+      if exclusive {
+        return value.doubleValue < maximum.doubleValue
+      }
+    }
+    return value.doubleValue <= maximum.doubleValue
+  }
+
+  return true
+}
+
+func validateMinimum(minimum:NSNumber, exclusive:Bool?)(value:AnyObject) -> Bool {
+  if let value = value as? NSNumber {
+    if let exclusive = exclusive {
+      if exclusive {
+        return value.doubleValue > minimum.doubleValue
+      }
+    }
+
+    return value.doubleValue >= minimum.doubleValue
+  }
+
+  return true
+}
