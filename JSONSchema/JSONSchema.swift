@@ -18,12 +18,18 @@ func validators(schema:[String:AnyObject]) -> [Validator] {
     validators.append(validateType(type))
   }
 
+  // String
+
   if let maxLength = schema["maxLength"] as? Int {
     validators.append(validateMaximumLength(maxLength))
   }
 
   if let minLength = schema["minLength"] as? Int {
     validators.append(validateMinimumLength(minLength))
+  }
+
+  if let pattern = schema["pattern"] as? String {
+    validators.append(validatePattern(pattern))
   }
 
   return validators

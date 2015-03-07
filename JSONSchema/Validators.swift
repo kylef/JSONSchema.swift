@@ -63,3 +63,19 @@ func validateMinimumLength(maximumLength:Int)(value:AnyObject) -> Bool {
   }
   return true
 }
+
+func validatePattern(pattern:String)(value:AnyObject) -> Bool {
+  if let value = value as? String {
+    let expression = NSRegularExpression(pattern: pattern, options: NSRegularExpressionOptions(0), error: nil)
+    if let expression = expression {
+      let range = NSMakeRange(0, value.utf16Count)
+      if expression.matchesInString(value, options: NSMatchingOptions(0), range: range).count > 0 {
+        return true
+      }
+    }
+
+    return false
+  }
+
+  return true
+}

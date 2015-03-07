@@ -35,6 +35,7 @@ class JSONSchemaCases: XCTestCase {
         "type.json",
         "maxLength.json",
         "minLength.json",
+        "pattern.json",
       ]
       return path.hasSuffix(".json") && contains(whitelist, path)
     }
