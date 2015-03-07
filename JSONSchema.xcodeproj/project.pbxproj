@@ -25,6 +25,9 @@
 
 /* Begin PBXFileReference section */
 		27B640C61AAB0EDC005C8641 /* JSONSchema.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JSONSchema.swift; sourceTree = "<group>"; };
+		27B640C91AAB1080005C8641 /* UniversalFramework_Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = UniversalFramework_Base.xcconfig; sourceTree = "<group>"; };
+		27B640CA1AAB1080005C8641 /* UniversalFramework_Framework.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = UniversalFramework_Framework.xcconfig; sourceTree = "<group>"; };
+		27B640CB1AAB1080005C8641 /* UniversalFramework_Test.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = UniversalFramework_Test.xcconfig; sourceTree = "<group>"; };
 		27CF7EE91A9B9EDA0063FDE4 /* JSONSchema.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = JSONSchema.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		27CF7EED1A9B9EDA0063FDE4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		27CF7EEE1A9B9EDA0063FDE4 /* JSONSchema.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JSONSchema.h; sourceTree = "<group>"; };
@@ -52,9 +55,20 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		27B640C81AAB1080005C8641 /* Configurations */ = {
+			isa = PBXGroup;
+			children = (
+				27B640C91AAB1080005C8641 /* UniversalFramework_Base.xcconfig */,
+				27B640CA1AAB1080005C8641 /* UniversalFramework_Framework.xcconfig */,
+				27B640CB1AAB1080005C8641 /* UniversalFramework_Test.xcconfig */,
+			);
+			path = Configurations;
+			sourceTree = "<group>";
+		};
 		27CF7EDF1A9B9EDA0063FDE4 = {
 			isa = PBXGroup;
 			children = (
+				27B640C81AAB1080005C8641 /* Configurations */,
 				27CF7EEB1A9B9EDA0063FDE4 /* JSONSchema */,
 				27CF7EF81A9B9EDA0063FDE4 /* JSONSchemaTests */,
 				27CF7EEA1A9B9EDA0063FDE4 /* Products */,
@@ -318,6 +332,7 @@
 		};
 		27CF7F001A9B9EDA0063FDE4 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 27B640CA1AAB1080005C8641 /* UniversalFramework_Framework.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -328,7 +343,6 @@
 				FRAMEWORK_VERSION = A;
 				INFOPLIST_FILE = JSONSchema/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -337,6 +351,7 @@
 		};
 		27CF7F011A9B9EDA0063FDE4 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 27B640CA1AAB1080005C8641 /* UniversalFramework_Framework.xcconfig */;
 			buildSettings = {
 				CLANG_ENABLE_MODULES = YES;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -347,7 +362,6 @@
 				FRAMEWORK_VERSION = A;
 				INFOPLIST_FILE = JSONSchema/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 			};
@@ -355,32 +369,24 @@
 		};
 		27CF7F031A9B9EDA0063FDE4 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 27B640CB1AAB1080005C8641 /* UniversalFramework_Test.xcconfig */;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(DEVELOPER_FRAMEWORKS_DIR)",
-					"$(inherited)",
-				);
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
 				);
 				INFOPLIST_FILE = JSONSchemaTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
 		};
 		27CF7F041A9B9EDA0063FDE4 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 27B640CB1AAB1080005C8641 /* UniversalFramework_Test.xcconfig */;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(DEVELOPER_FRAMEWORKS_DIR)",
-					"$(inherited)",
-				);
 				INFOPLIST_FILE = JSONSchemaTests/Info.plist;
-				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
