@@ -9,138 +9,243 @@
 import Foundation
 
 
-typealias Validator = (AnyObject) -> (Bool)
+public enum ValidationResult {
+  case Valid
+  case Invalid([String])
 
-// MARK: Type
+  public var valid:Bool {
+    switch self {
+    case .Valid:
+      return true
+    case .Invalid(let errors):
+      return false
+    }
+  }
 
-func validateType(type:String)(value:AnyObject) -> Bool {
+  public var errors:[String]? {
+    switch self {
+    case .Valid:
+      return nil
+    case .Invalid(let errors):
+      return errors
+    }
+  }
+}
+
+typealias LegacyValidator = (AnyObject) -> (Bool)
+typealias Validator = (AnyObject) -> (ValidationResult)
+
+/// Flatten an array of results into a single result (combining all errors)
+func flatten(results:[ValidationResult]) -> ValidationResult {
+  let failures = filter(results) { result in !result.valid }
+  if failures.count > 0 {
+    let errors = reduce(failures, [String]()) { (accumulator, failure) in
+      if let errors = failure.errors {
+        return accumulator + errors
+      }
+
+      return accumulator
+    }
+
+    return .Invalid(errors)
+  }
+
+  return .Valid
+}
+
+/// Creates a Validator which always returns an valid result
+func validValidation(value:AnyObject) -> ValidationResult {
+  return .Valid
+}
+
+/// Creates a Validator which always returns an invalid result with the given error
+func invalidValidation(error:String)(value:AnyObject) -> ValidationResult {
+  return .Invalid([error])
+}
+
+// MARK: Shared
+
+/// Validate the given value is of the given type
+func validateType(type:String)(value:AnyObject) -> ValidationResult {
   switch type {
   case "integer":
     if let number = value as? NSNumber {
-      return CFNumberIsFloatType(number) == 0 && CFGetTypeID(number) != CFBooleanGetTypeID()
+      if CFNumberIsFloatType(number) == 0 && CFGetTypeID(number) != CFBooleanGetTypeID() {
+        return .Valid
+      }
     }
   case "number":
     if let number = value as? NSNumber {
-      return CFGetTypeID(number) != CFBooleanGetTypeID()
+      if CFGetTypeID(number) != CFBooleanGetTypeID() {
+        return .Valid
+      }
     }
   case "string":
-    return value is String
+    if value is String {
+      return .Valid
+    }
   case "object":
-    return value is NSDictionary
+    if value is NSDictionary {
+      return .Valid
+    }
   case "array":
-    return value is NSArray
+    if value is NSArray {
+      return .Valid
+    }
   case "boolean":
     if let number = value as? NSNumber {
-      return CFGetTypeID(number) == CFBooleanGetTypeID()
+      if CFGetTypeID(number) == CFBooleanGetTypeID() {
+        return .Valid
+      }
     }
   case "null":
-    return value is NSNull
+    if value is NSNull {
+      return .Valid
+    }
   default:
     break
   }
 
-  return false
+  return .Invalid(["'\(value)' is not of type '\(type)'"])
+}
+
+/// Validate the given value is one of the given types
+func validateType(type:[String]) -> Validator {
+  let typeValidators = map(type, validateType) as [Validator]
+  return anyOf(typeValidators)
+}
+
+func validateType(type:AnyObject) -> Validator {
+  if let type = type as? String {
+    return validateType(type)
+  } else if let types = type as? [String] {
+    return validateType(types)
+  }
+
+  return invalidValidation("'\(type)' is not a valid 'type'")
 }
 
 
-func validateType(type:[String])(value:AnyObject) -> Bool {
-  let validators = map(type, validateType)
-  let results = map(validators) { validator in validator(value: value) }
-  return filter(results) { result in result }.count > 0
+/// Validate that a value is valid for any of the given validation rules
+func anyOf(validators:[Validator], error:String? = nil)(value:AnyObject) -> ValidationResult {
+  for validator in validators {
+    let result = validator(value)
+    if result.valid {
+      return .Valid
+    }
+  }
+
+  if let error = error {
+    return .Invalid([error])
+  }
+
+  return .Invalid(["\(value) does not meet anyOf validation rules."])
 }
 
-func validateNot(validator:Validator)(value:AnyObject) -> Bool {
-  return !validator(value)
+func oneOf(validators:[Validator])(value:AnyObject) -> ValidationResult {
+  let results = map(validators) { validator in validator(value) }
+  let validValidators = filter(results) { $0.valid }.count
+
+  if validValidators == 1 {
+    return .Valid
+  }
+
+  return .Invalid(["\(validValidators) validates instead `oneOf`."])
 }
 
-func validateEnum(values:[AnyObject])(value:AnyObject) -> Bool {
-  return contains(values as [NSObject], value as NSObject)
+/// Creates a validator that validates that the given validation rules are not met
+func not(validator:Validator)(value:AnyObject) -> ValidationResult {
+  if validator(value).valid {
+    return .Invalid(["'\(value)' does not match 'not' validation."])
+  }
+
+  return .Valid
+}
+
+func allOf(validators:[Validator])(value:AnyObject) -> ValidationResult {
+  return flatten(map(validators) { validator in validator(value) })
+}
+
+func validateEnum(values:[AnyObject])(value:AnyObject) -> ValidationResult {
+  if contains(values as [NSObject], value as NSObject) {
+    return .Valid
+  }
+
+  return .Invalid(["'\(value)' is not a valid enumeration value of '\(values)'"])
 }
 
 // MARK: String
 
-func validateMaximumLength(maximumLength:Int)(value:AnyObject) -> Bool {
+func validateLength(comparitor:((Int, Int) -> (Bool)), length:Int, error:String)(value:AnyObject) -> ValidationResult {
   if let value = value as? String {
-    return countElements(value) <= maximumLength
+    if !comparitor(countElements(value), length) {
+      return .Invalid([error])
+    }
   }
-  return true
+
+  return .Valid
 }
 
-
-func validateMinimumLength(maximumLength:Int)(value:AnyObject) -> Bool {
-  if let value = value as? String {
-    return countElements(value) >= maximumLength
-  }
-  return true
-}
-
-func validatePattern(pattern:String)(value:AnyObject) -> Bool {
+func validatePattern(pattern:String)(value:AnyObject) -> ValidationResult {
   if let value = value as? String {
     let expression = NSRegularExpression(pattern: pattern, options: NSRegularExpressionOptions(0), error: nil)
     if let expression = expression {
       let range = NSMakeRange(0, value.utf16Count)
-      if expression.matchesInString(value, options: NSMatchingOptions(0), range: range).count > 0 {
-        return true
+      if expression.matchesInString(value, options: NSMatchingOptions(0), range: range).count == 0 {
+        return .Invalid(["'\(value)' does not match pattern: '\(pattern)'"])
       }
+    } else {
+      return .Invalid(["[Schema] Regex pattern '\(pattern)' is not valid"])
     }
-
-    return false
   }
 
-  return true
+  return .Valid
 }
 
 // MARK: Numerical
 
-func validateMultipleOf(number:NSNumber)(value:AnyObject) -> Bool {
-  if let value = value as? NSNumber {
-    if number.doubleValue > 0.0 {
-      let result = value.doubleValue / number.doubleValue
-      return result == floor(result)
-    }
-  }
-
-  return true
-}
-
-func validateMaximum(maximum:NSNumber, exclusive:Bool?)(value:AnyObject) -> Bool {
-  if let value = value as? NSNumber {
-    if let exclusive = exclusive {
-      if exclusive {
-        return value.doubleValue < maximum.doubleValue
+func validateMultipleOf(number:Double)(value:AnyObject) -> ValidationResult {
+  if number > 0.0 {
+    if let value = value as? Double {
+      let result = value / number
+      if result != floor(result) {
+        return .Invalid(["\(value) is not a multiple of \(number)"])
       }
     }
-    return value.doubleValue <= maximum.doubleValue
   }
 
-  return true
+  return .Valid
 }
 
-func validateMinimum(minimum:NSNumber, exclusive:Bool?)(value:AnyObject) -> Bool {
-  if let value = value as? NSNumber {
-    if let exclusive = exclusive {
-      if exclusive {
-        return value.doubleValue > minimum.doubleValue
+func validateNumericLength(length:Double, comparitor:((Double, Double) -> (Bool)), exclusiveComparitor:((Double, Double) -> (Bool)), exclusive:Bool?, error:String)(value:AnyObject) -> ValidationResult {
+  if let value = value as? Double {
+    if exclusive ?? false {
+      if !exclusiveComparitor(value, length) {
+        return .Invalid([error])
       }
     }
 
-    return value.doubleValue >= minimum.doubleValue
+    if !comparitor(value, length) {
+      return .Invalid([error])
+    }
   }
 
-  return true
+  return .Valid
 }
 
-// Array
+// MARK: Array
 
-func validateArrayLength(rhs:Int, comparitor:((Int, Int) -> Bool))(value:AnyObject) -> Bool {
+func validateArrayLength(rhs:Int, comparitor:((Int, Int) -> Bool), error:String)(value:AnyObject) -> ValidationResult {
   if let value = value as? [AnyObject] {
-    return comparitor(value.count, rhs)
+    if !comparitor(value.count, rhs) {
+      return .Invalid([error])
+    }
   }
 
-  return true
+  return .Valid
 }
 
-func validateUniqueItems(value:AnyObject) -> Bool {
+func validateUniqueItems(value:AnyObject) -> ValidationResult {
   if let value = value as? [AnyObject] {
     // 1 and true, 0 and false are isEqual for NSNumber's, so logic to count for that below
 
@@ -156,50 +261,51 @@ func validateUniqueItems(value:AnyObject) -> Bool {
     let hasFalseAndZero = filter(booleans) { v in !v }.count > 0 && filter(nonBooleans) { v in v == 0 }.count > 0
     let delta = (hasTrueAndOne ? 1 : 0) + (hasFalseAndZero ? 1 : 0)
 
-    return (NSSet(array: value).count + delta) == value.count
+    if (NSSet(array: value).count + delta) == value.count {
+      return .Valid
+    }
+
+    return .Invalid(["\(value) does not have unique items"])
   }
 
-  return true // not an array
+  return .Valid
 }
 
-// Object
+// MARK: Object
 
-func validateMaxProperties(maxProperties:Int)(value:AnyObject)  -> Bool {
+func validatePropertiesLength(length:Int, comparitor:((Int, Int) -> (Bool)), error:String)(value:AnyObject)  -> ValidationResult {
   if let value = value as? [String:AnyObject] {
-    return maxProperties >= value.keys.array.count
+    if !comparitor(length, value.keys.array.count) {
+      return .Invalid([error])
+    }
   }
 
-  return true
+  return .Valid
 }
 
-func validateMinProperties(minProperties:Int)(value:AnyObject)  -> Bool {
+func validateRequired(required:[String])(value:AnyObject)  -> ValidationResult {
   if let value = value as? [String:AnyObject] {
-    return minProperties <= value.keys.array.count
+    if (required.filter { r in !contains(value.keys, r) }.count == 0) {
+      return .Valid
+    }
+
+    return .Invalid(["Required properties are missing '\(required)'"])
   }
 
-  return true
+  return .Valid
 }
 
-func validateRequired(required:[String])(value:AnyObject)  -> Bool {
-  if let value = value as? [String:AnyObject] {
-    return required.filter { r in !contains(value.keys, r) }.count == 0
-  }
-
-  return true
-}
-
-func validateProperties(properties:[String:Validator]?, patternProperties:[String:Validator]?, additionalProperties:Validator?)(value:AnyObject) -> Bool {
+func validateProperties(properties:[String:Validator]?, patternProperties:[String:Validator]?, additionalProperties:Validator?)(value:AnyObject) -> ValidationResult {
   if let value = value as? [String:AnyObject] {
     var allKeys = NSMutableSet()
+    var results = [ValidationResult]()
 
     if let properties = properties {
       for (key, validator) in properties {
         allKeys.addObject(key)
 
         if let value: AnyObject = value[key] {
-          if !validator(value) {
-            return false
-          }
+          results.append(validator(value))
         }
       }
     }
@@ -213,34 +319,25 @@ func validateProperties(properties:[String:Validator]?, patternProperties:[Strin
           }
 
           allKeys.addObjectsFromArray(keys.array)
-
-          for key in keys.array {
-            println("\(keys.array)")
-            if !validator(value[key]!) {
-              return false
-            }
-          }
+          results += map(keys) { key in validator(value[key]!) }
         } else {
-          return false // regex error
+          return .Invalid(["[Schema] '\(pattern)' is not a valid regex pattern for patternProperties"])
         }
       }
     }
 
     if let additionalProperties = additionalProperties {
       let additionalKeys = value.keys.filter { !allKeys.containsObject($0) }
-      println("\(additionalKeys.array)")
-      for key in additionalKeys {
-        if !additionalProperties(value[key]!) {
-          return false
-        }
-      }
+      results += map(additionalKeys) { key in additionalProperties(value[key]!) }
     }
+
+    return flatten(results)
   }
 
-  return true
+  return .Valid
 }
 
-func validateDependency(key:String, validator:Validator)(value:AnyObject) -> Bool {
+func validateDependency(key:String, validator:LegacyValidator)(value:AnyObject) -> Bool {
   if let value = value as? [String:AnyObject] {
     if (value[key] != nil) {
       return validator(value)

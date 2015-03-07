@@ -280,7 +280,6 @@
 		27CF7EEB1A9B9EDA0063FDE4 /* JSONSchema */ = {
 			isa = PBXGroup;
 			children = (
-				27CF7EEE1A9B9EDA0063FDE4 /* JSONSchema.h */,
 				27B640C61AAB0EDC005C8641 /* JSONSchema.swift */,
 				27B641471AAB3CEB005C8641 /* Validators.swift */,
 				27CF7EEC1A9B9EDA0063FDE4 /* Supporting Files */,
@@ -291,6 +290,7 @@
 		27CF7EEC1A9B9EDA0063FDE4 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				27CF7EEE1A9B9EDA0063FDE4 /* JSONSchema.h */,
 				27CF7EED1A9B9EDA0063FDE4 /* Info.plist */,
 			);
 			name = "Supporting Files";
