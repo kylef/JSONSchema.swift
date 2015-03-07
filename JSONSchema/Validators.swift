@@ -231,3 +231,27 @@ func validateProperties(properties:[String:Validator]?, patternProperties:[Strin
 
   return true
 }
+
+func validateDependency(key:String, validator:Validator)(value:AnyObject) -> Bool {
+  if let value = value as? [String:AnyObject] {
+    if (value[key] != nil) {
+      return validator(value)
+    }
+  }
+
+  return true
+}
+
+func validateDependencies(key:String, dependencies:[String])(value:AnyObject) -> Bool {
+  if let value = value as? [String:AnyObject] {
+    if (value[key] != nil) {
+      for dependency in dependencies {
+        if (value[dependency] == nil) {
+          return false
+        }
+      }
+    }
+  }
+
+  return true
+}

@@ -157,6 +157,41 @@ func validators(schema:[String:AnyObject]) -> [Validator] {
     validators.append(validateProperties(properties, patternProperties, additionalPropertyValidator))
   }
 
+  func validateDependency(key:String, validator:Validator)(value:AnyObject) -> Bool {
+    if let value = value as? [String:AnyObject] {
+      if (value[key] != nil) {
+        return validator(value)
+      }
+    }
+
+    return true
+  }
+
+  func validateDependencies(key:String, dependencies:[String])(value:AnyObject) -> Bool {
+    if let value = value as? [String:AnyObject] {
+      if (value[key] != nil) {
+        for dependency in dependencies {
+          if (value[dependency] == nil) {
+            return false
+          }
+        }
+      }
+    }
+
+    return true
+  }
+
+  if let dependencies = schema["dependencies"] as? [String:AnyObject] {
+    for (key, dependencies) in dependencies {
+      if let dependencies = dependencies as? [String: AnyObject] {
+        let schema = validate(JSONSchema.validators(dependencies))
+        validators.append(validateDependency(key, schema))
+      } else if let dependencies = dependencies as? [String] {
+        validators.append(validateDependencies(key, dependencies))
+      }
+    }
+  }
+
   return validators
 }
 

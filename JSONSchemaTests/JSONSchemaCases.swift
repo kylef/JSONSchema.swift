@@ -58,6 +58,7 @@ class JSONSchemaCases: XCTestCase {
         "properties.json",
         "patternProperties.json",
         "additionalProperties.json",
+        "dependencies.json",
       ]
       return path.hasSuffix(".json") && contains(whitelist, path)
     }
