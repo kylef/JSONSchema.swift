@@ -17,11 +17,11 @@ func validateType(type:String)(value:AnyObject) -> Bool {
   switch type {
   case "integer":
     if let number = value as? NSNumber {
-      return CFNumberIsFloatType(number) == 0 && CFNumberGetType(number) != .CharType
+      return CFNumberIsFloatType(number) == 0 && CFGetTypeID(number) != CFBooleanGetTypeID()
     }
   case "number":
     if let number = value as? NSNumber {
-      return CFNumberGetType(number) != .CharType
+      return CFGetTypeID(number) != CFBooleanGetTypeID()
     }
   case "string":
     return value is String
@@ -31,7 +31,7 @@ func validateType(type:String)(value:AnyObject) -> Bool {
     return value is NSArray
   case "boolean":
     if let number = value as? NSNumber {
-      return CFNumberGetType(number) == .CharType
+      return CFGetTypeID(number) == CFBooleanGetTypeID()
     }
   case "null":
     return value is NSNull
@@ -135,7 +135,7 @@ func validateUniqueItems(value:AnyObject) -> Bool {
     // 1 and true, 0 and false are isEqual for NSNumber's, so logic to count for that below
 
     func isBoolean(number:NSNumber) -> Bool {
-      return CFNumberGetType(number) == .CharType
+      return CFGetTypeID(number) != CFBooleanGetTypeID()
     }
 
     let numbers = filter(value) { value in value is NSNumber } as [NSNumber]
