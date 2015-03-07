@@ -62,11 +62,68 @@ func validators(schema:[String:AnyObject]) -> [Validator] {
     }
   }
 
+  if let items = schema["items"] as? [String:AnyObject] {
+    let itemValidators = validate(JSONSchema.validators(items))
+
+    func validateItems(document:AnyObject) -> Bool {
+      if let document = document as? [AnyObject] {
+        let results = map(document, itemValidators)
+        return filter(results) { result in !result }.count == 0
+      }
+
+      return true
+    }
+
+    validators.append(validateItems)
+  } else if let items = schema["items"] as? [[String:AnyObject]] {
+    func createAdditionalItemsValidator(additionalItems:AnyObject?) -> Validator {
+      if let additionalItems = additionalItems as? [String:AnyObject] {
+        let additionalItemValidators = JSONSchema.validators(additionalItems)
+        return validate(additionalItemValidators)
+      }
+
+      let additionalItems = additionalItems as? Bool ?? true
+      return { value in
+        return additionalItems
+      }
+    }
+
+    let additionalItemsValidator = createAdditionalItemsValidator(schema["additionalItems"])
+    let itemValidators = map(items, JSONSchema.validators)
+
+    func validateItems(value:AnyObject) -> Bool {
+      if let value = value as? [AnyObject] {
+        for (index, element) in enumerate(value) {
+          if index >= itemValidators.count {
+            if !additionalItemsValidator(element) {
+              return false
+            }
+          } else {
+            let validators = itemValidators[index]
+            if !validate(validators)(value:element) {
+              return false
+            }
+          }
+        }
+
+        return true
+      }
+
+      return true
+    }
+
+    validators.append(validateItems)
+  }
+
   return validators
 }
 
-public func validate(document:AnyObject, schema:[String:AnyObject]) -> Bool {
-  return filter(validators(schema)) { validator in
-    return !validator(document)
+func validate(validators:[Validator])(value:AnyObject) -> Bool {
+  return filter(validators) { validator in
+    return !validator(value)
   }.count == 0
+}
+
+public func validate(value:AnyObject, schema:[String:AnyObject]) -> Bool {
+  return validate(validators(schema))(value: value)
 }
