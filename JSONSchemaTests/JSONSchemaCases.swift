@@ -34,6 +34,7 @@ class JSONSchemaCases: XCTestCase {
       let whitelist = [
         "type.json",
         "allOf.json",
+        "anyOf.json",
 
         // String
         "maxLength.json",
