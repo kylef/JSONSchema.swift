@@ -40,6 +40,7 @@
 		27B641441AAB13A8005C8641 /* required.json in Resources */ = {isa = PBXBuildFile; fileRef = 27B6410A1AAB13A8005C8641 /* required.json */; };
 		27B641451AAB13A8005C8641 /* type.json in Resources */ = {isa = PBXBuildFile; fileRef = 27B6410B1AAB13A8005C8641 /* type.json */; };
 		27B641461AAB13A8005C8641 /* uniqueItems.json in Resources */ = {isa = PBXBuildFile; fileRef = 27B6410C1AAB13A8005C8641 /* uniqueItems.json */; };
+		27B641481AAB3CEB005C8641 /* Validators.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27B641471AAB3CEB005C8641 /* Validators.swift */; };
 		27CF7EEF1A9B9EDA0063FDE4 /* JSONSchema.h in Headers */ = {isa = PBXBuildFile; fileRef = 27CF7EEE1A9B9EDA0063FDE4 /* JSONSchema.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		27CF7EF51A9B9EDA0063FDE4 /* JSONSchema.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27CF7EE91A9B9EDA0063FDE4 /* JSONSchema.framework */; };
 		27CF7EFC1A9B9EDA0063FDE4 /* JSONSchemaTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27CF7EFB1A9B9EDA0063FDE4 /* JSONSchemaTests.swift */; };
@@ -119,6 +120,7 @@
 		27B6410A1AAB13A8005C8641 /* required.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = required.json; sourceTree = "<group>"; };
 		27B6410B1AAB13A8005C8641 /* type.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = type.json; sourceTree = "<group>"; };
 		27B6410C1AAB13A8005C8641 /* uniqueItems.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = uniqueItems.json; sourceTree = "<group>"; };
+		27B641471AAB3CEB005C8641 /* Validators.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Validators.swift; sourceTree = "<group>"; };
 		27CF7EE91A9B9EDA0063FDE4 /* JSONSchema.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = JSONSchema.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		27CF7EED1A9B9EDA0063FDE4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		27CF7EEE1A9B9EDA0063FDE4 /* JSONSchema.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = JSONSchema.h; sourceTree = "<group>"; };
@@ -280,6 +282,7 @@
 			children = (
 				27CF7EEE1A9B9EDA0063FDE4 /* JSONSchema.h */,
 				27B640C61AAB0EDC005C8641 /* JSONSchema.swift */,
+				27B641471AAB3CEB005C8641 /* Validators.swift */,
 				27CF7EEC1A9B9EDA0063FDE4 /* Supporting Files */,
 			);
 			path = JSONSchema;
@@ -450,6 +453,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				27B641481AAB3CEB005C8641 /* Validators.swift in Sources */,
 				27B640C71AAB0EDC005C8641 /* JSONSchema.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

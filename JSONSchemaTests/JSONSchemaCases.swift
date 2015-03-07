@@ -31,7 +31,10 @@ class JSONSchemaCases: XCTestCase {
     let fileManager = NSFileManager.defaultManager()
     let files = fileManager.enumeratorAtPath(bundle.resourcePath!)!.allObjects as [String]
     let suites = filter(files) { (path) -> Bool in
-      return path.hasSuffix(".json") && path == "type.json"
+      let whitelist = [
+        "type.json",
+      ]
+      return path.hasSuffix(".json") && contains(whitelist, path)
     }
 
     let cases = map(suites) { (file) -> [Case] in
