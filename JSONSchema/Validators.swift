@@ -179,3 +179,55 @@ func validateRequired(required:[String])(value:AnyObject)  -> Bool {
 
   return true
 }
+
+func validateProperties(properties:[String:Validator]?, patternProperties:[String:Validator]?, additionalProperties:Validator?)(value:AnyObject) -> Bool {
+  if let value = value as? [String:AnyObject] {
+    var allKeys = NSMutableSet()
+
+    if let properties = properties {
+      for (key, validator) in properties {
+        allKeys.addObject(key)
+
+        if let value: AnyObject = value[key] {
+          if !validator(value) {
+            return false
+          }
+        }
+      }
+    }
+
+    if let patternProperties = patternProperties {
+      for (pattern, validator) in patternProperties {
+        var error:NSError?
+        if let expression = NSRegularExpression(pattern: pattern, options: NSRegularExpressionOptions(0), error: &error) {
+          let keys = value.keys.filter {
+            (key:String) in expression.matchesInString(key, options: NSMatchingOptions(0), range: NSMakeRange(0, key.utf16Count)).count > 0
+          }
+
+          allKeys.addObjectsFromArray(keys.array)
+
+          for key in keys.array {
+            println("\(keys.array)")
+            if !validator(value[key]!) {
+              return false
+            }
+          }
+        } else {
+          return false // regex error
+        }
+      }
+    }
+
+    if let additionalProperties = additionalProperties {
+      let additionalKeys = value.keys.filter { !allKeys.containsObject($0) }
+      println("\(additionalKeys.array)")
+      for key in additionalKeys {
+        if !additionalProperties(value[key]!) {
+          return false
+        }
+      }
+    }
+  }
+
+  return true
+}

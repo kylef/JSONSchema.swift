@@ -127,6 +127,36 @@ func validators(schema:[String:AnyObject]) -> [Validator] {
     validators.append(validateRequired(required))
   }
 
+  if (schema["properties"] != nil) || (schema["patternProperties"] != nil) || (schema["additionalProperties"] != nil) {
+    func createAdditionalPropertiesValidator(additionalProperties:AnyObject?) -> Validator {
+      if let additionalProperties = additionalProperties as? [String:AnyObject] {
+        let additionalPropertiesValidators = JSONSchema.validators(additionalProperties)
+        return validate(additionalPropertiesValidators)
+      }
+
+      let additionalProperties = additionalProperties as? Bool ?? true
+      return { value in
+        return additionalProperties
+      }
+    }
+
+    func createPropertiesValidators(properties:[String:[String:AnyObject]]?) -> [String:Validator]? {
+      if let properties = properties {
+        return Dictionary(map(properties.keys) {
+          key in (key, validate(JSONSchema.validators(properties[key]!)))
+          })
+      }
+
+      return nil
+    }
+
+    let additionalPropertyValidator = createAdditionalPropertiesValidator(schema["additionalProperties"])
+    let properties = createPropertiesValidators(schema["properties"] as? [String:[String:AnyObject]])
+    let patternProperties = createPropertiesValidators(schema["patternProperties"] as? [String:[String:AnyObject]])
+
+    validators.append(validateProperties(properties, patternProperties, additionalPropertyValidator))
+  }
+
   return validators
 }
 
@@ -138,4 +168,15 @@ func validate(validators:[Validator])(value:AnyObject) -> Bool {
 
 public func validate(value:AnyObject, schema:[String:AnyObject]) -> Bool {
   return validate(validators(schema))(value: value)
+}
+
+/// Extension for dictionary providing initialization from array of elements
+extension Dictionary {
+  init(_ pairs: [Element]) {
+    self.init()
+
+    for (key, value) in pairs {
+      self[key] = value
+    }
+  }
 }
