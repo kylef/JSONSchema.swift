@@ -13,6 +13,8 @@ pod 'JSONSchema'
 ## Usage
 
 ```swift
+import JSONSchema
+
 let schema = [
     "type": "object",
     "properties": [
