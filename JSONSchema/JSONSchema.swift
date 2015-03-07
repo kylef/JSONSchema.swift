@@ -56,6 +56,12 @@ func validators(schema:[String:AnyObject]) -> [Validator] {
     validators.append(validateArrayLength(maxItems, <=))
   }
 
+  if let uniqueItems = schema["uniqueItems"] as? Bool {
+    if uniqueItems {
+      validators.append(validateUniqueItems)
+    }
+  }
+
   return validators
 }
 

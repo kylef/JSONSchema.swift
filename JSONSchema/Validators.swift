@@ -129,3 +129,25 @@ func validateArrayLength(rhs:Int, comparitor:((Int, Int) -> Bool))(value:AnyObje
 
   return true
 }
+
+func validateUniqueItems(value:AnyObject) -> Bool {
+  if let value = value as? [AnyObject] {
+    // 1 and true, 0 and false are isEqual for NSNumber's, so logic to count for that below
+
+    func isBoolean(number:NSNumber) -> Bool {
+      return CFNumberGetType(number) == .CharType
+    }
+
+    let numbers = filter(value) { value in value is NSNumber } as [NSNumber]
+    let numerBooleans = filter(numbers, isBoolean)
+    let booleans = numerBooleans as [Bool]
+    let nonBooleans = filter(numbers) { number in !isBoolean(number) }
+    let hasTrueAndOne = filter(booleans) { v in v }.count > 0 && filter(nonBooleans) { v in v == 1 }.count > 0
+    let hasFalseAndZero = filter(booleans) { v in !v }.count > 0 && filter(nonBooleans) { v in v == 0 }.count > 0
+    let delta = (hasTrueAndOne ? 1 : 0) + (hasFalseAndZero ? 1 : 0)
+
+    return (NSSet(array: value).count + delta) == value.count
+  }
+
+  return true // not an array
+}
