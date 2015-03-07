@@ -122,6 +122,8 @@ func validateMinimum(minimum:NSNumber, exclusive:Bool?)(value:AnyObject) -> Bool
   return true
 }
 
+// Array
+
 func validateArrayLength(rhs:Int, comparitor:((Int, Int) -> Bool))(value:AnyObject) -> Bool {
   if let value = value as? [AnyObject] {
     return comparitor(value.count, rhs)
@@ -150,4 +152,22 @@ func validateUniqueItems(value:AnyObject) -> Bool {
   }
 
   return true // not an array
+}
+
+// Object
+
+func validateMaxProperties(maxProperties:Int)(value:AnyObject)  -> Bool {
+  if let value = value as? [String:AnyObject] {
+    return maxProperties >= value.keys.array.count
+  }
+
+  return true
+}
+
+func validateMinProperties(minProperties:Int)(value:AnyObject)  -> Bool {
+  if let value = value as? [String:AnyObject] {
+    return minProperties <= value.keys.array.count
+  }
+
+  return true
 }

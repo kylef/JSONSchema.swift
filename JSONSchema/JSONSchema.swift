@@ -115,6 +115,14 @@ func validators(schema:[String:AnyObject]) -> [Validator] {
     validators.append(validateItems)
   }
 
+  if let maxProperties = schema["maxProperties"] as? Int {
+    validators.append(validateMaxProperties(maxProperties))
+  }
+
+  if let minProperties = schema["minProperties"] as? Int {
+    validators.append(validateMinProperties(minProperties))
+  }
+
   return validators
 }
 
