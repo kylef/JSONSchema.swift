@@ -8,6 +8,7 @@
 
 import Foundation
 import XCTest
+import JSONSchema
 
 func fixture(named:String, forObject:AnyObject) -> NSData {
   let bundle = NSBundle(forClass:object_getClass(forObject))
@@ -30,7 +31,7 @@ class JSONSchemaCases: XCTestCase {
     let fileManager = NSFileManager.defaultManager()
     let files = fileManager.enumeratorAtPath(bundle.resourcePath!)!.allObjects as [String]
     let suites = filter(files) { (path) -> Bool in
-      return path.hasSuffix(".json")
+      return path.hasSuffix(".json") && path == "type.json"
     }
 
     let cases = map(suites) { (file) -> [Case] in
@@ -111,7 +112,8 @@ typealias Assertion = (String, () -> ())
 func makeAssertions(c:Case) -> ([Assertion]) {
   return map(c.tests) { test -> Assertion in
     return ("\(c.description) \(test.description)", {
-      XCTFail("Not Implemented")
+      let isValid = validate(test.data, c.schema)
+      XCTAssertEqual(isValid, test.value, "\(test.value) should validate to \(test.value) with schema \(c.schema)")
     })
   }
 }
