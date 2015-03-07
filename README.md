@@ -2,7 +2,7 @@
 
 [![Build Status](http://img.shields.io/travis/kylef/JSONSchema.swift/master.svg?style=flat)](https://travis-ci.org/kylef/JSONSchema.swift)
 
-JSONSchema is an implementation of [JSON Schema](http://json-schema.org/) in Swift.
+An implementation of [JSON Schema](http://json-schema.org/) in Swift.
 
 ## Installation
 
@@ -16,7 +16,7 @@ pod 'JSONSchema'
 let schema = [
     "type": "object",
     "properties": [
-        "name": ["type: "string"],
+        "name": ["type": "string"],
         "price": ["type": "number"],
     ],
 ]
