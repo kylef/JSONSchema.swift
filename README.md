@@ -28,6 +28,6 @@ validate(["name": "Eggs", "price": 34.99], schema)
 
 ## License
 
-Mockingjay is licensed under the BSD license. See [LICENSE](LICENSE) for more
+JSONSchema is licensed under the BSD license. See [LICENSE](LICENSE) for more
 info.
 
