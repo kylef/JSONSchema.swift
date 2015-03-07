@@ -1,0 +1,9 @@
+language: objective-c
+before_install:
+- gem install cocoapods --pre --no-document
+- gem install xcpretty --no-document
+script:
+- set -o pipefail
+- xcodebuild -project JSONSchema.xcodeproj -scheme JSONSchema test -sdk macosx| xcpretty -c
+- xcodebuild -project JSONSchema.xcodeproj -scheme JSONSchema test -sdk iphonesimulator ONLY_ACTIVE_ARCH=NO | xcpretty -c
+- pod lib lint --quick
