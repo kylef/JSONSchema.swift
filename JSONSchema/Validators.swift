@@ -171,3 +171,11 @@ func validateMinProperties(minProperties:Int)(value:AnyObject)  -> Bool {
 
   return true
 }
+
+func validateRequired(required:[String])(value:AnyObject)  -> Bool {
+  if let value = value as? [String:AnyObject] {
+    return required.filter { r in !contains(value.keys, r) }.count == 0
+  }
+
+  return true
+}

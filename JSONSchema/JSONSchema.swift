@@ -123,6 +123,10 @@ func validators(schema:[String:AnyObject]) -> [Validator] {
     validators.append(validateMinProperties(minProperties))
   }
 
+  if let required = schema["required"] as? [String] {
+    validators.append(validateRequired(required))
+  }
+
   return validators
 }
 
