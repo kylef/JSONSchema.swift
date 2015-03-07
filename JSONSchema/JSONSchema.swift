@@ -31,6 +31,15 @@ func validators(schema:[String:AnyObject]) -> [Validator] {
     validators.append(anyOfValidator(anyOfValidators))
   }
 
+  if let oneOf = schema["oneOf"] as? [[String:AnyObject]] {
+    let oneOfValidators = map(map(oneOf, JSONSchema.validators), validate) as [Validator]
+    func oneOfValidator(validators:[Validator])(value:AnyObject) -> Bool {
+      let results = map(validators) { validator in validator(value) }
+      return filter(results) { $0 }.count == 1
+    }
+    validators.append(oneOfValidator(oneOfValidators))
+  }
+
   // String
 
   if let maxLength = schema["maxLength"] as? Int {
