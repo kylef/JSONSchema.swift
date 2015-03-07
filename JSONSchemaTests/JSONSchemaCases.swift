@@ -33,6 +33,7 @@ class JSONSchemaCases: XCTestCase {
     let suites = filter(files) { (path) -> Bool in
       let whitelist = [
         "type.json",
+        "maxLength.json",
       ]
       return path.hasSuffix(".json") && contains(whitelist, path)
     }

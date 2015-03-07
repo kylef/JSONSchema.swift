@@ -47,3 +47,11 @@ func validateType(type:[String])(value:AnyObject) -> Bool {
   let results = map(validators) { validator in validator(value: value) }
   return filter(results) { result in result }.count > 0
 }
+
+
+func validateMaximumLength(maximumLength:Int)(value:AnyObject) -> Bool {
+  if let value = value as? String {
+    return countElements(value) <= maximumLength
+  }
+  return true
+}
