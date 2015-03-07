@@ -55,3 +55,11 @@ func validateMaximumLength(maximumLength:Int)(value:AnyObject) -> Bool {
   }
   return true
 }
+
+
+func validateMinimumLength(maximumLength:Int)(value:AnyObject) -> Bool {
+  if let value = value as? String {
+    return countElements(value) >= maximumLength
+  }
+  return true
+}
