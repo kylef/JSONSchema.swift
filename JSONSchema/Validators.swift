@@ -11,6 +11,7 @@ import Foundation
 
 typealias Validator = (AnyObject) -> (Bool)
 
+// MARK: Type
 
 func validateType(type:String)(value:AnyObject) -> Bool {
   switch type {
@@ -48,6 +49,7 @@ func validateType(type:[String])(value:AnyObject) -> Bool {
   return filter(results) { result in result }.count > 0
 }
 
+// MARK: String
 
 func validateMaximumLength(maximumLength:Int)(value:AnyObject) -> Bool {
   if let value = value as? String {
@@ -75,6 +77,19 @@ func validatePattern(pattern:String)(value:AnyObject) -> Bool {
     }
 
     return false
+  }
+
+  return true
+}
+
+// MARK: Numerical
+
+func validateMultipleOf(number:NSNumber)(value:AnyObject) -> Bool {
+  if let value = value as? NSNumber {
+    if number.doubleValue > 0.0 {
+      let result = value.doubleValue / number.doubleValue
+      return result == floor(result)
+    }
   }
 
   return true

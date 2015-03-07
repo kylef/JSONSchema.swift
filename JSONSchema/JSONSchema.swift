@@ -32,6 +32,10 @@ func validators(schema:[String:AnyObject]) -> [Validator] {
     validators.append(validatePattern(pattern))
   }
 
+  if let multipleOf = schema["multipleOf"] as? NSNumber {
+    validators.append(validateMultipleOf(multipleOf))
+  }
+
   return validators
 }
 
