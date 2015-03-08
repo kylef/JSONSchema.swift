@@ -31,41 +31,18 @@ class JSONSchemaCases: XCTestCase {
     let fileManager = NSFileManager.defaultManager()
     let files = fileManager.enumeratorAtPath(bundle.resourcePath!)!.allObjects as [String]
     let suites = filter(files) { (path) -> Bool in
-      let whitelist = [
-        "type.json",
-        "allOf.json",
-        "anyOf.json",
-        "oneOf.json",
-        "not.json",
-        "enum.json",
+      let blacklist = [
+        //
+        "ref.json",
+        "refRemote.json",
+        "definitions.json",
 
-        // String
-        "maxLength.json",
-        "minLength.json",
-        "pattern.json",
-
-        // Numerical
-        "multipleOf.json",
-        "maximum.json",
-        "minimum.json",
-
-        // Array
-        "minItems.json",
-        "maxItems.json",
-        "uniqueItems.json",
-        "items.json",
-        "additionalItems.json",
-
-        // Object
-        "maxProperties.json",
-        "minProperties.json",
-        "required.json",
-        "properties.json",
-        "patternProperties.json",
-        "additionalProperties.json",
-        "dependencies.json",
+        // Optionals
+        "bignum.json",
+        "format.json",
+        "zeroTerminatedFloats.json",
       ]
-      return path.hasSuffix(".json") && contains(whitelist, path)
+      return path.hasSuffix(".json") && !contains(blacklist, path)
     }
 
     let cases = map(suites) { (file) -> [Case] in
