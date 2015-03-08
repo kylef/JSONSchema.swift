@@ -8,6 +8,44 @@
 
 import Foundation
 
+public enum Type: Swift.String {
+  case Object = "object"
+  case Array = "array"
+  case String = "string"
+  case Integer = "integer"
+  case Number = "number"
+  case Boolean = "boolean"
+  case Null = "null"
+}
+
+public struct Schema {
+  public let title:String?
+  public let description:String?
+
+  public let type:[Type]?
+
+  let schema:[String:AnyObject]
+
+  public init(_ schema:[String:AnyObject]) {
+    title = schema["title"] as? String
+    description = schema["description"] as? String
+
+    if let type = schema["type"] as? String {
+      if let type = Type(rawValue: type) {
+        self.type = [type]
+      }
+    } else if let types = schema["type"] as? [String] {
+      type = map(filter(map(types) { Type(rawValue: $0) }) { $0 != nil }) { $0! }
+    }
+
+    self.schema = schema
+  }
+
+  public func validate(data:AnyObject) -> ValidationResult {
+    return JSONSchema.validate(data, [:])
+  }
+}
+
 
 /// Returns a set of validators for a schema and document
 func validators(schema:[String:AnyObject]) -> [Validator] {

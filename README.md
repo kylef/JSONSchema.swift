@@ -15,15 +15,15 @@ pod 'JSONSchema'
 ```swift
 import JSONSchema
 
-let schema = [
+let schema = Schema([
     "type": "object",
     "properties": [
         "name": ["type": "string"],
         "price": ["type": "number"],
     ],
-]
+])
 
-validate(["name": "Eggs", "price": 34.99], schema)
+schema.validate(["name": "Eggs", "price": 34.99])
 ```
 
 ## License
