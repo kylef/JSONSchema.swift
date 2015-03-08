@@ -21,9 +21,20 @@ let schema = Schema([
         "name": ["type": "string"],
         "price": ["type": "number"],
     ],
+    "required": ["name"],
 ])
 
 schema.validate(["name": "Eggs", "price": 34.99])
+```
+
+### Error handling
+
+Validate returns an enumeration `ValidationResult` which contains all
+validation errors.
+
+```python
+println(schema.validate(["price": 34.99]).errors)
+>>> "Required property 'name' is missing."
 ```
 
 JSONSchema has full support for the draft4 of the specification. It does not

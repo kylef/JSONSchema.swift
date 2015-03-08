@@ -42,4 +42,18 @@ class JSONSchemaTests: XCTestCase {
   func testUnsuccessfulValidation() {
     XCTAssertFalse(schema.validate([String]()).valid)
   }
+
+  func testReadme() {
+    let schema = Schema([
+      "type": "object",
+      "properties": [
+        "name": ["type": "string"],
+        "price": ["type": "number"],
+      ],
+      "required": ["name"],
+    ])
+
+    XCTAssertTrue(schema.validate(["name": "Eggs", "price": 34.99]).valid)
+    XCTAssertFalse(schema.validate(["price": 34.99]).valid)
+  }
 }
