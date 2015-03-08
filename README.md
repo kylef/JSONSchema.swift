@@ -27,7 +27,7 @@ schema.validate(["name": "Eggs", "price": 34.99])
 ```
 
 JSONSchema has full support for the draft4 of the specification. It does not
-yet support remote referencing #9.
+yet support remote referencing [#9](https://github.com/kylef/JSONSchema.swift/issues/9).
 
 ## License
 
