@@ -55,7 +55,7 @@ public struct Schema {
     self.schema = schema
 
     formats = [
-      :
+      "ipv4": validateIPv4,
     ]
   }
 

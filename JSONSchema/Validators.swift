@@ -360,3 +360,19 @@ func validateDependencies(key:String, dependencies:[String])(value:AnyObject) ->
 
   return true
 }
+
+// MARK: Format
+
+func validateIPv4(value:AnyObject) -> ValidationResult {
+  if let ipv4 = value as? String {
+    if let expression = NSRegularExpression(pattern: "^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", options: NSRegularExpressionOptions(0), error: nil) {
+      if expression.matchesInString(ipv4, options: NSMatchingOptions(0), range: NSMakeRange(0, ipv4.utf16Count)).count == 1 {
+        return .Valid
+      }
+    }
+
+    return .Invalid(["'\(ipv4)' is not valid IPv4 address."])
+  }
+
+  return .Valid
+}
