@@ -35,6 +35,9 @@ public struct Schema {
 
   public let type:[Type]?
 
+  /// validation formats, currently private. If anyone wants to add custom please make a PR to make this public ;)
+  let formats:[String:Validator]
+
   let schema:[String:AnyObject]
 
   public init(_ schema:[String:AnyObject]) {
@@ -50,6 +53,10 @@ public struct Schema {
     }
 
     self.schema = schema
+
+    formats = [
+      :
+    ]
   }
 
   public func validate(data:AnyObject) -> ValidationResult {
@@ -304,6 +311,14 @@ func validators(root:Schema)(schema:[String:AnyObject]) -> [Validator] {
       } else if let dependencies = dependencies as? [String] {
         validators.append(validateDependencies(key, dependencies))
       }
+    }
+  }
+
+  if let format = schema["format"] as? String {
+    if let validator = root.formats[format] {
+      validators.append(validator)
+    } else {
+      validators.append(invalidValidation("'format' validation of '\(format)' is not yet supported."))
     }
   }
 
