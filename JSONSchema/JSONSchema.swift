@@ -59,6 +59,8 @@ public struct Schema {
   }
 
   func validatorForReference(reference:String) -> Validator {
+    // TODO: Rewrite this whole block: https://github.com/kylef/JSONSchema.swift/issues/12
+
     if let reference = reference.stringByRemovingPrefix("#") {  // Document relative
       if let reference = reference.stringByRemovingPrefix("/")?.stringByRemovingPercentEncoding {
         var components = reference.componentsSeparatedByString("/")
@@ -105,6 +107,7 @@ func validators(root:Schema)(schema:[String:AnyObject]) -> [Validator] {
   }
 
   if let type: AnyObject = schema["type"] {
+    // Rewrite this and most of the validator to use the `type` property, see https://github.com/kylef/JSONSchema.swift/issues/12
     validators.append(validateType(type))
   }
 

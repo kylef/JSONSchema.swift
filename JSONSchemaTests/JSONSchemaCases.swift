@@ -39,7 +39,6 @@ class JSONSchemaCases: XCTestCase {
         // Optionals
         "bignum.json",
         "format.json",
-//        "zeroTerminatedFloats.json",
       ]
       return path.hasSuffix(".json") && !contains(blacklist, path)
     }
