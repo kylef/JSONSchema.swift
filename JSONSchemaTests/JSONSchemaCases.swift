@@ -32,7 +32,6 @@ class JSONSchemaCases: XCTestCase {
     let files = fileManager.enumeratorAtPath(bundle.resourcePath!)!.allObjects as [String]
     let suites = filter(files) { (path) -> Bool in
       let blacklist = [
-        //
         "ref.json",
         "refRemote.json",
         "definitions.json",
@@ -40,7 +39,7 @@ class JSONSchemaCases: XCTestCase {
         // Optionals
         "bignum.json",
         "format.json",
-        "zeroTerminatedFloats.json",
+//        "zeroTerminatedFloats.json",
       ]
       return path.hasSuffix(".json") && !contains(blacklist, path)
     }
@@ -124,7 +123,12 @@ func makeAssertions(c:Case) -> ([Assertion]) {
   return map(c.tests) { test -> Assertion in
     return ("\(c.description) \(test.description)", {
       let result = validate(test.data, c.schema)
-      XCTAssertEqual(result.valid, test.value, "\(test.value) should validate to \(test.value) with schema \(c.schema)")
+      switch result {
+      case .Valid:
+        XCTAssertEqual(result.valid, test.value, "Result is valid")
+      case .Invalid(let errors):
+        XCTAssertEqual(result.valid, test.value, "Failed validation: \(errors)")
+      }
     })
   }
 }
