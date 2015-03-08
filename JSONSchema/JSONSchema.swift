@@ -56,6 +56,7 @@ public struct Schema {
 
     formats = [
       "ipv4": validateIPv4,
+      "ipv6": validateIPv6,
     ]
   }
 

@@ -376,3 +376,16 @@ func validateIPv4(value:AnyObject) -> ValidationResult {
 
   return .Valid
 }
+
+func validateIPv6(value:AnyObject) -> ValidationResult {
+  if let ipv6 = value as? String {
+    var buf = UnsafeMutablePointer<Void>.alloc(Int(INET6_ADDRSTRLEN))
+    if inet_pton(AF_INET6, ipv6, &buf) == 1 {
+      return .Valid
+    }
+
+    return .Invalid(["'\(ipv6)' is not valid IPv6 address."])
+  }
+
+  return .Valid
+}
