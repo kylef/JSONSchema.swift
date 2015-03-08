@@ -40,6 +40,6 @@ class JSONSchemaTests: XCTestCase {
   }
 
   func testUnsuccessfulValidation() {
-    XCTAssertTrue(schema.validate([String]()).valid)
+    XCTAssertFalse(schema.validate([String]()).valid)
   }
 }
