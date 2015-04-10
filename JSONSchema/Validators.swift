@@ -167,7 +167,7 @@ func allOf(validators:[Validator])(value:AnyObject) -> ValidationResult {
 }
 
 func validateEnum(values:[AnyObject])(value:AnyObject) -> ValidationResult {
-  if contains(values as [NSObject], value as NSObject) {
+  if contains(values as! [NSObject], value as! NSObject) {
     return .Valid
   }
 
@@ -178,7 +178,7 @@ func validateEnum(values:[AnyObject])(value:AnyObject) -> ValidationResult {
 
 func validateLength(comparitor:((Int, Int) -> (Bool)), length:Int, error:String)(value:AnyObject) -> ValidationResult {
   if let value = value as? String {
-    if !comparitor(countElements(value), length) {
+    if !comparitor(count(value), length) {
       return .Invalid([error])
     }
   }
@@ -190,7 +190,7 @@ func validatePattern(pattern:String)(value:AnyObject) -> ValidationResult {
   if let value = value as? String {
     let expression = NSRegularExpression(pattern: pattern, options: NSRegularExpressionOptions(0), error: nil)
     if let expression = expression {
-      let range = NSMakeRange(0, value.utf16Count)
+      let range = NSMakeRange(0, count(value))
       if expression.matchesInString(value, options: NSMatchingOptions(0), range: range).count == 0 {
         return .Invalid(["'\(value)' does not match pattern: '\(pattern)'"])
       }
@@ -253,9 +253,9 @@ func validateUniqueItems(value:AnyObject) -> ValidationResult {
       return CFGetTypeID(number) != CFBooleanGetTypeID()
     }
 
-    let numbers = filter(value) { value in value is NSNumber } as [NSNumber]
+    let numbers = filter(value) { value in value is NSNumber } as! [NSNumber]
     let numerBooleans = filter(numbers, isBoolean)
-    let booleans = numerBooleans as [Bool]
+    let booleans = numerBooleans as! [Bool]
     let nonBooleans = filter(numbers) { number in !isBoolean(number) }
     let hasTrueAndOne = filter(booleans) { v in v }.count > 0 && filter(nonBooleans) { v in v == 1 }.count > 0
     let hasFalseAndZero = filter(booleans) { v in !v }.count > 0 && filter(nonBooleans) { v in v == 0 }.count > 0
@@ -315,7 +315,7 @@ func validateProperties(properties:[String:Validator]?, patternProperties:[Strin
         var error:NSError?
         if let expression = NSRegularExpression(pattern: pattern, options: NSRegularExpressionOptions(0), error: &error) {
           let keys = value.keys.filter {
-            (key:String) in expression.matchesInString(key, options: NSMatchingOptions(0), range: NSMakeRange(0, key.utf16Count)).count > 0
+            (key:String) in expression.matchesInString(key, options: NSMatchingOptions(0), range: NSMakeRange(0, count(key))).count > 0
           }
 
           allKeys.addObjectsFromArray(keys.array)
@@ -366,7 +366,7 @@ func validateDependencies(key:String, dependencies:[String])(value:AnyObject) ->
 func validateIPv4(value:AnyObject) -> ValidationResult {
   if let ipv4 = value as? String {
     if let expression = NSRegularExpression(pattern: "^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", options: NSRegularExpressionOptions(0), error: nil) {
-      if expression.matchesInString(ipv4, options: NSMatchingOptions(0), range: NSMakeRange(0, ipv4.utf16Count)).count == 1 {
+      if expression.matchesInString(ipv4, options: NSMatchingOptions(0), range: NSMakeRange(0, count(ipv4))).count == 1 {
         return .Valid
       }
     }

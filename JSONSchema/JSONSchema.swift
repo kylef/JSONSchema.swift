@@ -21,7 +21,7 @@ public enum Type: Swift.String {
 extension String {
   func stringByRemovingPrefix(prefix:String) -> String? {
     if hasPrefix(prefix) {
-      let index = advance(startIndex, countElements(prefix))
+      let index = advance(startIndex, count(prefix))
       return substringFromIndex(index)
     }
 
@@ -47,9 +47,13 @@ public struct Schema {
     if let type = schema["type"] as? String {
       if let type = Type(rawValue: type) {
         self.type = [type]
+      } else {
+        self.type = []
       }
     } else if let types = schema["type"] as? [String] {
-      type = map(filter(map(types) { Type(rawValue: $0) }) { $0 != nil }) { $0! }
+      self.type = map(filter(map(types) { Type(rawValue: $0) }) { $0 != nil }) { $0! }
+    } else {
+      self.type = []
     }
 
     self.schema = schema

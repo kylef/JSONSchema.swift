@@ -22,14 +22,14 @@ func JSONFixture(named:String, forObject:AnyObject) -> [[String:AnyObject]] {
   var error:NSError?
   let object: AnyObject? = NSJSONSerialization.JSONObjectWithData(data, options: NSJSONReadingOptions(0), error: &error)
   assert(error == nil)
-  return object as [[String:AnyObject]]
+  return object as! [[String:AnyObject]]
 }
 
 class JSONSchemaCases: XCTestCase {
   override class func testInvocations() -> [AnyObject] {
     let bundle = NSBundle(forClass: self)
     let fileManager = NSFileManager.defaultManager()
-    let files = fileManager.enumeratorAtPath(bundle.resourcePath!)!.allObjects as [String]
+    let files = fileManager.enumeratorAtPath(bundle.resourcePath!)!.allObjects as! [String]
     let suites = filter(files) { (path) -> Bool in
       let blacklist = [
         "ref.json",
@@ -93,7 +93,7 @@ struct Test {
 }
 
 func makeTest(object:[String:AnyObject]) -> Test {
-  return Test(description: object["description"] as String, data: object["data"] as AnyObject!, value: object["valid"] as Bool)
+  return Test(description: object["description"] as! String, data: object["data"] as AnyObject!, value: object["valid"] as! Bool)
 }
 
 struct Case {
@@ -109,9 +109,9 @@ struct Case {
 }
 
 func makeCase(filename:String)(object:[String:AnyObject]) -> Case {
-  let description = object["description"] as String
-  let schema = object["schema"] as [String:AnyObject]
-  let tests = map(object["tests"] as [[String: AnyObject]], makeTest)
+  let description = object["description"] as! String
+  let schema = object["schema"] as! [String:AnyObject]
+  let tests = map(object["tests"] as! [[String: AnyObject]], makeTest)
   let caseName = filename.stringByDeletingPathExtension
   return Case(description: "\(caseName) \(description)", schema: schema, tests: tests)
 }
