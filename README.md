@@ -1,7 +1,5 @@
 # JSON Schema
 
-[![Build Status](http://img.shields.io/travis/kylef/JSONSchema.swift/master.svg?style=flat)](https://travis-ci.org/kylef/JSONSchema.swift)
-
 An implementation of [JSON Schema](http://json-schema.org/) in Swift.
 
 ## Installation
