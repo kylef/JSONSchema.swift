@@ -4,6 +4,8 @@ An implementation of [JSON Schema](http://json-schema.org/) in Swift.
 
 ## Installation
 
+[CocoaPods](http://cocoapods.org/) is the recommended installation method.
+
 ```ruby
 pod 'JSONSchema'
 ```
