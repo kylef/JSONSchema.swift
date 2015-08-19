@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		087106241B837F3F00D1DABF /* BaseDynamicSwiftTestCase.m in Sources */ = {isa = PBXBuildFile; fileRef = 087106231B837F3F00D1DABF /* BaseDynamicSwiftTestCase.m */; };
 		27B640C71AAB0EDC005C8641 /* JSONSchema.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27B640C61AAB0EDC005C8641 /* JSONSchema.swift */; };
 		27B640CD1AAB12CB005C8641 /* JSONSchemaCases.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27B640CC1AAB12CB005C8641 /* JSONSchemaCases.swift */; };
 		27B641281AAB13A8005C8641 /* additionalItems.json in Resources */ = {isa = PBXBuildFile; fileRef = 27B640ED1AAB13A8005C8641 /* additionalItems.json */; };
@@ -57,6 +58,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		087106221B837F3F00D1DABF /* JSONSchemaTests-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "JSONSchemaTests-Bridging-Header.h"; path = "JSON-Schema-Test-Suite/tests/JSONSchemaTests-Bridging-Header.h"; sourceTree = "<group>"; };
+		087106231B837F3F00D1DABF /* BaseDynamicSwiftTestCase.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = BaseDynamicSwiftTestCase.m; path = JSONSchemaTests/BaseDynamicSwiftTestCase.m; sourceTree = SOURCE_ROOT; };
+		087106251B8384BB00D1DABF /* BaseDynamicSwiftTestCase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = BaseDynamicSwiftTestCase.h; path = JSONSchemaTests/BaseDynamicSwiftTestCase.h; sourceTree = SOURCE_ROOT; };
 		27B640C61AAB0EDC005C8641 /* JSONSchema.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JSONSchema.swift; sourceTree = "<group>"; };
 		27B640C91AAB1080005C8641 /* UniversalFramework_Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = UniversalFramework_Base.xcconfig; sourceTree = "<group>"; };
 		27B640CA1AAB1080005C8641 /* UniversalFramework_Framework.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = UniversalFramework_Framework.xcconfig; sourceTree = "<group>"; };
@@ -137,7 +141,7 @@
 				27B640EC1AAB13A8005C8641 /* draft4 */,
 			);
 			name = tests;
-			path = Cases/tests;
+			path = "JSON-Schema-Test-Suite/tests";
 			sourceTree = "<group>";
 		};
 		27B640EC1AAB13A8005C8641 /* draft4 */ = {
@@ -229,9 +233,12 @@
 		27CF7EF81A9B9EDA0063FDE4 /* JSONSchemaTests */ = {
 			isa = PBXGroup;
 			children = (
-				27B640CE1AAB13A8005C8641 /* tests */,
+				087106251B8384BB00D1DABF /* BaseDynamicSwiftTestCase.h */,
+				087106231B837F3F00D1DABF /* BaseDynamicSwiftTestCase.m */,
+				087106221B837F3F00D1DABF /* JSONSchemaTests-Bridging-Header.h */,
 				27CF7EFB1A9B9EDA0063FDE4 /* JSONSchemaTests.swift */,
 				27B640CC1AAB12CB005C8641 /* JSONSchemaCases.swift */,
+				27B640CE1AAB13A8005C8641 /* tests */,
 				27CF7EF91A9B9EDA0063FDE4 /* Supporting Files */,
 			);
 			path = JSONSchemaTests;
@@ -301,7 +308,9 @@
 		27CF7EE01A9B9EDA0063FDE4 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0610;
+				LastSwiftMigration = 0700;
+				LastSwiftUpdateCheck = 0700;
+				LastUpgradeCheck = 0700;
 				ORGANIZATIONNAME = Cocode;
 				TargetAttributes = {
 					27CF7EE81A9B9EDA0063FDE4 = {
@@ -392,6 +401,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				087106241B837F3F00D1DABF /* BaseDynamicSwiftTestCase.m in Sources */,
 				27B640CD1AAB12CB005C8641 /* JSONSchemaCases.swift in Sources */,
 				27CF7EFC1A9B9EDA0063FDE4 /* JSONSchemaTests.swift in Sources */,
 			);
@@ -428,6 +438,7 @@
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -502,6 +513,7 @@
 				FRAMEWORK_VERSION = A;
 				INFOPLIST_FILE = JSONSchema/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "org.cocode.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -521,6 +533,7 @@
 				FRAMEWORK_VERSION = A;
 				INFOPLIST_FILE = JSONSchema/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "org.cocode.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 			};
@@ -530,13 +543,18 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 27B640CB1AAB1080005C8641 /* UniversalFramework_Test.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
 					"$(inherited)",
 				);
 				INFOPLIST_FILE = JSONSchemaTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "org.cocode.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "JSONSchemaTests/JSON-Schema-Test-Suite/tests/JSONSchemaTests-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
 		};
@@ -544,9 +562,13 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 27B640CB1AAB1080005C8641 /* UniversalFramework_Test.xcconfig */;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				COMBINE_HIDPI_IMAGES = YES;
 				INFOPLIST_FILE = JSONSchemaTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "org.cocode.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "JSONSchemaTests/JSON-Schema-Test-Suite/tests/JSONSchemaTests-Bridging-Header.h";
 			};
 			name = Release;
 		};
