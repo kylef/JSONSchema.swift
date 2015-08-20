@@ -18,19 +18,18 @@ func fixture(named:String, forObject:AnyObject) -> NSData {
 }
 
 func JSONFixture(named:String, forObject:AnyObject) -> [[String:AnyObject]] {
-  let data = fixture(named, forObject)
-  var error:NSError?
-  let object: AnyObject? = NSJSONSerialization.JSONObjectWithData(data, options: NSJSONReadingOptions(0), error: &error)
-  assert(error == nil)
+  let data = fixture(named, forObject: forObject)
+  let object = try! NSJSONSerialization.JSONObjectWithData(data, options: NSJSONReadingOptions(rawValue: 0))
   return object as! [[String:AnyObject]]
 }
 
-class JSONSchemaCases: XCTestCase {
-  override class func testInvocations() -> [AnyObject] {
+class JSONSchemaCases: BaseDynamicSwiftTestCase {
+  //class method declared in BaseDynamicSwiftTestCase to get around not being able to create NSInvocation in swift
+  override class func testSelectorNames() -> [AnyObject] {
     let bundle = NSBundle(forClass: self)
     let fileManager = NSFileManager.defaultManager()
     let files = fileManager.enumeratorAtPath(bundle.resourcePath!)!.allObjects as! [String]
-    let suites = filter(files) { (path) -> Bool in
+    let suites = files.filter { (path) -> Bool in
       let blacklist = [
         "ref.json",
         "refRemote.json",
@@ -40,20 +39,20 @@ class JSONSchemaCases: XCTestCase {
         "bignum.json",
         "format.json",
       ]
-      return path.hasSuffix(".json") && !contains(blacklist, path)
+      return path.hasSuffix(".json") && !blacklist.contains(path)
     }
 
-    let cases = map(suites) { (file) -> [Case] in
-      let suite = JSONFixture(file, self)
-      return map(suite, makeCase(file))
+    let cases = suites.map { (file) -> [Case] in
+      let suite = JSONFixture(file, forObject: self)
+      return suite.map(makeCase(file))
     }
 
-    let flatCases = reduce(cases, [Case](), +)
-    return reduce(map(flatCases, addCase), [AnyObject](), +)
+    let flatCases = cases.reduce([Case](), combine: +)
+    return flatCases.map(addCase).reduce([AnyObject](), combine: +)
   }
 
   class func addCase(c:Case) -> [AnyObject] {
-    return map(makeAssertions(c), addAssertion)
+    return makeAssertions(c).map(addAssertion)
   }
 
   class func addAssertion(assertion:Assertion) -> AnyObject {
@@ -61,20 +60,20 @@ class JSONSchemaCases: XCTestCase {
   }
 
   class func addTest(name:String, closure:() -> ()) -> AnyObject {
-    let block : @objc_block (AnyObject!) -> () = { (instance : AnyObject!) -> () in
+    let block : @convention(block) (AnyObject!) -> () = { (instance : AnyObject!) -> () in
       closure()
     }
 
     let imp = imp_implementationWithBlock(unsafeBitCast(block, AnyObject.self))
-    let selectorName = name.stringByReplacingOccurrencesOfString(" ", withString: "_", options: NSStringCompareOptions(0), range: nil)
+    let selectorName = name.stringByReplacingOccurrencesOfString(" ", withString: "_", options: NSStringCompareOptions(rawValue: 0), range: nil)
     let selector = Selector(selectorName)
     let method = class_getInstanceMethod(self, "example") // No @encode in swift, creating a dummy method to get encoding
     let types = method_getTypeEncoding(method)
     let added = class_addMethod(self, selector, imp, types)
-    println(name)
+    print(name)
     assert(added, "Failed to add `\(name)` as `\(selector)`")
 
-    return self.testCaseWithSelector(selector).invocation
+    return selectorName
   }
 
   func example() { /* See addTest() */ }
@@ -111,17 +110,17 @@ struct Case {
 func makeCase(filename:String)(object:[String:AnyObject]) -> Case {
   let description = object["description"] as! String
   let schema = object["schema"] as! [String:AnyObject]
-  let tests = map(object["tests"] as! [[String: AnyObject]], makeTest)
-  let caseName = filename.stringByDeletingPathExtension
+  let tests = (object["tests"] as! [[String: AnyObject]]).map(makeTest)
+  let caseName = (filename as NSString).stringByDeletingPathExtension
   return Case(description: "\(caseName) \(description)", schema: schema, tests: tests)
 }
 
 typealias Assertion = (String, () -> ())
 
 func makeAssertions(c:Case) -> ([Assertion]) {
-  return map(c.tests) { test -> Assertion in
+  return c.tests.map { test -> Assertion in
     return ("\(c.description) \(test.description)", {
-      let result = validate(test.data, c.schema)
+      let result = validate(test.data, schema: c.schema)
       switch result {
       case .Valid:
         XCTAssertEqual(result.valid, test.value, "Result is valid")

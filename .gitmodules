@@ -1,3 +1,6 @@
 [submodule "JSONSchemaTests/Cases"]
 	path = JSONSchemaTests/Cases
 	url = https://github.com/json-schema/JSON-Schema-Test-Suite
+[submodule "JSONSchemaTests/JSON-Schema-Test-Suite"]
+	path = JSONSchemaTests/JSON-Schema-Test-Suite
+	url = https://github.com/json-schema/JSON-Schema-Test-Suite.git
