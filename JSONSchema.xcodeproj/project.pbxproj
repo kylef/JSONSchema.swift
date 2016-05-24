@@ -214,7 +214,8 @@
 				27B641471AAB3CEB005C8641 /* Validators.swift */,
 				27CF7EEC1A9B9EDA0063FDE4 /* Supporting Files */,
 			);
-			path = JSONSchema;
+			name = JSONSchema;
+			path = Sources;
 			sourceTree = "<group>";
 		};
 		27CF7EEC1A9B9EDA0063FDE4 /* Supporting Files */ = {
@@ -234,7 +235,8 @@
 				27B640CC1AAB12CB005C8641 /* JSONSchemaCases.swift */,
 				27CF7EF91A9B9EDA0063FDE4 /* Supporting Files */,
 			);
-			path = JSONSchemaTests;
+			name = JSONSchemaTests;
+			path = Tests;
 			sourceTree = "<group>";
 		};
 		27CF7EF91A9B9EDA0063FDE4 /* Supporting Files */ = {
@@ -503,7 +505,7 @@
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_VERSION = A;
-				INFOPLIST_FILE = JSONSchema/Info.plist;
+				INFOPLIST_FILE = Sources/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "org.cocode.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -523,7 +525,7 @@
 				DYLIB_CURRENT_VERSION = 1;
 				DYLIB_INSTALL_NAME_BASE = "@rpath";
 				FRAMEWORK_VERSION = A;
-				INFOPLIST_FILE = JSONSchema/Info.plist;
+				INFOPLIST_FILE = Sources/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = "org.cocode.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -540,7 +542,7 @@
 					"DEBUG=1",
 					"$(inherited)",
 				);
-				INFOPLIST_FILE = JSONSchemaTests/Info.plist;
+				INFOPLIST_FILE = Tests/Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = "org.cocode.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -551,7 +553,7 @@
 			baseConfigurationReference = 27B640CB1AAB1080005C8641 /* UniversalFramework_Test.xcconfig */;
 			buildSettings = {
 				COMBINE_HIDPI_IMAGES = YES;
-				INFOPLIST_FILE = JSONSchemaTests/Info.plist;
+				INFOPLIST_FILE = Tests/Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = "org.cocode.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
