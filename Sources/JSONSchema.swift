@@ -35,9 +35,7 @@ public struct Schema {
 
   public let type:[Type]?
 
-  /// validation formats, currently private. If anyone wants to add custom please make a PR to make this public ;)
-  let formats:[String:Validator]
-
+  var formats:[String:Validator]
   let schema:[String:AnyObject]
 
   public init(_ schema:[String:AnyObject]) {
@@ -68,6 +66,10 @@ public struct Schema {
     let validator = allOf(validators(self)(schema: schema))
     let result = validator(value: data)
     return result
+  }
+  
+  public mutating func addFormat(formatKey: String, format: Validator) {
+    formats[formatKey] = format
   }
 
   func validatorForReference(reference:String) -> Validator {

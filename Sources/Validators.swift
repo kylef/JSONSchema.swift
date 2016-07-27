@@ -33,7 +33,7 @@ public enum ValidationResult {
 }
 
 typealias LegacyValidator = (AnyObject) -> (Bool)
-typealias Validator = (AnyObject) -> (ValidationResult)
+public typealias Validator = (AnyObject) -> (ValidationResult)
 
 /// Flatten an array of results into a single result (combining all errors)
 func flatten(results:[ValidationResult]) -> ValidationResult {
