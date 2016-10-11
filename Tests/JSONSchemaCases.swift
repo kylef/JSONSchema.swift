@@ -10,29 +10,29 @@ import Foundation
 import XCTest
 import JSONSchema
 
-func fixture(named:String, forObject:AnyObject) -> NSData {
-  let bundle = NSBundle(forClass:object_getClass(forObject))
-  let path = bundle.URLForResource(named, withExtension: nil)!
-  let data = NSData(contentsOfURL: path)!
+func fixture(_ named:String, forObject:Any) -> Data {
+  let bundle = Bundle(for:object_getClass(forObject))
+  let path = bundle.url(forResource: named, withExtension: nil)!
+  let data = try! Data(contentsOf: path)
   return data
 }
 
-func JSONFixture(named:String, forObject:AnyObject) -> [[String:AnyObject]] {
+func JSONFixture(_ named:String, forObject:Any) -> [[String:Any]] {
   let data = fixture(named, forObject: forObject)
-  let object: AnyObject?
+  let object: Any?
   do {
-    object = try NSJSONSerialization.JSONObjectWithData(data, options: NSJSONReadingOptions(rawValue: 0))
+    object = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions(rawValue: 0))
   } catch {
     fatalError()
   }
-  return object as! [[String:AnyObject]]
+  return object as! [[String:Any]]
 }
 
 class JSONSchemaCases: XCTestCase {
   func testEverything() {
-    let bundle = NSBundle(forClass: JSONSchemaCases.self)
-    let fileManager = NSFileManager.defaultManager()
-    let files = fileManager.enumeratorAtPath(bundle.resourcePath!)!.allObjects as! [String]
+    let bundle = Bundle(for: JSONSchemaCases.self)
+    let fileManager = FileManager.default
+    let files = fileManager.enumerator(atPath: bundle.resourcePath!)!.allObjects as! [String]
     let suites = files.filter { (path) -> Bool in
       let blacklist = [
         "ref.json",
@@ -51,7 +51,7 @@ class JSONSchemaCases: XCTestCase {
       return suite.map(makeCase(file))
     }
 
-    let flatCases = cases.reduce([Case](), combine: +)
+    let flatCases = cases.reduce([Case](), +)
     for c in flatCases {
       for (name, assertion) in makeAssertions(c) {
         // TODO: Improve testing
@@ -64,52 +64,52 @@ class JSONSchemaCases: XCTestCase {
 
 struct Test {
   let description:String
-  let data:AnyObject
+  let data:Any
   let value:Bool
 
-  init(description:String, data:AnyObject, value:Bool) {
+  init(description:String, data:Any, value:Bool) {
     self.description = description
     self.data = data
     self.value = value
   }
 }
 
-func makeTest(object:[String:AnyObject]) -> Test {
-  return Test(description: object["description"] as! String, data: object["data"] as AnyObject!, value: object["valid"] as! Bool)
+func makeTest(_ object:[String:Any]) -> Test {
+  return Test(description: object["description"] as! String, data: object["data"] as Any!, value: object["valid"] as! Bool)
 }
 
 struct Case {
   let description:String
-  let schema:[String:AnyObject]
+  let schema:[String:Any]
   let tests:[Test]
 
-  init(description:String, schema:[String:AnyObject], tests:[Test]) {
+  init(description:String, schema:[String:Any], tests:[Test]) {
     self.description = description
     self.schema = schema
     self.tests = tests
   }
 }
 
-func makeCase(filename: String) -> (object: [String:AnyObject]) -> Case {
+func makeCase(_ filename: String) -> (_ object: [String:Any]) -> Case {
   return { object in
     let description = object["description"] as! String
-    let schema = object["schema"] as! [String:AnyObject]
-    let tests = (object["tests"] as! [[String: AnyObject]]).map(makeTest)
-    let caseName = (filename as NSString).stringByDeletingPathExtension
+    let schema = object["schema"] as! [String:Any]
+    let tests = (object["tests"] as! [[String: Any]]).map(makeTest)
+    let caseName = (filename as NSString).deletingPathExtension
     return Case(description: "\(caseName) \(description)", schema: schema, tests: tests)
   }
 }
 
 typealias Assertion = (String, () -> ())
 
-func makeAssertions(c:Case) -> ([Assertion]) {
+func makeAssertions(_ c:Case) -> ([Assertion]) {
   return c.tests.map { test -> Assertion in
     return ("\(c.description) \(test.description)", {
       let result = validate(test.data, schema: c.schema)
       switch result {
       case .Valid:
         XCTAssertEqual(result.valid, test.value, "Result is valid")
-      case .Invalid(let errors):
+      case .invalid(let errors):
         XCTAssertEqual(result.valid, test.value, "Failed validation: \(errors)")
       }
     })

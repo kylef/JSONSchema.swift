@@ -36,7 +36,7 @@ class JSONSchemaTests: XCTestCase {
   }
 
   func testSuccessfulValidation() {
-    XCTAssertTrue(schema.validate([String:AnyObject]()).valid)
+    XCTAssertTrue(schema.validate([String:Any]()).valid)
   }
 
   func testUnsuccessfulValidation() {
