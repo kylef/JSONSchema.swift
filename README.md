@@ -2,6 +2,12 @@
 
 An implementation of [JSON Schema](http://json-schema.org/) in Swift.
 
+## Requirements
+
+The latest version of `JSON Schema` requires Swift `3`.
+
+If you are using Swift `2.2` then use version `0.3.0` of `JSON Schema`.
+
 ## Installation
 
 [CocoaPods](http://cocoapods.org/) is the recommended installation method.

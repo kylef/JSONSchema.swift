@@ -1,4 +1,9 @@
 # JSONSchema Changelog
+
+## 0.4.0
+
+- Converted project to Swift 3
+
 ## 0.3.0
 ### Enhancements
 
