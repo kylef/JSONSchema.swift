@@ -56,10 +56,9 @@ public struct Schema {
 
     self.schema = schema
 
-    formats = [
-      "ipv4": validateIPv4,
-      "ipv6": validateIPv6,
-    ]
+    formats = [:]
+    addFormat(formatKey: "ipv4", format: validateIPv4)
+    addFormat(formatKey: "ipv6", format: validateIPv6)
   }
 
   public func validate(_ data:Any) -> ValidationResult {
@@ -68,8 +67,9 @@ public struct Schema {
     return result
   }
 
-  public mutating func addFormat(formatKey: String, format: Validator) {
-    formats[formatKey] = format
+  public mutating func addFormat(formatKey: String, format: @escaping Validator) {
+    let validator = allOf([validateType(Type.String.rawValue), format])
+    formats[formatKey] = validator
   }
 
   func validatorForReference(_ reference:String) -> Validator {

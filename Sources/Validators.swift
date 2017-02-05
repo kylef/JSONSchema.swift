@@ -399,10 +399,9 @@ func validateDependencies(_ key: String, dependencies: [String]) -> (_ value: An
 
 func validateIPv4(_ value:Any) -> ValidationResult {
   if let ipv4 = value as? String {
-    if let expression = try? NSRegularExpression(pattern: "^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", options: NSRegularExpression.Options(rawValue: 0)) {
-      if expression.matches(in: ipv4, options: NSRegularExpression.MatchingOptions(rawValue: 0), range: NSMakeRange(0, ipv4.characters.count)).count == 1 {
-        return .Valid
-      }
+    var sin = sockaddr_in()
+    if ipv4.trimmingCharacters(in: .whitespaces).withCString({ cstring in inet_pton(AF_INET, cstring, &sin.sin_addr) }) == 1 {
+      return .Valid
     }
 
     return .invalid(["'\(ipv4)' is not valid IPv4 address."])
@@ -413,8 +412,8 @@ func validateIPv4(_ value:Any) -> ValidationResult {
 
 func validateIPv6(_ value:Any) -> ValidationResult {
   if let ipv6 = value as? String {
-    var buf = UnsafeMutablePointer<Int8>.allocate(capacity: Int(INET6_ADDRSTRLEN))
-    if inet_pton(AF_INET6, ipv6, &buf) == 1 {
+    var sin = sockaddr_in6()
+    if ipv6.trimmingCharacters(in: .whitespaces).withCString({ cstring in inet_pton(AF_INET6, cstring, &sin.sin6_addr) }) == 1 {
       return .Valid
     }
 
