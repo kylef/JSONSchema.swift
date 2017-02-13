@@ -73,10 +73,10 @@ class JSONSchemaTests: XCTestCase {
         if leftover.characters.count > 0 {
           return .invalid(["\(str) contains non-alpha characters"])
         }
-        return .Valid
+        return .valid
       }
 
-      return .Valid
+      return .valid
     }
 
     XCTAssertTrue(schema.validate(["letters": "HelloWorld"]).valid)
