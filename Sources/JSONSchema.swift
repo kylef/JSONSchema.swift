@@ -35,9 +35,7 @@ public struct Schema {
 
   public let type:[Type]?
 
-  /// validation formats, currently private. If anyone wants to add custom please make a PR to make this public ;)
-  let formats:[String:Validator]
-
+  var formats:[String:Validator]
   let schema:[String:Any]
 
   public init(_ schema:[String:Any]) {
@@ -58,16 +56,20 @@ public struct Schema {
 
     self.schema = schema
 
-    formats = [
-      "ipv4": validateIPv4,
-      "ipv6": validateIPv6,
-    ]
+    formats = [:]
+    addFormat(formatKey: "ipv4", format: validateIPv4)
+    addFormat(formatKey: "ipv6", format: validateIPv6)
   }
 
   public func validate(_ data:Any) -> ValidationResult {
     let validator = allOf(validators(self)(schema))
     let result = validator(data)
     return result
+  }
+
+  public mutating func addFormat(formatKey: String, format: @escaping Validator) {
+    let validator = allOf([validateType(Type.String.rawValue), format])
+    formats[formatKey] = validator
   }
 
   func validatorForReference(_ reference:String) -> Validator {
@@ -199,7 +201,7 @@ func validators(_ root: Schema) -> (_ schema: [String:Any]) -> [Validator] {
           return flatten(document.map(itemsValidators))
         }
 
-        return .Valid
+        return .valid
       }
 
       validators.append(validateItems)
@@ -236,7 +238,7 @@ func validators(_ root: Schema) -> (_ schema: [String:Any]) -> [Validator] {
           return flatten(results)
         }
 
-        return .Valid
+        return .valid
       }
 
       validators.append(validateItems)
@@ -292,7 +294,7 @@ func validators(_ root: Schema) -> (_ schema: [String:Any]) -> [Validator] {
           }
         }
 
-        return .Valid
+        return .valid
       }
     }
 
@@ -304,12 +306,12 @@ func validators(_ root: Schema) -> (_ schema: [String:Any]) -> [Validator] {
               if value[dependency] == nil {
                 return .invalid(["'\(key)' is missing it's dependency of '\(dependency)'"])
               }
-              return .Valid
+              return .valid
             })
           }
         }
 
-        return .Valid
+        return .valid
       }
     }
 
