@@ -10,12 +10,12 @@ import Foundation
 
 
 public enum ValidationResult {
-  case Valid
+  case valid
   case invalid([String])
 
   public var valid: Bool {
     switch self {
-    case .Valid:
+    case .valid:
       return true
     case .invalid:
       return false
@@ -24,7 +24,7 @@ public enum ValidationResult {
 
   public var errors:[String]? {
     switch self {
-    case .Valid:
+    case .valid:
       return nil
     case .invalid(let errors):
       return errors
@@ -50,12 +50,12 @@ func flatten(_ results:[ValidationResult]) -> ValidationResult {
     return .invalid(errors)
   }
 
-  return .Valid
+  return .valid
 }
 
 /// Creates a Validator which always returns an valid result
 func validValidation(_ value:Any) -> ValidationResult {
-  return .Valid
+  return .valid
 }
 
 /// Creates a Validator which always returns an invalid result with the given error
@@ -74,36 +74,36 @@ func validateType(_ type: String) -> (_ value: Any) -> ValidationResult {
     case "integer":
       if let number = value as? NSNumber {
         if !CFNumberIsFloatType(number) && CFGetTypeID(number) != CFBooleanGetTypeID() {
-          return .Valid
+          return .valid
         }
       }
     case "number":
       if let number = value as? NSNumber {
         if CFGetTypeID(number) != CFBooleanGetTypeID() {
-          return .Valid
+          return .valid
         }
       }
     case "string":
       if value is String {
-        return .Valid
+        return .valid
       }
     case "object":
       if value is NSDictionary {
-        return .Valid
+        return .valid
       }
     case "array":
       if value is NSArray {
-        return .Valid
+        return .valid
       }
     case "boolean":
       if let number = value as? NSNumber {
         if CFGetTypeID(number) == CFBooleanGetTypeID() {
-          return .Valid
+          return .valid
         }
       }
     case "null":
       if value is NSNull {
-        return .Valid
+        return .valid
       }
     default:
       break
@@ -136,7 +136,7 @@ func anyOf(_ validators:[Validator], error:String? = nil) -> (_ value: Any) -> V
     for validator in validators {
       let result = validator(value)
       if result.valid {
-        return .Valid
+        return .valid
       }
     }
 
@@ -154,7 +154,7 @@ func oneOf(_ validators: [Validator]) -> (_ value: Any) -> ValidationResult {
     let validValidators = results.filter { $0.valid }.count
 
     if validValidators == 1 {
-      return .Valid
+      return .valid
     }
 
     return .invalid(["\(validValidators) validates instead `oneOf`."])
@@ -168,7 +168,7 @@ func not(_ validator: @escaping Validator) -> (_ value: Any) -> ValidationResult
       return .invalid(["'\(value)' does not match 'not' validation."])
     }
 
-    return .Valid
+    return .valid
   }
 }
 
@@ -181,7 +181,7 @@ func allOf(_ validators: [Validator]) -> (_ value: Any) -> ValidationResult {
 func validateEnum(_ values: [Any]) -> (_ value: Any) -> ValidationResult {
   return { value in
     if (values as! [NSObject]).contains(value as! NSObject) {
-      return .Valid
+      return .valid
     }
 
     return .invalid(["'\(value)' is not a valid enumeration value of '\(values)'"])
@@ -198,7 +198,7 @@ func validateLength(_ comparitor: @escaping ((Int, Int) -> (Bool)), length: Int,
       }
     }
 
-    return .Valid
+    return .valid
   }
 }
 
@@ -216,7 +216,7 @@ func validatePattern(_ pattern: String) -> (_ value: Any) -> ValidationResult {
       }
     }
 
-    return .Valid
+    return .valid
   }
 }
 
@@ -233,7 +233,7 @@ func validateMultipleOf(_ number: Double) -> (_ value: Any) -> ValidationResult 
       }
     }
 
-    return .Valid
+    return .valid
   }
 }
 
@@ -251,7 +251,7 @@ func validateNumericLength(_ length: Double, comparitor: @escaping ((Double, Dou
       }
     }
 
-    return .Valid
+    return .valid
   }
 }
 
@@ -265,7 +265,7 @@ func validateArrayLength(_ rhs: Int, comparitor: @escaping ((Int, Int) -> Bool),
       }
     }
 
-    return .Valid
+    return .valid
   }
 }
 
@@ -286,13 +286,13 @@ func validateUniqueItems(_ value: Any) -> ValidationResult {
     let delta = (hasTrueAndOne ? 1 : 0) + (hasFalseAndZero ? 1 : 0)
 
     if (NSSet(array: value).count + delta) == value.count {
-      return .Valid
+      return .valid
     }
 
     return .invalid(["\(value) does not have unique items"])
   }
 
-  return .Valid
+  return .valid
 }
 
 // MARK: Object
@@ -305,7 +305,7 @@ func validatePropertiesLength(_ length: Int, comparitor: @escaping ((Int, Int) -
       }
     }
 
-    return .Valid
+    return .valid
   }
 }
 
@@ -319,13 +319,13 @@ func validateRequired(_ required: [String]) -> (_ value: Any)  -> ValidationResu
       }
       
       if missingKeys.isEmpty {
-        return .Valid
+        return .valid
       }
 
       return .invalid(["Required properties are missing '\(missingKeys)'"])
     }
 
-    return .Valid
+    return .valid
   }
 }
 
@@ -369,7 +369,7 @@ func validateProperties(_ properties: [String:Validator]?, patternProperties: [S
       return flatten(results)
     }
 
-    return .Valid
+    return .valid
   }
 }
 
@@ -407,25 +407,25 @@ func validateIPv4(_ value:Any) -> ValidationResult {
   if let ipv4 = value as? String {
     if let expression = try? NSRegularExpression(pattern: "^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", options: NSRegularExpression.Options(rawValue: 0)) {
       if expression.matches(in: ipv4, options: NSRegularExpression.MatchingOptions(rawValue: 0), range: NSMakeRange(0, ipv4.characters.count)).count == 1 {
-        return .Valid
+        return .valid
       }
     }
 
     return .invalid(["'\(ipv4)' is not valid IPv4 address."])
   }
 
-  return .Valid
+  return .valid
 }
 
 func validateIPv6(_ value:Any) -> ValidationResult {
   if let ipv6 = value as? String {
     var buf = UnsafeMutablePointer<Int8>.allocate(capacity: Int(INET6_ADDRSTRLEN))
     if inet_pton(AF_INET6, ipv6, &buf) == 1 {
-      return .Valid
+      return .valid
     }
 
     return .invalid(["'\(ipv6)' is not valid IPv6 address."])
   }
 
-  return .Valid
+  return .valid
 }
