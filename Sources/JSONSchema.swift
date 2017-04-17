@@ -199,7 +199,7 @@ func validators(_ root: Schema) -> (_ schema: [String:Any]) -> [Validator] {
           return flatten(document.map(itemsValidators))
         }
 
-        return .Valid
+        return .valid
       }
 
       validators.append(validateItems)
@@ -236,7 +236,7 @@ func validators(_ root: Schema) -> (_ schema: [String:Any]) -> [Validator] {
           return flatten(results)
         }
 
-        return .Valid
+        return .valid
       }
 
       validators.append(validateItems)
@@ -292,7 +292,7 @@ func validators(_ root: Schema) -> (_ schema: [String:Any]) -> [Validator] {
           }
         }
 
-        return .Valid
+        return .valid
       }
     }
 
@@ -304,12 +304,12 @@ func validators(_ root: Schema) -> (_ schema: [String:Any]) -> [Validator] {
               if value[dependency] == nil {
                 return .invalid(["'\(key)' is missing it's dependency of '\(dependency)'"])
               }
-              return .Valid
+              return .valid
             })
           }
         }
 
-        return .Valid
+        return .valid
       }
     }
 
