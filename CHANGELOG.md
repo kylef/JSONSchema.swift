@@ -6,6 +6,10 @@
 
 - `ValidationResult.Valid` was renamed to `ValidationResult.valid`.
 
+### Enhancements
+
+- `uri` format is now validated.
+
 
 ## 0.3.0
 
