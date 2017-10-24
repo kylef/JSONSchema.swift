@@ -279,7 +279,7 @@ func validateUniqueItems(_ value: Any) -> ValidationResult {
 
     let numbers = value.filter { value in value is NSNumber } as! [NSNumber]
     let numerBooleans = numbers.filter(isBoolean)
-    let booleans = numerBooleans as [Bool]
+    let booleans = (numerBooleans as? [Bool]) ?? []
     let nonBooleans = numbers.filter { number in !isBoolean(number) }
     let hasTrueAndOne = booleans.filter { v in v }.count > 0 && nonBooleans.filter { v in v == 1 }.count > 0
     let hasFalseAndZero = booleans.filter { v in !v }.count > 0 && nonBooleans.filter { v in v == 0 }.count > 0
