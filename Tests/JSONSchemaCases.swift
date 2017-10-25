@@ -41,13 +41,21 @@ class JSONSchemaCases: XCTestCase {
 
         // Optionals
         "bignum.json",
-        "format.json",
       ]
       return path.hasSuffix(".json") && !blacklist.contains(path)
     }
 
     let cases = suites.map { (file) -> [Case] in
       let suite = JSONFixture(file, forObject: self)
+
+      if file == "format.json" {
+        let cases = suite.map(makeCase(file))
+        return cases.filter {
+          let format = $0.schema["format"] as! String
+          return !["date-time", "email", "hostname"].contains(format)
+        }
+      }
+
       return suite.map(makeCase(file))
     }
 
