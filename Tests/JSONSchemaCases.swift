@@ -11,7 +11,7 @@ import XCTest
 import JSONSchema
 
 func fixture(_ named:String, forObject:Any) -> Data {
-  let bundle = Bundle(for:object_getClass(forObject))
+  let bundle = Bundle(for:object_getClass(forObject)!)
   let path = bundle.url(forResource: named, withExtension: nil)!
   let data = try! Data(contentsOf: path)
   return data

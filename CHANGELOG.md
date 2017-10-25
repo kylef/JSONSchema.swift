@@ -4,10 +4,12 @@
 
 ### Breaking Changes
 
+- Support for Swift 3 was removed.
 - `ValidationResult.Valid` was renamed to `ValidationResult.valid`.
 
 ### Enhancements
 
+- Support for Swift 4 has been added.
 - `uri` format is now validated.
 
 
