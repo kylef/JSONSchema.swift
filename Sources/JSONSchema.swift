@@ -58,9 +58,11 @@ public struct Schema {
 
     self.schema = schema
 
+    let validateIsString = validateType(Type.String.rawValue)
+
     formats = [
-      "ipv4": validateIPv4,
-      "ipv6": validateIPv6,
+      "ipv4": allOf([validateIsString, validateIPv4]),
+      "ipv6": allOf([validateIsString, validateIPv6]),
       "uri": validateURI,
     ]
   }
