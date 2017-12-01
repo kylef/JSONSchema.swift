@@ -2,5 +2,8 @@ import PackageDescription
 
 
 let package = Package(
-  name: "JSONSchema"
+  name: "JSONSchema",
+  exclude: [
+    "Tests/Cases",
+  ]
 )

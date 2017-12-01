@@ -121,6 +121,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		275051D21FD01C0D00492E00 /* JSONSchemaTests */ = {
+			isa = PBXGroup;
+			children = (
+				27CF7EFB1A9B9EDA0063FDE4 /* JSONSchemaTests.swift */,
+				27B640CC1AAB12CB005C8641 /* JSONSchemaCases.swift */,
+			);
+			path = JSONSchemaTests;
+			sourceTree = "<group>";
+		};
 		27B640C81AAB1080005C8641 /* Configurations */ = {
 			isa = PBXGroup;
 			children = (
@@ -191,7 +200,7 @@
 			children = (
 				27B640C81AAB1080005C8641 /* Configurations */,
 				27CF7EEB1A9B9EDA0063FDE4 /* JSONSchema */,
-				27CF7EF81A9B9EDA0063FDE4 /* JSONSchemaTests */,
+				27CF7EF81A9B9EDA0063FDE4 /* Tests */,
 				27CF7EEA1A9B9EDA0063FDE4 /* Products */,
 			);
 			indentWidth = 2;
@@ -227,15 +236,13 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
-		27CF7EF81A9B9EDA0063FDE4 /* JSONSchemaTests */ = {
+		27CF7EF81A9B9EDA0063FDE4 /* Tests */ = {
 			isa = PBXGroup;
 			children = (
 				27B640CE1AAB13A8005C8641 /* tests */,
-				27CF7EFB1A9B9EDA0063FDE4 /* JSONSchemaTests.swift */,
-				27B640CC1AAB12CB005C8641 /* JSONSchemaCases.swift */,
+				275051D21FD01C0D00492E00 /* JSONSchemaTests */,
 				27CF7EF91A9B9EDA0063FDE4 /* Supporting Files */,
 			);
-			name = JSONSchemaTests;
 			path = Tests;
 			sourceTree = "<group>";
 		};
