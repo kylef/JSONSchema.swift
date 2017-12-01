@@ -33,7 +33,7 @@ Validate returns an enumeration `ValidationResult` which contains all
 validation errors.
 
 ```python
-println(schema.validate(["price": 34.99]).errors)
+print(schema.validate(["price": 34.99]).errors)
 >>> "Required property 'name' is missing."
 ```
 
