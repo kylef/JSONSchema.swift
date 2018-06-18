@@ -82,8 +82,12 @@ struct Test {
   }
 }
 
-func makeTest(_ object:[String:Any]) -> Test {
-  return Test(description: object["description"] as! String, data: object["data"] as Any!, value: object["valid"] as! Bool)
+func makeTest(_ object:[String:Any]) -> Test? {
+  guard let description = object["description"] as? String,
+    let data = object["data"],
+    let value = object["valid"] as? Bool else { return nil }
+  
+  return Test(description: description, data: data, value: value)
 }
 
 struct Case {
@@ -102,7 +106,7 @@ func makeCase(_ filename: String) -> (_ object: [String:Any]) -> Case {
   return { object in
     let description = object["description"] as! String
     let schema = object["schema"] as! [String:Any]
-    let tests = (object["tests"] as! [[String: Any]]).map(makeTest)
+    let tests = (object["tests"] as! [[String: Any]]).compactMap(makeTest)
     let caseName = (filename as NSString).deletingPathExtension
     return Case(description: "\(caseName) \(description)", schema: schema, tests: tests)
   }
