@@ -83,7 +83,7 @@ struct Test {
 }
 
 func makeTest(_ object:[String:Any]) -> Test {
-  return Test(description: object["description"] as! String, data: object["data"] as Any!, value: object["valid"] as! Bool)
+  return Test(description: object["description"] as! String, data: object["data"] as Any, value: object["valid"] as! Bool)
 }
 
 struct Case {
