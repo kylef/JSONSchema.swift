@@ -12,25 +12,143 @@ func JSONFixture(_ path: Path) throws -> [[String: Any]] {
 
 
 class JSONSchemaCases: XCTestCase {
-  func testEverything() throws {
+  func testJSONSchemaDraft4() throws {
+    try test(name: "draft4", excluding: [
+      "ref.json",
+      "refRemote.json",
+      "definitions.json",
+
+      // optional
+      "bignum.json",
+    ])
+  }
+
+  func testJSONSchemaDraft6() throws {
+    try test(name: "draft6", excluding: [
+      "allOf.json",
+      "anyOf.json",
+      "boolean_schema.json",
+      "const.json",
+      "contains.json",
+      "definitions.json",
+      "dependencies.json",
+      "exclusiveMaximum.json",
+      "exclusiveMinimum.json",
+      "items.json",
+      "not.json",
+      "oneOf.json",
+      "patternProperties.json",
+      "properties.json",
+      "propertyNames.json",
+      "ref.json",
+      "refRemote.json",
+
+      // optional
+      "bignum.json",
+      "format.json",
+      "zeroTerminatedFloats.json",
+    ])
+  }
+
+  func testJSONSchemaDraft7() throws {
+    try test(name: "draft7", excluding: [
+      "allOf.json",
+      "anyOf.json",
+      "boolean_schema.json",
+      "const.json",
+      "contains.json",
+      "definitions.json",
+      "dependencies.json",
+      "exclusiveMaximum.json",
+      "exclusiveMinimum.json",
+      "if-then-else.json",
+      "items.json",
+      "not.json",
+      "oneOf.json",
+      "patternProperties.json",
+      "properties.json",
+      "propertyNames.json",
+      "ref.json",
+      "refRemote.json",
+
+      // optional
+      "bignum.json",
+      "content.json",
+      "zeroTerminatedFloats.json",
+
+      // optional, format
+      "date-time.json",
+      "date.json",
+      "email.json",
+      "hostname.json",
+      "idn-email.json",
+      "idn-hostname.json",
+      "iri-reference.json",
+      "iri.json",
+      "json-pointer.json",
+      "regex.json",
+      "relative-json-pointer.json",
+      "time.json",
+      "uri-reference.json",
+      "uri-template.json",
+    ])
+  }
+
+  func testJSONSchemaDraft2019_08() throws {
+    try test(name: "draft2019-08", excluding: [
+      "allOf.json",
+      "anyOf.json",
+      "boolean_schema.json",
+      "const.json",
+      "contains.json",
+      "defs.json",
+      "dependencies.json",
+      "exclusiveMaximum.json",
+      "exclusiveMinimum.json",
+      "if-then-else.json",
+      "items.json",
+      "not.json",
+      "oneOf.json",
+      "pattern.json",
+      "patternProperties.json",
+      "properties.json",
+      "propertyNames.json",
+      "ref.json",
+      "refRemote.json",
+      "uniqueItems.json",
+
+      // optional
+      "bignum.json",
+      "content.json",
+      "ecmascript-regex.json",
+      "zeroTerminatedFloats.json",
+
+      // optional, format
+      "date-time.json",
+      "date.json",
+      "email.json",
+      "hostname.json",
+      "idn-email.json",
+      "idn-hostname.json",
+      "iri-reference.json",
+      "iri.json",
+      "json-pointer.json",
+      "regex.json",
+      "relative-json-pointer.json",
+      "time.json",
+      "uri-reference.json",
+      "uri-template.json",
+    ])
+  }
+
+  func test(name: String, excluding: [String]) throws {
     let filePath = #file
-    let path = Path(filePath) + ".." + ".." + "Cases" + "tests" + "draft4"
+    let path = Path(filePath) + ".." + ".." + "Cases" + "tests" + name
 
     let testCases = try path
       .recursiveChildren()
       .filter { $0.extension == "json" }
-      .filter {
-        let blacklist = [
-          "ref.json",
-          "refRemote.json",
-          "definitions.json",
-
-          // Optionals
-          "bignum.json",
-        ]
-
-        return !blacklist.contains($0.lastComponent)
-      }
+      .filter { !excluding.contains($0.lastComponent) }
 
     let cases = try testCases.map { (file) -> [Case] in
       let suite = try JSONFixture(file)
