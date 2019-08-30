@@ -1,17 +1,10 @@
-//
-//  JSONSchemaTests.swift
-//  JSONSchemaTests
-//
-//  Created by Kyle Fuller on 23/02/2015.
-//  Copyright (c) 2015 Cocode. All rights reserved.
-//
-
 import Foundation
 import XCTest
 import JSONSchema
 
+
 class JSONSchemaTests: XCTestCase {
-  var schema:Schema!
+  var schema: Schema!
 
   override func setUp() {
     super.setUp()
@@ -24,19 +17,19 @@ class JSONSchemaTests: XCTestCase {
   }
 
   func testTitle() {
-    XCTAssertEqual(schema.title!, "Product")
+    XCTAssertEqual(schema.title, "Product")
   }
 
   func testDescription() {
-    XCTAssertEqual(schema.description!, "A product from Acme's catalog")
+    XCTAssertEqual(schema.description, "A product from Acme's catalog")
   }
 
   func testType() {
-    XCTAssertEqual(schema.type!, [Type.Object])
+    XCTAssertEqual(schema.type, [Type.Object])
   }
 
   func testSuccessfulValidation() {
-    XCTAssertTrue(schema.validate([String:Any]()).valid)
+    XCTAssertTrue(schema.validate([String: Any]()).valid)
   }
 
   func testUnsuccessfulValidation() {

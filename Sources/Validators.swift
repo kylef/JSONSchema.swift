@@ -1,11 +1,3 @@
-//
-//  Validators.swift
-//  JSONSchema
-//
-//  Created by Kyle Fuller on 07/03/2015.
-//  Copyright (c) 2015 Cocode. All rights reserved.
-//
-
 import Foundation
 
 
@@ -22,7 +14,7 @@ public enum ValidationResult {
     }
   }
 
-  public var errors:[String]? {
+  public var errors: [String]? {
     switch self {
     case .valid:
       return nil
@@ -36,7 +28,7 @@ typealias LegacyValidator = (Any) -> (Bool)
 typealias Validator = (Any) -> (ValidationResult)
 
 /// Flatten an array of results into a single result (combining all errors)
-func flatten(_ results:[ValidationResult]) -> ValidationResult {
+func flatten(_ results: [ValidationResult]) -> ValidationResult {
   let failures = results.filter { result in !result.valid }
   if failures.count > 0 {
     let errors = failures.reduce([String]()) { (accumulator, failure) in
@@ -54,7 +46,7 @@ func flatten(_ results:[ValidationResult]) -> ValidationResult {
 }
 
 /// Creates a Validator which always returns an valid result
-func validValidation(_ value:Any) -> ValidationResult {
+func validValidation(_ value: Any) -> ValidationResult {
   return .valid
 }
 
@@ -114,12 +106,12 @@ func validateType(_ type: String) -> (_ value: Any) -> ValidationResult {
 }
 
 /// Validate the given value is one of the given types
-func validateType(_ type:[String]) -> Validator {
+func validateType(_ type: [String]) -> Validator {
   let typeValidators = type.map(validateType) as [Validator]
   return anyOf(typeValidators)
 }
 
-func validateType(_ type:Any) -> Validator {
+func validateType(_ type: Any) -> Validator {
   if let type = type as? String {
     return validateType(type)
   } else if let types = type as? [String] {
@@ -131,7 +123,7 @@ func validateType(_ type:Any) -> Validator {
 
 
 /// Validate that a value is valid for any of the given validation rules
-func anyOf(_ validators:[Validator], error:String? = nil) -> (_ value: Any) -> ValidationResult {
+func anyOf(_ validators: [Validator], error: String? = nil) -> (_ value: Any) -> ValidationResult {
   return { value in
     for validator in validators {
       let result = validator(value)
@@ -172,11 +164,13 @@ func not(_ validator: @escaping Validator) -> (_ value: Any) -> ValidationResult
   }
 }
 
+
 func allOf(_ validators: [Validator]) -> (_ value: Any) -> ValidationResult {
   return { value in
     return flatten(validators.map { validator in validator(value) })
   }
 }
+
 
 func validateEnum(_ values: [Any]) -> (_ value: Any) -> ValidationResult {
   return { value in
@@ -187,6 +181,7 @@ func validateEnum(_ values: [Any]) -> (_ value: Any) -> ValidationResult {
     return .invalid(["'\(value)' is not a valid enumeration value of '\(values)'"])
   }
 }
+
 
 // MARK: String
 
@@ -201,6 +196,7 @@ func validateLength(_ comparitor: @escaping ((Int, Int) -> (Bool)), length: Int,
     return .valid
   }
 }
+
 
 func validatePattern(_ pattern: String) -> (_ value: Any) -> ValidationResult {
   return { value in
@@ -220,6 +216,7 @@ func validatePattern(_ pattern: String) -> (_ value: Any) -> ValidationResult {
   }
 }
 
+
 // MARK: Numerical
 
 func validateMultipleOf(_ number: Double) -> (_ value: Any) -> ValidationResult {
@@ -236,6 +233,7 @@ func validateMultipleOf(_ number: Double) -> (_ value: Any) -> ValidationResult 
     return .valid
   }
 }
+
 
 func validateNumericLength(_ length: Double, comparitor: @escaping ((Double, Double) -> (Bool)), exclusiveComparitor: @escaping ((Double, Double) -> (Bool)), exclusive: Bool?, error: String) -> (_ value: Any) -> ValidationResult {
   return { value in
@@ -255,6 +253,7 @@ func validateNumericLength(_ length: Double, comparitor: @escaping ((Double, Dou
   }
 }
 
+
 // MARK: Array
 
 func validateArrayLength(_ rhs: Int, comparitor: @escaping ((Int, Int) -> Bool), error: String) -> (_ value: Any) -> ValidationResult {
@@ -269,11 +268,12 @@ func validateArrayLength(_ rhs: Int, comparitor: @escaping ((Int, Int) -> Bool),
   }
 }
 
+
 func validateUniqueItems(_ value: Any) -> ValidationResult {
   if let value = value as? [Any] {
     // 1 and true, 0 and false are isEqual for NSNumber's, so logic to count for that below
 
-    func isBoolean(_ number:NSNumber) -> Bool {
+    func isBoolean(_ number: NSNumber) -> Bool {
       return CFGetTypeID(number) != CFBooleanGetTypeID()
     }
 
@@ -295,11 +295,12 @@ func validateUniqueItems(_ value: Any) -> ValidationResult {
   return .valid
 }
 
+
 // MARK: Object
 
-func validatePropertiesLength(_ length: Int, comparitor: @escaping ((Int, Int) -> (Bool)), error: String) -> (_ value: Any)  -> ValidationResult {
+func validatePropertiesLength(_ length: Int, comparitor: @escaping ((Int, Int) -> (Bool)), error: String) -> (_ value: Any) -> ValidationResult {
   return { value in
-    if let value = value as? [String:Any] {
+    if let value = value as? [String: Any] {
       if !comparitor(length, value.count) {
         return .invalid([error])
       }
@@ -309,9 +310,10 @@ func validatePropertiesLength(_ length: Int, comparitor: @escaping ((Int, Int) -
   }
 }
 
-func validateRequired(_ required: [String]) -> (_ value: Any)  -> ValidationResult {
+
+func validateRequired(_ required: [String]) -> (_ value: Any) -> ValidationResult {
   return { value in
-    if let value = value as? [String:Any] {
+    if let value = value as? [String: Any] {
       if (required.filter { r in !value.keys.contains(r) }.count == 0) {
         return .valid
       }
@@ -323,9 +325,10 @@ func validateRequired(_ required: [String]) -> (_ value: Any)  -> ValidationResu
   }
 }
 
-func validateProperties(_ properties: [String:Validator]?, patternProperties: [String:Validator]?, additionalProperties: Validator?) -> (_ value: Any) -> ValidationResult {
+
+func validateProperties(_ properties: [String: Validator]?, patternProperties: [String: Validator]?, additionalProperties: Validator?) -> (_ value: Any) -> ValidationResult {
   return { value in
-    if let value = value as? [String:Any] {
+    if let value = value as? [String: Any] {
       let allKeys = NSMutableSet()
       var results = [ValidationResult]()
 
@@ -367,6 +370,7 @@ func validateProperties(_ properties: [String:Validator]?, patternProperties: [S
   }
 }
 
+
 func validateDependency(_ key: String, validator: @escaping LegacyValidator) -> (_ value: Any) -> Bool {
   return { value in
     if let value = value as? [String:Any] {
@@ -379,9 +383,10 @@ func validateDependency(_ key: String, validator: @escaping LegacyValidator) -> 
   }
 }
 
+
 func validateDependencies(_ key: String, dependencies: [String]) -> (_ value: Any) -> Bool {
   return { value in
-    if let value = value as? [String:Any] {
+    if let value = value as? [String :Any] {
       if (value[key] != nil) {
         for dependency in dependencies {
           if (value[dependency] == nil) {
@@ -395,9 +400,10 @@ func validateDependencies(_ key: String, dependencies: [String]) -> (_ value: An
   }
 }
 
+
 // MARK: Format
 
-func validateIPv4(_ value:Any) -> ValidationResult {
+func validateIPv4(_ value: Any) -> ValidationResult {
   if let ipv4 = value as? String {
     if let expression = try? NSRegularExpression(pattern: "^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", options: NSRegularExpression.Options(rawValue: 0)) {
       if expression.matches(in: ipv4, options: NSRegularExpression.MatchingOptions(rawValue: 0), range: NSMakeRange(0, ipv4.count)).count == 1 {
@@ -411,7 +417,8 @@ func validateIPv4(_ value:Any) -> ValidationResult {
   return .valid
 }
 
-func validateIPv6(_ value:Any) -> ValidationResult {
+
+func validateIPv6(_ value: Any) -> ValidationResult {
   if let ipv6 = value as? String {
     var buf = UnsafeMutablePointer<Int8>.allocate(capacity: Int(INET6_ADDRSTRLEN))
     if inet_pton(AF_INET6, ipv6, &buf) == 1 {
@@ -424,7 +431,8 @@ func validateIPv6(_ value:Any) -> ValidationResult {
   return .valid
 }
 
-func validateURI(_ value:Any) -> ValidationResult {
+
+func validateURI(_ value: Any) -> ValidationResult {
   if let uri = value as? String {
     // Using the regex from http://blog.dieweltistgarnichtso.net/constructing-a-regular-expression-that-matches-uris
 
