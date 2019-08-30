@@ -174,7 +174,18 @@ func allOf(_ validators: [Validator]) -> (_ value: Any) -> ValidationResult {
 
 func validateEnum(_ values: [Any]) -> (_ value: Any) -> ValidationResult {
   return { value in
-    if (values as! [NSObject]).contains(value as! NSObject) {
+    let value = value as! NSObject
+
+    let enumInValues = (values as! [NSObject]).contains {
+      if let lhs = value as? NSNumber, let rhs = $0 as? NSNumber {
+        if CFGetTypeID(lhs) != CFGetTypeID(rhs) {
+          return false
+        }
+      }
+
+      return value == $0
+    }
+    if enumInValues {
       return .valid
     }
 

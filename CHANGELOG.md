@@ -12,6 +12,14 @@
 - `uri` format is now validated.
 - Support for Swift 4 and 5.
 
+### Bug Fixes
+
+- Fixes cases where schemas containing an `enum` with a boolean or number may
+  be incorrectly matched against values which are boolean or numbers.
+
+  For example, `{ "enum": [1] }` incorrectly validated with values of `true`
+  and vice-versa.
+
 ## 0.3.0
 
 ### Enhancements
