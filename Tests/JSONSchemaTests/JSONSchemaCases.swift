@@ -8,55 +8,48 @@
 
 import Foundation
 import XCTest
+import PathKit
+
 import JSONSchema
 
-func fixture(_ named:String, forObject:Any) -> Data {
-  let bundle = Bundle(for:object_getClass(forObject)!)
-  let path = bundle.url(forResource: named, withExtension: nil)!
-  let data = try! Data(contentsOf: path)
-  return data
-}
-
-func JSONFixture(_ named:String, forObject:Any) -> [[String:Any]] {
-  let data = fixture(named, forObject: forObject)
-  let object: Any?
-  do {
-    object = try JSONSerialization.jsonObject(with: data, options: JSONSerialization.ReadingOptions(rawValue: 0))
-  } catch {
-    fatalError()
-  }
+func JSONFixture(_ path: Path) throws -> [[String:Any]] {
+  let object = try JSONSerialization.jsonObject(with: try! path.read(), options: JSONSerialization.ReadingOptions(rawValue: 0))
   return object as! [[String:Any]]
 }
 
 class JSONSchemaCases: XCTestCase {
-  func testEverything() {
-    let bundle = Bundle(for: JSONSchemaCases.self)
-    let fileManager = FileManager.default
-    let files = fileManager.enumerator(atPath: bundle.resourcePath!)!.allObjects as! [String]
-    let suites = files.filter { (path) -> Bool in
-      let blacklist = [
-        "ref.json",
-        "refRemote.json",
-        "definitions.json",
+  func testEverything() throws {
+    let filePath = #file
+    let path = Path(filePath) + ".." + ".." + "Cases" + "tests" + "draft4"
 
-        // Optionals
-        "bignum.json",
-      ]
-      return path.hasSuffix(".json") && !blacklist.contains(path)
-    }
+    let testCases = try path
+      .recursiveChildren()
+      .filter { $0.extension == "json" }
+      .filter {
+        let blacklist = [
+          "ref.json",
+          "refRemote.json",
+          "definitions.json",
 
-    let cases = suites.map { (file) -> [Case] in
-      let suite = JSONFixture(file, forObject: self)
+          // Optionals
+          "bignum.json",
+        ]
 
-      if file == "format.json" {
-        let cases = suite.map(makeCase(file))
+        return !blacklist.contains($0.lastComponent)
+      }
+
+    let cases = try testCases.map { (file) -> [Case] in
+      let suite = try JSONFixture(file)
+
+      if file.lastComponent == "format.json" {
+        let cases = suite.map(makeCase(file.lastComponent))
         return cases.filter {
           let format = $0.schema["format"] as! String
           return !["date-time", "email", "hostname"].contains(format)
         }
       }
 
-      return suite.map(makeCase(file))
+      return suite.map(makeCase(file.lastComponent))
     }
 
     let flatCases = cases.reduce([Case](), +)
