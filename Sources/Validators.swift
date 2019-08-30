@@ -222,14 +222,31 @@ func validatePattern(_ pattern: String) -> (_ value: Any) -> ValidationResult {
 
 // MARK: Numerical
 
+func validate(_ value: Double, multipleOf number: Double) -> ValidationResult {
+  if value.truncatingRemainder(dividingBy: number) != 0 {
+    return .invalid(["\(value) is not a multiple of \(number)"])
+  }
+  return .Valid
+}
+
+func validate(_ value: Int, multipleOf number: Int) -> ValidationResult {
+  if value % number != 0 {
+    return .invalid(["\(value) is not a multiple of \(number)"])
+  }
+  return .Valid
+}
+
 func validateMultipleOf(_ number: Double) -> (_ value: Any) -> ValidationResult {
   return { value in
     if number > 0.0 {
       if let value = value as? Double {
-        let result = value / number
-        if result != floor(result) {
-          return .invalid(["\(value) is not a multiple of \(number)"])
+        return validate(value, multipleOf: number)
+      }
+      if let value = value as? Int {
+        if number.truncatingRemainder(dividingBy: 1) == 0 {
+          return validate(value, multipleOf: Int(number))
         }
+        return validate(Double(value), multipleOf: number)
       }
     }
 
