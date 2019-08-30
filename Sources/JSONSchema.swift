@@ -293,6 +293,10 @@ func validatorsDict(_ root: Schema) -> (_ schema: [String: Any]) -> [Validator] 
       validators.append(validateRequired(required))
     }
 
+    if let propertyNames = schema["propertyNames"] {
+      validators.append(validatePropertyNames(allOf(JSONSchema.validators(root)(propertyNames))))
+    }
+
     if (schema["properties"] != nil) || (schema["patternProperties"] != nil) || (schema["additionalProperties"] != nil) {
       func createAdditionalPropertiesValidator(_ additionalProperties: Any?) -> Validator {
         if let additionalProperties = additionalProperties {

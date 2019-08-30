@@ -29,7 +29,6 @@ class JSONSchemaCases: XCTestCase {
       "definitions.json",
       "exclusiveMaximum.json",
       "exclusiveMinimum.json",
-      "propertyNames.json",
       "ref.json",
       "refRemote.json",
 
@@ -47,7 +46,6 @@ class JSONSchemaCases: XCTestCase {
       "exclusiveMaximum.json",
       "exclusiveMinimum.json",
       "if-then-else.json",
-      "propertyNames.json",
       "ref.json",
       "refRemote.json",
 
@@ -81,7 +79,6 @@ class JSONSchemaCases: XCTestCase {
       "exclusiveMaximum.json",
       "exclusiveMinimum.json",
       "if-then-else.json",
-      "propertyNames.json",
       "ref.json",
       "refRemote.json",
 

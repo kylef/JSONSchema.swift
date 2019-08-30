@@ -348,6 +348,17 @@ func validateRequired(_ required: [String]) -> (_ value: Any) -> ValidationResul
 }
 
 
+func validatePropertyNames(_ propertyNames: @escaping Validator) -> (_ value: Any) -> ValidationResult {
+  return { value in
+    if let value = value as? [String: Any] {
+      return flatten(value.keys.map(propertyNames))
+    }
+
+    return .valid
+  }
+}
+
+
 func validateProperties(_ properties: [String: Validator]?, patternProperties: [String: Validator]?, additionalProperties: Validator?) -> (_ value: Any) -> ValidationResult {
   return { value in
     if let value = value as? [String: Any] {
