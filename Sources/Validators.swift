@@ -172,24 +172,35 @@ func allOf(_ validators: [Validator]) -> (_ value: Any) -> ValidationResult {
 }
 
 
+func isEqual(_ lhs: NSObject, _ rhs: NSObject) -> Bool {
+  if let lhs = lhs as? NSNumber, let rhs = rhs as? NSNumber, CFGetTypeID(lhs) != CFGetTypeID(rhs) {
+    return false
+  }
+
+  return lhs == rhs
+}
+
+
 func validateEnum(_ values: [Any]) -> (_ value: Any) -> ValidationResult {
   return { value in
     let value = value as! NSObject
 
-    let enumInValues = (values as! [NSObject]).contains {
-      if let lhs = value as? NSNumber, let rhs = $0 as? NSNumber {
-        if CFGetTypeID(lhs) != CFGetTypeID(rhs) {
-          return false
-        }
-      }
-
-      return value == $0
-    }
-    if enumInValues {
+    if (values as! [NSObject]).contains(where: { isEqual(value, $0) }) {
       return .valid
     }
 
     return .invalid(["'\(value)' is not a valid enumeration value of '\(values)'"])
+  }
+}
+
+
+func validateConst(_ const: Any) -> (_ value: Any) -> ValidationResult {
+  return { value in
+    if isEqual(value as! NSObject, const as! NSObject) {
+       return .valid
+    }
+
+    return .invalid(["'\(value)' is not equal to const '\(const)'"])
   }
 }
 

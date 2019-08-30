@@ -144,6 +144,10 @@ func validators(_ root: Schema) -> (_ schema: [String: Any]) -> [Validator] {
       validators.append(validateEnum(enumValues))
     }
 
+    if let const = schema["const"] {
+      validators.append(validateConst(const))
+    }
+
     // String
 
     if let maxLength = schema["maxLength"] as? Int {
