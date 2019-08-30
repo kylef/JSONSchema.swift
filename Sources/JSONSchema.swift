@@ -22,7 +22,7 @@ extension String {
   func stringByRemovingPrefix(_ prefix:String) -> String? {
     if hasPrefix(prefix) {
       let index = self.index(startIndex, offsetBy: prefix.count)
-      return substring(from: index)
+      return String(self[index...])
     }
 
     return nil
