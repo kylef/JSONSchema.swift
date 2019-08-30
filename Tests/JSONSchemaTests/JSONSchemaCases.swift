@@ -25,19 +25,10 @@ class JSONSchemaCases: XCTestCase {
 
   func testJSONSchemaDraft6() throws {
     try test(name: "draft6", excluding: [
-      "allOf.json",
-      "anyOf.json",
-      "boolean_schema.json",
       "contains.json",
       "definitions.json",
-      "dependencies.json",
       "exclusiveMaximum.json",
       "exclusiveMinimum.json",
-      "items.json",
-      "not.json",
-      "oneOf.json",
-      "patternProperties.json",
-      "properties.json",
       "propertyNames.json",
       "ref.json",
       "refRemote.json",
@@ -51,20 +42,11 @@ class JSONSchemaCases: XCTestCase {
 
   func testJSONSchemaDraft7() throws {
     try test(name: "draft7", excluding: [
-      "allOf.json",
-      "anyOf.json",
-      "boolean_schema.json",
       "contains.json",
       "definitions.json",
-      "dependencies.json",
       "exclusiveMaximum.json",
       "exclusiveMinimum.json",
       "if-then-else.json",
-      "items.json",
-      "not.json",
-      "oneOf.json",
-      "patternProperties.json",
-      "properties.json",
       "propertyNames.json",
       "ref.json",
       "refRemote.json",
@@ -94,20 +76,11 @@ class JSONSchemaCases: XCTestCase {
 
   func testJSONSchemaDraft2019_08() throws {
     try test(name: "draft2019-08", excluding: [
-      "allOf.json",
-      "anyOf.json",
-      "boolean_schema.json",
       "contains.json",
       "defs.json",
-      "dependencies.json",
       "exclusiveMaximum.json",
       "exclusiveMinimum.json",
       "if-then-else.json",
-      "items.json",
-      "not.json",
-      "oneOf.json",
-      "patternProperties.json",
-      "properties.json",
       "propertyNames.json",
       "ref.json",
       "refRemote.json",
@@ -151,8 +124,12 @@ class JSONSchemaCases: XCTestCase {
       if file.lastComponent == "format.json" {
         let cases = suite.map(makeCase(file.lastComponent))
         return cases.filter {
-          let format = $0.schema["format"] as! String
-          return !["date-time", "email", "hostname"].contains(format)
+          if let schema = $0.schema as? [String: Any] {
+            let format = schema["format"] as! String
+            return !["date-time", "email", "hostname"].contains(format)
+          }
+
+          return true
         }
       }
 
@@ -184,7 +161,7 @@ func makeTest(_ object: [String: Any]) -> Test {
 
 struct Case {
   let description: String
-  let schema: [String: Any]
+  let schema: Any
   let tests: [Test]
 }
 
@@ -192,7 +169,7 @@ struct Case {
 func makeCase(_ filename: String) -> (_ object: [String: Any]) -> Case {
   return { object in
     let description = object["description"] as! String
-    let schema = object["schema"] as! [String: Any]
+    let schema = object["schema"]!
     let tests = (object["tests"] as! [[String: Any]]).map(makeTest)
     let caseName = (filename as NSString).deletingPathExtension
     return Case(description: "\(caseName) \(description)", schema: schema, tests: tests)
@@ -205,13 +182,23 @@ typealias Assertion = (String, () -> ())
 
 func makeAssertions(_ c: Case) -> ([Assertion]) {
   return c.tests.map { test -> Assertion in
-    return ("\(c.description) \(test.description)", {
-      let result = validate(test.data, schema: c.schema)
+    let label = "\(c.description) \(test.description)"
+    return (label, {
+      let result: ValidationResult
+
+      if let schema = c.schema as? [String: Any] {
+        result = validate(test.data, schema: schema)
+      } else if let schema = c.schema as? Bool {
+        result = validate(test.data, schema: schema)
+      } else {
+        fatalError()
+      }
+
       switch result {
       case .valid:
-        XCTAssertEqual(result.valid, test.value, "Result is valid")
+        XCTAssertEqual(result.valid, test.value, "\(label) -- Result is valid")
       case .invalid(let errors):
-        XCTAssertEqual(result.valid, test.value, "Failed validation: \(errors)")
+        XCTAssertEqual(result.valid, test.value, "\(label) -- Failed validation: \(errors)")
       }
     })
   }
