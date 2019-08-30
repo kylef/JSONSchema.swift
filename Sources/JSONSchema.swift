@@ -2,13 +2,13 @@ import Foundation
 
 
 public enum Type: Swift.String {
-  case Object = "object"
-  case Array = "array"
-  case String = "string"
-  case Integer = "integer"
-  case Number = "number"
-  case Boolean = "boolean"
-  case Null = "null"
+  case object = "object"
+  case array = "array"
+  case string = "string"
+  case integer = "integer"
+  case jumber = "number"
+  case boolean = "boolean"
+  case null = "null"
 }
 
 

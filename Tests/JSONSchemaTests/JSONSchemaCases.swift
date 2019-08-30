@@ -109,13 +109,11 @@ class JSONSchemaCases: XCTestCase {
       "items.json",
       "not.json",
       "oneOf.json",
-      "pattern.json",
       "patternProperties.json",
       "properties.json",
       "propertyNames.json",
       "ref.json",
       "refRemote.json",
-      "uniqueItems.json",
 
       // optional
       "bignum.json",

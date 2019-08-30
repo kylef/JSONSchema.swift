@@ -25,7 +25,7 @@ class JSONSchemaTests: XCTestCase {
   }
 
   func testType() {
-    XCTAssertEqual(schema.type, [Type.Object])
+    XCTAssertEqual(schema.type, [Type.object])
   }
 
   func testSuccessfulValidation() {
