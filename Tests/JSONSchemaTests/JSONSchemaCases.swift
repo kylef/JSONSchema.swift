@@ -25,7 +25,6 @@ class JSONSchemaCases: XCTestCase {
 
   func testJSONSchemaDraft6() throws {
     try test(name: "draft6", excluding: [
-      "contains.json",
       "definitions.json",
       "exclusiveMaximum.json",
       "exclusiveMinimum.json",
@@ -41,7 +40,6 @@ class JSONSchemaCases: XCTestCase {
 
   func testJSONSchemaDraft7() throws {
     try test(name: "draft7", excluding: [
-      "contains.json",
       "definitions.json",
       "exclusiveMaximum.json",
       "exclusiveMinimum.json",
@@ -74,7 +72,6 @@ class JSONSchemaCases: XCTestCase {
 
   func testJSONSchemaDraft2019_08() throws {
     try test(name: "draft2019-08", excluding: [
-      "contains.json",
       "defs.json",
       "exclusiveMaximum.json",
       "exclusiveMinimum.json",

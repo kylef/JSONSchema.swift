@@ -281,6 +281,11 @@ func validatorsDict(_ root: Schema) -> (_ schema: [String: Any]) -> [Validator] 
       validators.append(validateItems)
     }
 
+    if let contains = schema["contains"] {
+      let containsValidator = allOf(JSONSchema.validators(root)(contains))
+      validators.append(validateContains(containsValidator))
+    }
+
     if let maxProperties = schema["maxProperties"] as? Int {
       validators.append(validatePropertiesLength(maxProperties, comparitor: >=, error: "Amount of properties is greater than maximum permitted"))
     }

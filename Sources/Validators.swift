@@ -317,6 +317,20 @@ func validateUniqueItems(_ value: Any) -> ValidationResult {
   return .valid
 }
 
+func validateContains(_ validator: @escaping Validator) -> (_ value: Any) -> ValidationResult {
+  return { value in
+    if let value = value as? [Any] {
+      let arrayContainsValue = value.contains { validator($0).valid }
+
+      if !arrayContainsValue {
+        return .invalid(["\(value) does not match contains"])
+      }
+    }
+
+    return .valid
+  }
+}
+
 
 // MARK: Object
 
