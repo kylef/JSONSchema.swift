@@ -24,7 +24,6 @@ public enum ValidationResult {
   }
 }
 
-typealias LegacyValidator = (Any) -> (Bool)
 typealias Validator = (Any) -> (ValidationResult)
 
 /// Flatten an array of results into a single result (combining all errors)
@@ -84,72 +83,56 @@ func type(validator: Draft4Validator, type: Any, instance: Any, schema: [String:
     return .valid
   }
 
-  let typeValidators = type.map(validateType) as [Validator]
-  return anyOf(typeValidators)(instance)
+  if type.contains(where :{ isType($0, instance) }) {
+    return .valid
+  }
+
+  let types = type.map { "'\($0)'" }.joined(separator: ", ")
+  return .invalid(["'\(instance)' is not of type \(types)"])
 }
 
 /// Validate the given value is of the given type
-func validateType(_ type: String) -> (_ value: Any) -> ValidationResult {
-  return { value in
-    switch type {
-    case "integer":
-      if let number = value as? NSNumber {
-        if !CFNumberIsFloatType(number) && CFGetTypeID(number) != CFBooleanGetTypeID() {
-          return .valid
-        }
+func isType(_ type: String, _ instance: Any) -> Bool {
+  switch type {
+  case "integer":
+    if let number = instance as? NSNumber {
+      if !CFNumberIsFloatType(number) && CFGetTypeID(number) != CFBooleanGetTypeID() {
+        return true
       }
-    case "number":
-      if let number = value as? NSNumber {
-        if CFGetTypeID(number) != CFBooleanGetTypeID() {
-          return .valid
-        }
-      }
-    case "string":
-      if value is String {
-        return .valid
-      }
-    case "object":
-      if value is NSDictionary {
-        return .valid
-      }
-    case "array":
-      if value is NSArray {
-        return .valid
-      }
-    case "boolean":
-      if let number = value as? NSNumber {
-        if CFGetTypeID(number) == CFBooleanGetTypeID() {
-          return .valid
-        }
-      }
-    case "null":
-      if value is NSNull {
-        return .valid
-      }
-    default:
-      break
     }
-
-    return .invalid(["'\(value)' is not of type '\(type)'"])
+  case "number":
+    if let number = instance as? NSNumber {
+      if CFGetTypeID(number) != CFBooleanGetTypeID() {
+        return true
+      }
+    }
+  case "string":
+    if instance is String {
+      return true
+    }
+  case "object":
+    if instance is NSDictionary {
+      return true
+    }
+  case "array":
+    if instance is NSArray {
+      return true
+    }
+  case "boolean":
+    if let number = instance as? NSNumber {
+      if CFGetTypeID(number) == CFBooleanGetTypeID() {
+        return true
+      }
+    }
+  case "null":
+    if instance is NSNull {
+      return true
+    }
+  default:
+    break
   }
-}
 
-/// Validate that a value is valid for any of the given validation rules
-func anyOf(_ validators: [Validator], error: String? = nil) -> (_ value: Any) -> ValidationResult {
-  return { value in
-    for validator in validators {
-      let result = validator(value)
-      if result.valid {
-        return .valid
-      }
-    }
-
-    if let error = error {
-      return .invalid([error])
-    }
-
-    return .invalid(["\(value) does not meet anyOf validation rules."])
-  }
+  return false
 }
 
 func anyOf(validator: Draft4Validator, anyOf: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
@@ -193,13 +176,6 @@ func allOf(validator: Draft4Validator, allOf: Any, instance: Any, schema: [Strin
 
   return flatten(allOf.map({ validator.descend(instance: instance, subschema: $0) }))
 }
-
-func allOf(_ validators: [Validator]) -> (_ value: Any) -> ValidationResult {
-  return { value in
-    return flatten(validators.map { validator in validator(value) })
-  }
-}
-
 
 func isEqual(_ lhs: NSObject, _ rhs: NSObject) -> Bool {
   if let lhs = lhs as? NSNumber, let rhs = rhs as? NSNumber, CFGetTypeID(lhs) != CFGetTypeID(rhs) {
@@ -589,49 +565,6 @@ func additionalProperties(validator: Draft4Validator, additionalProperties: Any,
   }
 
   return .valid
-}
-
-
-func validateDependency(_ key: String, validator: @escaping LegacyValidator) -> (_ value: Any) -> Bool {
-  return { value in
-    if let value = value as? [String:Any] {
-      if (value[key] != nil) {
-        return validator(value as Any)
-      }
-    }
-
-    return true
-  }
-}
-
-
-func validateDependencies(_ key: String, dependencies: [String]) -> (_ value: Any) -> ValidationResult {
-  return { value in
-    if let value = value as? [String: Any] {
-      if (value[key] != nil) {
-        return flatten(dependencies.map { dependency in
-          if value[dependency] == nil {
-            return .invalid(["'\(key)' is missing it's dependency of '\(dependency)'"])
-          }
-          return .valid
-        })
-      }
-    }
-
-    return .valid
-  }
-}
-
-func validateDependency(_ key: String, validator: @escaping Validator) -> (_ value: Any) -> ValidationResult {
-  return { value in
-    if let value = value as? [String: Any] {
-      if (value[key] != nil) {
-        return validator(value)
-      }
-    }
-
-    return .valid
-  }
 }
 
 func dependencies(validator: Draft4Validator, dependencies: Any, instance: Any, schema: [String: Any]) -> ValidationResult {

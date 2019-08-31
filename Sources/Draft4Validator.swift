@@ -38,7 +38,7 @@ class Draft4Validator {
     "additionalProperties": additionalProperties,
   ]
 
-  let formats: [String: Validator] = [
+  let formats: [String: (String) -> (ValidationResult)] = [
     "ipv4": validateIPv4,
     "ipv6": validateIPv6,
     "uri": validateURI,
@@ -73,20 +73,19 @@ class Draft4Validator {
       return .valid
     }
 
-    var validators = [Validator]()
-
     if let ref = schema["$ref"] as? String {
       let validation = validations["$ref"]!
-      validators.append(validatorCurry(validation)(self, ref, schema))
-    } else {
-      for (key, validation) in validations {
-        if let value = schema[key] {
-          validators.append(validatorCurry(validation)(self, value, schema))
-        }
+      return validation(self, ref, instance, schema)
+    }
+
+    var results = [ValidationResult]()
+    for (key, validation) in validations {
+      if let value = schema[key] {
+        results.append(validation(self, value, instance, schema))
       }
     }
 
-    return flatten(validators.map { $0(instance) })
+    return flatten(results)
   }
 
   func resolve(ref: String) -> Validator {
