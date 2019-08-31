@@ -24,8 +24,6 @@ public enum ValidationResult {
   }
 }
 
-typealias Validator = (Any) -> (ValidationResult)
-
 /// Flatten an array of results into a single result (combining all errors)
 func flatten(_ results: [ValidationResult]) -> ValidationResult {
   let failures = results.filter { result in !result.valid }
@@ -58,7 +56,7 @@ func invalidValidation(_ error: String) -> (_ value: Any) -> ValidationResult {
 
 // MARK: Shared
 
-func ref(validator: Draft4Validator, reference: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func ref(validator: Validator, reference: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
   guard let reference = reference as? String else {
     return .valid
   }
@@ -66,7 +64,7 @@ func ref(validator: Draft4Validator, reference: Any, instance: Any, schema: [Str
   return validator.resolve(ref: reference)(instance)
 }
 
-func type(validator: Draft4Validator, type: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func type(validator: Validator, type: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
   func ensureArray(_ value: Any) -> [String]? {
     if let value = value as? [String] {
       return value
@@ -135,7 +133,7 @@ func isType(_ type: String, _ instance: Any) -> Bool {
   return false
 }
 
-func anyOf(validator: Draft4Validator, anyOf: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func anyOf(validator: Validator, anyOf: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
   guard let anyOf = anyOf as? [Any] else {
     return .valid
   }
@@ -147,7 +145,7 @@ func anyOf(validator: Draft4Validator, anyOf: Any, instance: Any, schema: [Strin
   return .valid
 }
 
-func oneOf(validator: Draft4Validator, oneOf: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func oneOf(validator: Validator, oneOf: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
   guard let oneOf = oneOf as? [Any] else {
     return .valid
   }
@@ -159,7 +157,7 @@ func oneOf(validator: Draft4Validator, oneOf: Any, instance: Any, schema: [Strin
   return .valid
 }
 
-func not(validator: Draft4Validator, not: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func not(validator: Validator, not: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
   let result = validator.descend(instance: instance, subschema: not)
 
   if result.valid {
@@ -169,7 +167,7 @@ func not(validator: Draft4Validator, not: Any, instance: Any, schema: [String: A
   return .valid
 }
 
-func `if`(validator: Draft4Validator, `if`: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func `if`(validator: Validator, `if`: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
   if validator.validate(instance: instance, schema: `if`).valid {
     if let then = schema["then"] {
       return validator.descend(instance: instance, subschema: then)
@@ -181,7 +179,7 @@ func `if`(validator: Draft4Validator, `if`: Any, instance: Any, schema: [String:
   return .valid
 }
 
-func allOf(validator: Draft4Validator, allOf: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func allOf(validator: Validator, allOf: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
   guard let allOf = allOf as? [Any] else {
     return .valid
   }
@@ -197,7 +195,7 @@ func isEqual(_ lhs: NSObject, _ rhs: NSObject) -> Bool {
   return lhs == rhs
 }
 
-func `enum`(validator: Draft4Validator, enum: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func `enum`(validator: Validator, enum: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
   guard let `enum` = `enum` as? [Any] else {
     return .valid
   }
@@ -210,7 +208,7 @@ func `enum`(validator: Draft4Validator, enum: Any, instance: Any, schema: [Strin
   return .invalid(["'\(instance)' is not a valid enumeration value of '\(`enum`)'"])
 }
 
-func const(validator: Draft4Validator, const: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func const(validator: Validator, const: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
   if isEqual(instance as! NSObject, const as! NSObject) {
      return .valid
   }
@@ -232,7 +230,7 @@ func validateLength(_ comparitor: @escaping ((Int, Int) -> (Bool)), length: Int,
   }
 }
 
-func minLength(validator: Draft4Validator, minLength: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func minLength(validator: Validator, minLength: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
   guard let minLength = minLength as? Int else {
     return .valid
   }
@@ -240,7 +238,7 @@ func minLength(validator: Draft4Validator, minLength: Any, instance: Any, schema
   return validateLength(>=, length: minLength, error: "Length of string is smaller than minimum length \(minLength)")(instance)
 }
 
-func maxLength(validator: Draft4Validator, maxLength: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func maxLength(validator: Validator, maxLength: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
   guard let maxLength = maxLength as? Int else {
     return .valid
   }
@@ -248,7 +246,7 @@ func maxLength(validator: Draft4Validator, maxLength: Any, instance: Any, schema
   return validateLength(<=, length: maxLength, error: "Length of string is larger than max length \(maxLength)")(instance)
 }
 
-func pattern(validator: Draft4Validator, pattern: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func pattern(validator: Validator, pattern: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
   guard let pattern = pattern as? String else {
     return .valid
   }
@@ -271,7 +269,7 @@ func pattern(validator: Draft4Validator, pattern: Any, instance: Any, schema: [S
 
 // MARK: Numerical
 
-func multipleOf(validator: Draft4Validator, multipleOf: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func multipleOf(validator: Validator, multipleOf: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
   guard let multipleOf = multipleOf as? Double else {
     return .valid
   }
@@ -306,7 +304,7 @@ func validateNumericLength(_ length: Double, comparitor: @escaping ((Double, Dou
   }
 }
 
-func minimum(validator: Draft4Validator, minimum: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func minimum(validator: Validator, minimum: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
   guard let minimum = minimum as? Double else {
     return .valid
   }
@@ -314,7 +312,7 @@ func minimum(validator: Draft4Validator, minimum: Any, instance: Any, schema: [S
   return validateNumericLength(minimum, comparitor: >=, exclusiveComparitor: >, exclusive: schema["exclusiveMinimum"] as? Bool, error: "Value is lower than minimum value of \(minimum)")(instance)
 }
 
-func maximum(validator: Draft4Validator, maximum: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func maximum(validator: Validator, maximum: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
   guard let maximum = maximum as? Double else {
     return .valid
   }
@@ -324,7 +322,7 @@ func maximum(validator: Draft4Validator, maximum: Any, instance: Any, schema: [S
 
 // MARK: Array
 
-func items(validator: Draft4Validator, items: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func items(validator: Validator, items: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
   guard let instance = instance as? [Any] else {
     return .valid
   }
@@ -350,7 +348,7 @@ func items(validator: Draft4Validator, items: Any, instance: Any, schema: [Strin
   return .valid
 }
 
-func additionalItems(validator: Draft4Validator, additionalItems: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func additionalItems(validator: Validator, additionalItems: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
   guard let instance = instance as? [Any], let items = schema["items"] as? [Any], instance.count > items.count else {
     return .valid
   }
@@ -378,7 +376,7 @@ func validateArrayLength(_ rhs: Int, comparitor: @escaping ((Int, Int) -> Bool),
   }
 }
 
-func minItems(validator: Draft4Validator, minItems: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func minItems(validator: Validator, minItems: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
   guard let minItems = minItems as? Int else {
     return .valid
   }
@@ -386,7 +384,7 @@ func minItems(validator: Draft4Validator, minItems: Any, instance: Any, schema: 
   return validateArrayLength(minItems, comparitor: >=, error: "Length of array is smaller than the minimum \(minItems)")(instance)
 }
 
-func maxItems(validator: Draft4Validator, maxItems: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func maxItems(validator: Validator, maxItems: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
   guard let maxItems = maxItems as? Int else {
     return .valid
   }
@@ -394,7 +392,7 @@ func maxItems(validator: Draft4Validator, maxItems: Any, instance: Any, schema: 
   return validateArrayLength(maxItems, comparitor: <=, error: "Length of array is greater than maximum \(maxItems)")(instance)
 }
 
-func uniqueItems(validator: Draft4Validator, uniqueItems: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func uniqueItems(validator: Validator, uniqueItems: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
   guard let uniqueItems = uniqueItems as? Bool, uniqueItems else {
     return .valid
   }
@@ -424,7 +422,7 @@ func uniqueItems(validator: Draft4Validator, uniqueItems: Any, instance: Any, sc
   return .invalid(["\(instance) does not have unique items"])
 }
 
-func contains(validator: Draft4Validator, contains: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func contains(validator: Validator, contains: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
   guard let instance = instance as? [Any] else {
     return .valid
   }
@@ -451,7 +449,7 @@ func validatePropertiesLength(_ length: Int, comparitor: @escaping ((Int, Int) -
   }
 }
 
-func minProperties(validator: Draft4Validator, minProperties: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func minProperties(validator: Validator, minProperties: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
   guard let minProperties = minProperties as? Int else {
     return .valid
   }
@@ -459,7 +457,7 @@ func minProperties(validator: Draft4Validator, minProperties: Any, instance: Any
   return validatePropertiesLength(minProperties, comparitor: <=, error: "Amount of properties is less than the required amount")(instance)
 }
 
-func maxProperties(validator: Draft4Validator, maxProperties: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func maxProperties(validator: Validator, maxProperties: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
   guard let maxProperties = maxProperties as? Int else {
     return .valid
   }
@@ -467,7 +465,7 @@ func maxProperties(validator: Draft4Validator, maxProperties: Any, instance: Any
   return validatePropertiesLength(maxProperties, comparitor: >=, error: "Amount of properties is greater than maximum permitted")(instance)
 }
 
-func required(validator: Draft4Validator, required: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func required(validator: Validator, required: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
   guard let instance = instance as? [String: Any] else {
     return .valid
   }
@@ -483,7 +481,7 @@ func required(validator: Draft4Validator, required: Any, instance: Any, schema: 
   return .invalid(["Required properties are missing '\(required)'"])
 }
 
-func propertyNames(validator: Draft4Validator, propertyNames: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func propertyNames(validator: Validator, propertyNames: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
   guard let instance = instance as? [String: Any] else {
     return .valid
   }
@@ -491,7 +489,7 @@ func propertyNames(validator: Draft4Validator, propertyNames: Any, instance: Any
   return flatten(instance.keys.map { validator.descend(instance: $0, subschema: propertyNames) })
 }
 
-func properties(validator: Draft4Validator, properties: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func properties(validator: Validator, properties: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
   guard let instance = instance as? [String: Any] else {
     return .valid
   }
@@ -509,7 +507,7 @@ func properties(validator: Draft4Validator, properties: Any, instance: Any, sche
   }))
 }
 
-func patternProperties(validator: Draft4Validator, patternProperties: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func patternProperties(validator: Validator, patternProperties: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
   guard let instance = instance as? [String: Any] else {
     return .valid
   }
@@ -561,7 +559,7 @@ func findAdditionalProperties(instance: [String: Any], schema: [String: Any]) ->
   return keys
 }
 
-func additionalProperties(validator: Draft4Validator, additionalProperties: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func additionalProperties(validator: Validator, additionalProperties: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
   guard let instance = instance as? [String: Any] else {
     return .valid
   }
@@ -579,7 +577,7 @@ func additionalProperties(validator: Draft4Validator, additionalProperties: Any,
   return .valid
 }
 
-func dependencies(validator: Draft4Validator, dependencies: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func dependencies(validator: Validator, dependencies: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
   guard let dependencies = dependencies as? [String: Any] else {
     return .valid
   }
@@ -607,7 +605,7 @@ func dependencies(validator: Draft4Validator, dependencies: Any, instance: Any, 
 
 // MARK: Format
 
-func format(validator: Draft4Validator, format: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func format(validator: Validator, format: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
   guard let format = format as? String else {
     return .valid
   }
