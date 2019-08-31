@@ -59,4 +59,8 @@ class Draft4Validator {
   func resolve(ref: String) -> Validator {
     return Schema(schema).validatorForReference(ref)
   }
+
+  func descend(instance: Any, subschema: Any) -> ValidationResult {
+    return allOf(JSONSchema.validators(self.schema)(subschema))(instance)
+  }
 }

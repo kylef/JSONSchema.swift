@@ -157,8 +157,11 @@ func anyOf(validator: Draft4Validator, anyOf: Any, instance: Any, schema: [Strin
     return .valid
   }
 
-  let anyOfValidators = anyOf.map(JSONSchema.validators(schema)).map(JSONSchema.allOf) as [Validator]
-  return JSONSchema.anyOf(anyOfValidators)(instance)
+  if !anyOf.contains(where: { validator.descend(instance: instance, subschema: $0).valid }) {
+    return .invalid(["\(instance) does not meet anyOf validation rules."])
+  }
+
+  return .valid
 }
 
 func oneOf(validator: Draft4Validator, oneOf: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
@@ -166,27 +169,17 @@ func oneOf(validator: Draft4Validator, oneOf: Any, instance: Any, schema: [Strin
     return .valid
   }
 
-  let oneOfValidators = oneOf.map(JSONSchema.validators(schema)).map(allOf) as [Validator]
-  return JSONSchema.oneOf(oneOfValidators)(instance)
-}
-
-func oneOf(_ validators: [Validator]) -> (_ value: Any) -> ValidationResult {
-  return { value in
-    let results = validators.map { validator in validator(value) }
-    let validValidators = results.filter { $0.valid }.count
-
-    if validValidators == 1 {
-      return .valid
-    }
-
-    return .invalid(["\(validValidators) validates instead `oneOf`."])
+  if oneOf.filter({ validator.descend(instance: instance, subschema: $0).valid }).count != 1 {
+    return .invalid(["Only one value from `oneOf` should be met"])
   }
+
+  return .valid
 }
 
 func not(validator: Draft4Validator, not: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
-  let notValidator = allOf(JSONSchema.validators(schema)(not))
+  let result = validator.descend(instance: instance, subschema: not)
 
-  if notValidator(instance).valid {
+  if result.valid {
     return .invalid(["'\(instance)' does not match 'not' validation."])
   }
 
@@ -198,7 +191,7 @@ func allOf(validator: Draft4Validator, allOf: Any, instance: Any, schema: [Strin
     return .valid
   }
 
-  return flatten(allOf.map(JSONSchema.validators(schema)).reduce([], +).map { $0(instance) })
+  return flatten(allOf.map({ validator.descend(instance: instance, subschema: $0) }))
 }
 
 func allOf(_ validators: [Validator]) -> (_ value: Any) -> ValidationResult {
@@ -349,23 +342,18 @@ func items(validator: Draft4Validator, items: Any, instance: Any, schema: [Strin
   }
 
   if let items = items as? [String: Any] {
-    let itemsValidators = allOf(JSONSchema.validators(validator.schema)(items))
-    return flatten(instance.map { itemsValidators($0) })
+    return flatten(instance.map { validator.descend(instance: $0, subschema: items) })
   }
 
   if let items = items as? Bool {
-    let itemsValidators = allOf(JSONSchema.validators(validator.schema)(items))
-    return flatten(instance.map { itemsValidators($0) })
+    return flatten(instance.map { validator.descend(instance: $0, subschema: items) })
   }
 
   if let items = items as? [Any] {
-    let itemValidators = items.map(JSONSchema.validators(validator.schema))
-
     var results = [ValidationResult]()
 
-    for (index, element) in instance.enumerated() where index < itemValidators.count {
-      let validators = allOf(itemValidators[index])
-      results.append(validators(element))
+    for (index, item) in instance.enumerated() where index < items.count {
+      results.append(validator.descend(instance: item, subschema: items[index]))
     }
 
     return flatten(results)
@@ -380,8 +368,7 @@ func additionalItems(validator: Draft4Validator, additionalItems: Any, instance:
   }
 
   if let additionalItems = additionalItems as? [String: Any] {
-    let valiations = allOf(JSONSchema.validators(validator.schema)(additionalItems))
-    return flatten(instance[items.count...].map { valiations($0) })
+    return flatten(instance[items.count...].map { validator.descend(instance: $0, subschema: additionalItems) })
   }
 
   if let additionalItems = additionalItems as? Bool, !additionalItems {
@@ -454,9 +441,7 @@ func contains(validator: Draft4Validator, contains: Any, instance: Any, schema: 
     return .valid
   }
 
-  let validator = allOf(JSONSchema.validators(schema)(contains))
-  let arrayContainsValue = instance.contains { validator($0).valid }
-  if !arrayContainsValue {
+  if !instance.contains(where: { validator.descend(instance: $0, subschema: contains).valid }) {
     return .invalid(["\(instance) does not match contains"])
   }
 
@@ -515,8 +500,7 @@ func propertyNames(validator: Draft4Validator, propertyNames: Any, instance: Any
     return .valid
   }
 
-  let validators = allOf(JSONSchema.validators(schema)(propertyNames))
-  return flatten(instance.keys.map(validators))
+  return flatten(instance.keys.map { validator.descend(instance: $0, subschema: propertyNames) })
 }
 
 func properties(validator: Draft4Validator, properties: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
@@ -528,16 +512,13 @@ func properties(validator: Draft4Validator, properties: Any, instance: Any, sche
     return .valid
   }
 
-  var results: [ValidationResult] = []
-
-  for (key, value) in instance {
+  return flatten(instance.map({ (key, value) in
     if let schema = properties[key] {
-      let propertyValidation = allOf(JSONSchema.validators(validator.schema)(schema))
-      results.append(propertyValidation(value))
+      return validator.descend(instance: value, subschema: schema)
     }
-  }
 
-  return flatten(results)
+    return .valid
+  }))
 }
 
 func patternProperties(validator: Draft4Validator, patternProperties: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
@@ -559,8 +540,7 @@ func patternProperties(validator: Draft4Validator, patternProperties: Any, insta
       }
 
       for key in keys {
-        let propertyValidation = allOf(JSONSchema.validators(validator.schema)(schema))
-        results.append(propertyValidation(instance[key]!))
+        results.append(validator.descend(instance: instance[key]!, subschema: schema))
       }
     } catch {
       return .invalid(["[Schema] '\(pattern)' is not a valid regex pattern for patternProperties"])
@@ -601,14 +581,7 @@ func additionalProperties(validator: Draft4Validator, additionalProperties: Any,
   let extras = findAdditionalProperties(instance: instance, schema: schema)
 
   if let additionalProperties = additionalProperties as? [String: Any] {
-    var results: [ValidationResult] = []
-
-    for key in extras {
-      let propertyValidation = allOf(JSONSchema.validators(validator.schema)(additionalProperties))
-      results.append(propertyValidation(instance[key]!))
-    }
-
-    return flatten(results)
+    return flatten(extras.map { validator.descend(instance: instance[$0]!, subschema: additionalProperties) })
   }
 
   if let additionalProperties = additionalProperties as? Bool, !additionalProperties && !extras.isEmpty {
@@ -666,18 +639,25 @@ func dependencies(validator: Draft4Validator, dependencies: Any, instance: Any, 
     return .valid
   }
 
-  var validators: [Validator] = []
-
-  for (key, dependencies) in dependencies {
-    if let dependencies = dependencies as? [String] {
-      validators.append(validateDependencies(key, dependencies: dependencies))
-    }
-
-    let validator = allOf(JSONSchema.validators(schema)(dependencies))
-    validators.append(validateDependency(key, validator: validator))
+  guard let instance = instance as? [String: Any] else {
+    return .valid
   }
 
-  return flatten(validators.map { $0(instance) })
+  var results: [ValidationResult] = []
+
+  for (property, dependency) in dependencies where instance.keys.contains(property) {
+    if let dependency = dependency as? [String] {
+      for key in dependency {
+        if !instance.keys.contains(key) {
+          results.append(.invalid(["'\(key)' is a dependency for '\(property)'"]))
+        }
+      }
+    } else {
+      results.append(validator.descend(instance: instance, subschema: dependency))
+    }
+  }
+
+  return flatten(results)
 }
 
 // MARK: Format
