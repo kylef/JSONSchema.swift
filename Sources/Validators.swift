@@ -57,7 +57,36 @@ func invalidValidation(_ error: String) -> (_ value: Any) -> ValidationResult {
   }
 }
 
+func validatorCurry(_ validator: @escaping (Any, Any, Schema) -> ValidationResult) -> ((_ value: Any, _ schema: Schema) -> ((_ instance: Any) -> ValidationResult)) {
+  return { (value, schema) in
+    return { instance in
+      return validator(value, instance, schema)
+    }
+  }
+}
+
 // MARK: Shared
+
+func type(_ type: Any, instance: Any, schema: Schema) -> ValidationResult {
+  func ensureArray(_ value: Any) -> [String]? {
+    if let value = value as? [String] {
+      return value
+    }
+
+    if let value = value as? String {
+      return [value]
+    }
+
+    return nil
+  }
+
+  guard let type = ensureArray(type) else {
+    return .valid
+  }
+
+  let typeValidators = type.map(validateType) as [Validator]
+  return anyOf(typeValidators)(instance)
+}
 
 /// Validate the given value is of the given type
 func validateType(_ type: String) -> (_ value: Any) -> ValidationResult {
@@ -105,23 +134,6 @@ func validateType(_ type: String) -> (_ value: Any) -> ValidationResult {
   }
 }
 
-/// Validate the given value is one of the given types
-func validateType(_ type: [String]) -> Validator {
-  let typeValidators = type.map(validateType) as [Validator]
-  return anyOf(typeValidators)
-}
-
-func validateType(_ type: Any) -> Validator {
-  if let type = type as? String {
-    return validateType(type)
-  } else if let types = type as? [String] {
-    return validateType(types)
-  }
-
-  return invalidValidation("'\(type)' is not a valid 'type'")
-}
-
-
 /// Validate that a value is valid for any of the given validation rules
 func anyOf(_ validators: [Validator], error: String? = nil) -> (_ value: Any) -> ValidationResult {
   return { value in
@@ -140,6 +152,24 @@ func anyOf(_ validators: [Validator], error: String? = nil) -> (_ value: Any) ->
   }
 }
 
+func anyOf(_ anyOf: Any, instance: Any, schema: Schema) -> ValidationResult {
+  guard let anyOf = anyOf as? [Any] else {
+    return .valid
+  }
+
+  let anyOfValidators = anyOf.map(JSONSchema.validators(schema)).map(JSONSchema.allOf) as [Validator]
+  return JSONSchema.anyOf(anyOfValidators)(instance)
+}
+
+func oneOf(_ oneOf: Any, instance: Any, schema: Schema) -> ValidationResult {
+  guard let oneOf = oneOf as? [Any] else {
+    return .valid
+  }
+
+  let oneOfValidators = oneOf.map(JSONSchema.validators(schema)).map(allOf) as [Validator]
+  return JSONSchema.oneOf(oneOfValidators)(instance)
+}
+
 func oneOf(_ validators: [Validator]) -> (_ value: Any) -> ValidationResult {
   return { value in
     let results = validators.map { validator in validator(value) }
@@ -153,17 +183,23 @@ func oneOf(_ validators: [Validator]) -> (_ value: Any) -> ValidationResult {
   }
 }
 
-/// Creates a validator that validates that the given validation rules are not met
-func not(_ validator: @escaping Validator) -> (_ value: Any) -> ValidationResult {
-  return { value in
-    if validator(value).valid {
-      return .invalid(["'\(value)' does not match 'not' validation."])
-    }
+func not(_ not: Any, instance: Any, schema: Schema) -> ValidationResult {
+  let notValidator = allOf(JSONSchema.validators(schema)(not))
 
-    return .valid
+  if notValidator(instance).valid {
+    return .invalid(["'\(instance)' does not match 'not' validation."])
   }
+
+  return .valid
 }
 
+func allOf(_ allOf: Any, instance: Any, schema: Schema) -> ValidationResult {
+  guard let allOf = allOf as? [Any] else {
+    return .valid
+  }
+
+  return flatten(allOf.map(JSONSchema.validators(schema)).reduce([], +).map { $0(instance) })
+}
 
 func allOf(_ validators: [Validator]) -> (_ value: Any) -> ValidationResult {
   return { value in
@@ -180,30 +216,26 @@ func isEqual(_ lhs: NSObject, _ rhs: NSObject) -> Bool {
   return lhs == rhs
 }
 
-
-func validateEnum(_ values: [Any]) -> (_ value: Any) -> ValidationResult {
-  return { value in
-    let value = value as! NSObject
-
-    if (values as! [NSObject]).contains(where: { isEqual(value, $0) }) {
-      return .valid
-    }
-
-    return .invalid(["'\(value)' is not a valid enumeration value of '\(values)'"])
+func `enum`(_ enum: Any, instance: Any, schema: Schema) -> ValidationResult {
+  guard let `enum` = `enum` as? [Any] else {
+    return .valid
   }
+
+  let instance = instance as! NSObject
+  if (`enum` as! [NSObject]).contains(where: { isEqual(instance, $0) }) {
+    return .valid
+  }
+
+  return .invalid(["'\(instance)' is not a valid enumeration value of '\(`enum`)'"])
 }
 
-
-func validateConst(_ const: Any) -> (_ value: Any) -> ValidationResult {
-  return { value in
-    if isEqual(value as! NSObject, const as! NSObject) {
-       return .valid
-    }
-
-    return .invalid(["'\(value)' is not equal to const '\(const)'"])
+func const(_ const: Any, instance: Any, schema: Schema) -> ValidationResult {
+  if isEqual(instance as! NSObject, const as! NSObject) {
+     return .valid
   }
-}
 
+  return .invalid(["'\(instance)' is not equal to const '\(const)'"])
+}
 
 // MARK: String
 
@@ -219,43 +251,61 @@ func validateLength(_ comparitor: @escaping ((Int, Int) -> (Bool)), length: Int,
   }
 }
 
-
-func validatePattern(_ pattern: String) -> (_ value: Any) -> ValidationResult {
-  return { value in
-    if let value = value as? String {
-      let expression = try? NSRegularExpression(pattern: pattern, options: NSRegularExpression.Options(rawValue: 0))
-      if let expression = expression {
-        let range = NSMakeRange(0, value.count)
-        if expression.matches(in: value, options: NSRegularExpression.MatchingOptions(rawValue: 0), range: range).count == 0 {
-          return .invalid(["'\(value)' does not match pattern: '\(pattern)'"])
-        }
-      } else {
-        return .invalid(["[Schema] Regex pattern '\(pattern)' is not valid"])
-      }
-    }
-
+func minLength(_ minLength: Any, instance: Any, schema: Schema) -> ValidationResult {
+  guard let minLength = minLength as? Int else {
     return .valid
   }
+
+  return validateLength(>=, length: minLength, error: "Length of string is smaller than minimum length \(minLength)")(instance)
 }
 
+func maxLength(_ maxLength: Any, instance: Any, schema: Schema) -> ValidationResult {
+  guard let maxLength = maxLength as? Int else {
+    return .valid
+  }
+
+  return validateLength(<=, length: maxLength, error: "Length of string is larger than max length \(maxLength)")(instance)
+}
+
+func pattern(_ pattern: Any, instance: Any, schema: Schema) -> ValidationResult {
+  guard let pattern = pattern as? String else {
+    return .valid
+  }
+
+  guard let instance = instance as? String else {
+    return .valid
+  }
+
+  guard let expression = try? NSRegularExpression(pattern: pattern, options: NSRegularExpression.Options(rawValue: 0)) else {
+    return .invalid(["[Schema] Regex pattern '\(pattern)' is not valid"])
+  }
+
+  let range = NSMakeRange(0, instance.count)
+  if expression.matches(in: instance, options: NSRegularExpression.MatchingOptions(rawValue: 0), range: range).count == 0 {
+    return .invalid(["'\(instance)' does not match pattern: '\(pattern)'"])
+  }
+
+  return .valid
+}
 
 // MARK: Numerical
 
-func validateMultipleOf(_ number: Double) -> (_ value: Any) -> ValidationResult {
-  return { value in
-    if number > 0.0 {
-      if let value = value as? Double {
-        let result = value / number
-        if result != floor(result) {
-          return .invalid(["\(value) is not a multiple of \(number)"])
-        }
-      }
-    }
-
+func multipleOf(_ multipleOf: Any, instance: Any, schema: Schema) -> ValidationResult {
+  guard let multipleOf = multipleOf as? Double else {
     return .valid
   }
-}
 
+  guard let instance = instance as? Double, instance > 0.0 else {
+    return .valid
+  }
+
+  let result = instance / multipleOf
+  if result != floor(result) {
+    return .invalid(["\(instance) is not a multiple of \(multipleOf)"])
+  }
+
+  return .valid
+}
 
 func validateNumericLength(_ length: Double, comparitor: @escaping ((Double, Double) -> (Bool)), exclusiveComparitor: @escaping ((Double, Double) -> (Bool)), exclusive: Bool?, error: String) -> (_ value: Any) -> ValidationResult {
   return { value in
@@ -275,6 +325,21 @@ func validateNumericLength(_ length: Double, comparitor: @escaping ((Double, Dou
   }
 }
 
+func minimum(_ minimum: Any, instance: Any, schema: Schema) -> ValidationResult {
+  guard let minimum = minimum as? Double else {
+    return .valid
+  }
+
+  return validateNumericLength(minimum, comparitor: >=, exclusiveComparitor: >, exclusive: schema.schema["exclusiveMinimum"] as? Bool, error: "Value is lower than minimum value of \(minimum)")(instance)
+}
+
+func maximum(_ maximum: Any, instance: Any, schema: Schema) -> ValidationResult {
+  guard let maximum = maximum as? Double else {
+    return .valid
+  }
+
+  return validateNumericLength(maximum, comparitor: <=, exclusiveComparitor: <, exclusive: schema.schema["exclusiveMaximum"] as? Bool, error: "Value exceeds maximum value of \(maximum)")(instance)
+}
 
 // MARK: Array
 
@@ -290,45 +355,64 @@ func validateArrayLength(_ rhs: Int, comparitor: @escaping ((Int, Int) -> Bool),
   }
 }
 
+func minItems(_ minItems: Any, instance: Any, schema: Schema) -> ValidationResult {
+  guard let minItems = minItems as? Int else {
+    return .valid
+  }
 
-func validateUniqueItems(_ value: Any) -> ValidationResult {
-  if let value = value as? [Any] {
-    // 1 and true, 0 and false are isEqual for NSNumber's, so logic to count for that below
+  return validateArrayLength(minItems, comparitor: >=, error: "Length of array is smaller than the minimum \(minItems)")(instance)
+}
 
-    func isBoolean(_ number: NSNumber) -> Bool {
-      return CFGetTypeID(number) != CFBooleanGetTypeID()
-    }
+func maxItems(_ maxItems: Any, instance: Any, schema: Schema) -> ValidationResult {
+  guard let maxItems = maxItems as? Int else {
+    return .valid
+  }
 
-    let numbers = value.filter { value in value is NSNumber } as! [NSNumber]
-    let numerBooleans = numbers.filter(isBoolean)
-    let booleans = (numerBooleans as? [Bool]) ?? []
-    let nonBooleans = numbers.filter { number in !isBoolean(number) }
-    let hasTrueAndOne = booleans.filter { v in v }.count > 0 && nonBooleans.filter { v in v == 1 }.count > 0
-    let hasFalseAndZero = booleans.filter { v in !v }.count > 0 && nonBooleans.filter { v in v == 0 }.count > 0
-    let delta = (hasTrueAndOne ? 1 : 0) + (hasFalseAndZero ? 1 : 0)
+  return validateArrayLength(maxItems, comparitor: <=, error: "Length of array is greater than maximum \(maxItems)")(instance)
+}
 
-    if (NSSet(array: value).count + delta) == value.count {
-      return .valid
-    }
+func uniqueItems(_ uniqueItems: Any, instance: Any, schema: Schema) -> ValidationResult {
+  guard let uniqueItems = uniqueItems as? Bool, uniqueItems else {
+    return .valid
+  }
 
-    return .invalid(["\(value) does not have unique items"])
+  guard let instance = instance as? [Any] else {
+    return .valid
+  }
+
+  // 1 and true, 0 and false are isEqual for NSNumber's, so logic to count for that below
+
+  func isBoolean(_ number: NSNumber) -> Bool {
+    return CFGetTypeID(number) != CFBooleanGetTypeID()
+  }
+
+  let numbers = instance.filter { value in value is NSNumber } as! [NSNumber]
+  let numerBooleans = numbers.filter(isBoolean)
+  let booleans = (numerBooleans as? [Bool]) ?? []
+  let nonBooleans = numbers.filter { number in !isBoolean(number) }
+  let hasTrueAndOne = booleans.filter { v in v }.count > 0 && nonBooleans.filter { v in v == 1 }.count > 0
+  let hasFalseAndZero = booleans.filter { v in !v }.count > 0 && nonBooleans.filter { v in v == 0 }.count > 0
+  let delta = (hasTrueAndOne ? 1 : 0) + (hasFalseAndZero ? 1 : 0)
+
+  if (NSSet(array: instance).count + delta) == instance.count {
+    return .valid
+  }
+
+  return .invalid(["\(instance) does not have unique items"])
+}
+
+func contains(_ contains: Any, instance: Any, schema: Schema) -> ValidationResult {
+  guard let instance = instance as? [Any] else {
+    return .valid
+  }
+
+  let validator = allOf(JSONSchema.validators(schema)(contains))
+  let arrayContainsValue = instance.contains { validator($0).valid }
+  if !arrayContainsValue {
+    return .invalid(["\(instance) does not match contains"])
   }
 
   return .valid
-}
-
-func validateContains(_ validator: @escaping Validator) -> (_ value: Any) -> ValidationResult {
-  return { value in
-    if let value = value as? [Any] {
-      let arrayContainsValue = value.contains { validator($0).valid }
-
-      if !arrayContainsValue {
-        return .invalid(["\(value) does not match contains"])
-      }
-    }
-
-    return .valid
-  }
 }
 
 
@@ -346,32 +430,46 @@ func validatePropertiesLength(_ length: Int, comparitor: @escaping ((Int, Int) -
   }
 }
 
-
-func validateRequired(_ required: [String]) -> (_ value: Any) -> ValidationResult {
-  return { value in
-    if let value = value as? [String: Any] {
-      if (required.filter { r in !value.keys.contains(r) }.count == 0) {
-        return .valid
-      }
-
-      return .invalid(["Required properties are missing '\(required)'"])
-    }
-
+func minProperties(_ minProperties: Any, instance: Any, schema: Schema) -> ValidationResult {
+  guard let minProperties = minProperties as? Int else {
     return .valid
   }
+
+  return validatePropertiesLength(minProperties, comparitor: <=, error: "Amount of properties is less than the required amount")(instance)
 }
 
-
-func validatePropertyNames(_ propertyNames: @escaping Validator) -> (_ value: Any) -> ValidationResult {
-  return { value in
-    if let value = value as? [String: Any] {
-      return flatten(value.keys.map(propertyNames))
-    }
-
+func maxProperties(_ maxProperties: Any, instance: Any, schema: Schema) -> ValidationResult {
+  guard let maxProperties = maxProperties as? Int else {
     return .valid
   }
+
+  return validatePropertiesLength(maxProperties, comparitor: >=, error: "Amount of properties is greater than maximum permitted")(instance)
 }
 
+func required(_ required: Any, instance: Any, schema: Schema) -> ValidationResult {
+  guard let instance = instance as? [String: Any] else {
+    return .valid
+  }
+
+  guard let required = required as? [String] else {
+    return .valid
+  }
+
+  if (required.filter { key in !instance.keys.contains(key) }.count == 0) {
+    return .valid
+  }
+
+  return .invalid(["Required properties are missing '\(required)'"])
+}
+
+func propertyNames(_ propertyNames: Any, instance: Any, schema: Schema) -> ValidationResult {
+  guard let instance = instance as? [String: Any] else {
+    return .valid
+  }
+
+  let validators = allOf(JSONSchema.validators(schema)(propertyNames))
+  return flatten(instance.keys.map(validators))
+}
 
 func validateProperties(_ properties: [String: Validator]?, patternProperties: [String: Validator]?, additionalProperties: Validator?) -> (_ value: Any) -> ValidationResult {
   return { value in
@@ -431,24 +529,71 @@ func validateDependency(_ key: String, validator: @escaping LegacyValidator) -> 
 }
 
 
-func validateDependencies(_ key: String, dependencies: [String]) -> (_ value: Any) -> Bool {
+func validateDependencies(_ key: String, dependencies: [String]) -> (_ value: Any) -> ValidationResult {
   return { value in
-    if let value = value as? [String :Any] {
+    if let value = value as? [String: Any] {
       if (value[key] != nil) {
-        for dependency in dependencies {
-          if (value[dependency] == nil) {
-            return false
+        return flatten(dependencies.map { dependency in
+          if value[dependency] == nil {
+            return .invalid(["'\(key)' is missing it's dependency of '\(dependency)'"])
           }
-        }
+          return .valid
+        })
       }
     }
 
-    return true
+    return .valid
   }
 }
 
+func validateDependency(_ key: String, validator: @escaping Validator) -> (_ value: Any) -> ValidationResult {
+  return { value in
+    if let value = value as? [String: Any] {
+      if (value[key] != nil) {
+        return validator(value)
+      }
+    }
+
+    return .valid
+  }
+}
+
+func dependencies(_ dependencies: Any, instance: Any, schema: Schema) -> ValidationResult {
+  guard let dependencies = dependencies as? [String: Any] else {
+    return .valid
+  }
+
+  var validators: [Validator] = []
+
+  for (key, dependencies) in dependencies {
+    if let dependencies = dependencies as? [String] {
+      validators.append(validateDependencies(key, dependencies: dependencies))
+    }
+
+    let validator = allOf(JSONSchema.validators(schema)(dependencies))
+    validators.append(validateDependency(key, validator: validator))
+  }
+
+  return flatten(validators.map { $0(instance) })
+}
 
 // MARK: Format
+
+func format(_ format: Any, instance: Any, schema: Schema) -> ValidationResult {
+  guard let format = format as? String else {
+    return .valid
+  }
+
+  guard let instance = instance as? String else {
+    return .valid
+  }
+
+  guard let validator = schema.formats[format] else {
+    return invalidValidation("'format' validation of '\(format)' is not yet supported.")(instance)
+  }
+
+  return validator(instance)
+}
 
 func validateIPv4(_ value: Any) -> ValidationResult {
   if let ipv4 = value as? String {
