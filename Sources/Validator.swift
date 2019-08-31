@@ -52,6 +52,10 @@ extension Validator {
       return { Draft4Validator(schema: DRAFT_04_META_SCHEMA).descend(instance: $0, subschema: DRAFT_04_META_SCHEMA) }
     }
 
+    if reference == "http://json-schema.org/draft-06/schema#" {
+      return { Draft7Validator(schema: DRAFT_06_META_SCHEMA).descend(instance: $0, subschema: DRAFT_06_META_SCHEMA) }
+    }
+
     if reference == "http://json-schema.org/draft-07/schema#" {
       return { Draft7Validator(schema: DRAFT_07_META_SCHEMA).descend(instance: $0, subschema: DRAFT_07_META_SCHEMA) }
     }

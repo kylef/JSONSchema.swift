@@ -24,6 +24,19 @@ func draft4Validator(schema: Any, instance: Any) -> ValidationResult {
 }
 
 
+func draft6Validator(schema: Any, instance: Any) -> ValidationResult {
+  if let schema = schema as? Bool {
+    return Draft6Validator(schema: schema).validate(instance: instance)
+  }
+
+  if let schema = schema as? [String: Any] {
+    return Draft6Validator(schema: schema).validate(instance: instance)
+  }
+
+  fatalError()
+}
+
+
 func draft7Validator(schema: Any, instance: Any) -> ValidationResult {
   if let schema = schema as? Bool {
     return Draft7Validator(schema: schema).validate(instance: instance)
@@ -49,8 +62,7 @@ class JSONSchemaCases: XCTestCase {
   }
 
   func testJSONSchemaDraft6() throws {
-    try test(name: "draft6", validator: draft7Validator, excluding: [
-      "definitions.json",
+    try test(name: "draft6", validator: draft6Validator, excluding: [
       "ref.json",
       "refRemote.json",
 
