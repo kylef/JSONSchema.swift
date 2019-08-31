@@ -10,7 +10,7 @@ Pod::Spec.new do |spec|
   spec.ios.deployment_target = '8.0'
   spec.osx.deployment_target = '10.9'
   spec.requires_arc = true
-  spec.source_files = 'Sources/JSONSchema.{h,swift}', 'Sources/Validators.swift'
+  spec.source_files = 'Sources/*.swift'
   spec.swift_versions = ['4.2', '5.0']
 end
 
