@@ -169,6 +169,18 @@ func not(validator: Draft4Validator, not: Any, instance: Any, schema: [String: A
   return .valid
 }
 
+func `if`(validator: Draft4Validator, `if`: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+  if validator.validate(instance: instance, schema: `if`).valid {
+    if let then = schema["then"] {
+      return validator.descend(instance: instance, subschema: then)
+    }
+  } else if let `else` = schema["else"] {
+    return validator.descend(instance: instance, subschema: `else`)
+  }
+
+  return .valid
+}
+
 func allOf(validator: Draft4Validator, allOf: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
   guard let allOf = allOf as? [Any] else {
     return .valid
