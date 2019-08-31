@@ -9,7 +9,7 @@ protocol Validator {
 }
 
 extension Validator {
-  func validate(instance: Any) -> ValidationResult {
+  public func validate(instance: Any) -> ValidationResult {
     return validate(instance: instance, schema: schema)
   }
 
@@ -50,6 +50,10 @@ extension Validator {
 
     if reference == "http://json-schema.org/draft-04/schema#" {
       return { Draft4Validator(schema: DRAFT_04_META_SCHEMA).descend(instance: $0, subschema: DRAFT_04_META_SCHEMA) }
+    }
+
+    if reference == "http://json-schema.org/draft-07/schema#" {
+      return { Draft7Validator(schema: DRAFT_07_META_SCHEMA).descend(instance: $0, subschema: DRAFT_07_META_SCHEMA) }
     }
 
     if let reference = reference.stringByRemovingPrefix("#") {  // Document relative

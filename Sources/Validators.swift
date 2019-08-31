@@ -304,7 +304,7 @@ func validateNumericLength(_ length: Double, comparitor: @escaping ((Double, Dou
   }
 }
 
-func minimum(validator: Validator, minimum: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func minimumDraft4(validator: Validator, minimum: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
   guard let minimum = minimum as? Double else {
     return .valid
   }
@@ -312,12 +312,44 @@ func minimum(validator: Validator, minimum: Any, instance: Any, schema: [String:
   return validateNumericLength(minimum, comparitor: >=, exclusiveComparitor: >, exclusive: schema["exclusiveMinimum"] as? Bool, error: "Value is lower than minimum value of \(minimum)")(instance)
 }
 
-func maximum(validator: Validator, maximum: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func maximumDraft4(validator: Validator, maximum: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
   guard let maximum = maximum as? Double else {
     return .valid
   }
 
   return validateNumericLength(maximum, comparitor: <=, exclusiveComparitor: <, exclusive: schema["exclusiveMaximum"] as? Bool, error: "Value exceeds maximum value of \(maximum)")(instance)
+}
+
+func minimum(validator: Validator, minimum: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+  guard let minimum = minimum as? Double else {
+    return .valid
+  }
+
+  return validateNumericLength(minimum, comparitor: >=, exclusiveComparitor: >, exclusive: false, error: "Value is lower than minimum value of \(minimum)")(instance)
+}
+
+func maximum(validator: Validator, maximum: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+  guard let maximum = maximum as? Double else {
+    return .valid
+  }
+
+  return validateNumericLength(maximum, comparitor: <=, exclusiveComparitor: <, exclusive: false, error: "Value exceeds maximum value of \(maximum)")(instance)
+}
+
+func exclusiveMinimum(validator: Validator, minimum: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+  guard let minimum = minimum as? Double else {
+    return .valid
+  }
+
+  return validateNumericLength(minimum, comparitor: >=, exclusiveComparitor: >, exclusive: true, error: "Value is lower than exclusive minimum value of \(minimum)")(instance)
+}
+
+func exclusiveMaximum(validator: Validator, maximum: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+  guard let maximum = maximum as? Double else {
+    return .valid
+  }
+
+  return validateNumericLength(maximum, comparitor: <=, exclusiveComparitor: <, exclusive: true, error: "Value exceeds exclusive maximum value of \(maximum)")(instance)
 }
 
 // MARK: Array

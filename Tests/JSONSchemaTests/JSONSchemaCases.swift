@@ -2,7 +2,7 @@ import Foundation
 import XCTest
 import PathKit
 
-import JSONSchema
+@testable import JSONSchema
 
 
 func JSONFixture(_ path: Path) throws -> [[String: Any]] {
@@ -11,9 +11,35 @@ func JSONFixture(_ path: Path) throws -> [[String: Any]] {
 }
 
 
+func draft4Validator(schema: Any, instance: Any) -> ValidationResult {
+  if let schema = schema as? Bool {
+    return Draft4Validator(schema: schema).validate(instance: instance)
+  }
+
+  if let schema = schema as? [String: Any] {
+    return Draft4Validator(schema: schema).validate(instance: instance)
+  }
+
+  fatalError()
+}
+
+
+func draft7Validator(schema: Any, instance: Any) -> ValidationResult {
+  if let schema = schema as? Bool {
+    return Draft7Validator(schema: schema).validate(instance: instance)
+  }
+
+  if let schema = schema as? [String: Any] {
+    return Draft7Validator(schema: schema).validate(instance: instance)
+  }
+
+  fatalError()
+}
+
+
 class JSONSchemaCases: XCTestCase {
   func testJSONSchemaDraft4() throws {
-    try test(name: "draft4", excluding: [
+    try test(name: "draft4", validator: draft4Validator, excluding: [
       "ref.json",
       "refRemote.json",
 
@@ -23,10 +49,8 @@ class JSONSchemaCases: XCTestCase {
   }
 
   func testJSONSchemaDraft6() throws {
-    try test(name: "draft6", excluding: [
+    try test(name: "draft6", validator: draft7Validator, excluding: [
       "definitions.json",
-      "exclusiveMaximum.json",
-      "exclusiveMinimum.json",
       "ref.json",
       "refRemote.json",
 
@@ -38,11 +62,7 @@ class JSONSchemaCases: XCTestCase {
   }
 
   func testJSONSchemaDraft7() throws {
-    try test(name: "draft7", excluding: [
-      "definitions.json",
-      "exclusiveMaximum.json",
-      "exclusiveMinimum.json",
-      "if-then-else.json",
+    try test(name: "draft7", validator: draft7Validator, excluding: [
       "ref.json",
       "refRemote.json",
 
@@ -70,11 +90,8 @@ class JSONSchemaCases: XCTestCase {
   }
 
   func testJSONSchemaDraft2019_08() throws {
-    try test(name: "draft2019-08", excluding: [
+    try test(name: "draft2019-08", validator: draft7Validator, excluding: [
       "defs.json",
-      "exclusiveMaximum.json",
-      "exclusiveMinimum.json",
-      "if-then-else.json",
       "ref.json",
       "refRemote.json",
 
@@ -102,7 +119,7 @@ class JSONSchemaCases: XCTestCase {
     ])
   }
 
-  func test(name: String, excluding: [String]) throws {
+  func test(name: String, validator: @escaping ((_ schema: Any, _ instance: Any) -> (ValidationResult)), excluding: [String]) throws {
     let filePath = #file
     let path = Path(filePath) + ".." + ".." + "Cases" + "tests" + name
 
@@ -131,7 +148,7 @@ class JSONSchemaCases: XCTestCase {
 
     let flatCases = cases.reduce([Case](), +)
     for c in flatCases {
-      for (name, assertion) in makeAssertions(c) {
+      for (name, assertion) in makeAssertions(c, validator) {
         // TODO: Improve testing
         print(name)
         assertion()
@@ -173,16 +190,16 @@ func makeCase(_ filename: String) -> (_ object: [String: Any]) -> Case {
 typealias Assertion = (String, () -> ())
 
 
-func makeAssertions(_ c: Case) -> ([Assertion]) {
+func makeAssertions(_ c: Case, _ validator: @escaping ((_ schema: Any, _ instance: Any) -> (ValidationResult))) -> ([Assertion]) {
   return c.tests.map { test -> Assertion in
     let label = "\(c.description) \(test.description)"
     return (label, {
       let result: ValidationResult
 
       if let schema = c.schema as? [String: Any] {
-        result = validate(test.data, schema: schema)
+        result = validator(schema, test.data)
       } else if let schema = c.schema as? Bool {
-        result = validate(test.data, schema: schema)
+        result = validator(schema, test.data)
       } else {
         fatalError()
       }
