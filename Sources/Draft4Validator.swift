@@ -1,3 +1,5 @@
+import Foundation
+
 class Draft4Validator {
   let schema: [String: Any]
 
@@ -53,14 +55,79 @@ class Draft4Validator {
   }
 
   func validate(instance: Any) -> ValidationResult {
-    return .valid
+    return validate(instance: instance, schema: schema)
+  }
+
+  func validate(instance: Any, schema: Any) -> ValidationResult {
+    if let schema = schema as? Bool {
+      if schema == true {
+        return .valid
+      }
+
+      return .invalid(["Falsy schema"])
+    }
+
+    guard let schema = schema as? [String: Any] else {
+      return .valid
+    }
+
+    var validators = [Validator]()
+
+    if let ref = schema["$ref"] as? String {
+      let validation = validations["$ref"]!
+      validators.append(validatorCurry(validation)(self, ref, schema))
+    } else {
+      for (key, validation) in validations {
+        if let value = schema[key] {
+          validators.append(validatorCurry(validation)(self, value, schema))
+        }
+      }
+    }
+
+    return flatten(validators.map { $0(instance) })
   }
 
   func resolve(ref: String) -> Validator {
-    return Schema(schema).validatorForReference(ref)
+    return validatorForReference(ref)
+  }
+
+  func validatorForReference(_ reference: String) -> Validator {
+    // TODO: Rewrite this whole block: https://github.com/kylef/JSONSchema.swift/issues/12
+
+    if let reference = reference.stringByRemovingPrefix("#") {  // Document relative
+      if let tmp = reference.stringByRemovingPrefix("/"), let reference = (tmp as NSString).removingPercentEncoding {
+        var components = reference.components(separatedBy: "/")
+        var schema = self.schema
+        while let component = components.first {
+          components.remove(at: components.startIndex)
+
+          if let subschema = schema[component] as? [String:Any] {
+            schema = subschema
+            continue
+          } else if let schemas = schema[component] as? [[String:Any]] {
+            if let component = components.first, let index = Int(component) {
+              components.remove(at: components.startIndex)
+
+              if schemas.count > index {
+                schema = schemas[index]
+                continue
+              }
+            }
+          }
+
+          return invalidValidation("Reference not found '\(component)' in '\(reference)'")
+        }
+
+        return { self.descend(instance: $0, subschema: schema) }
+      } else if reference == "" {
+        return { self.descend(instance: $0, subschema: self.schema) }
+      }
+    }
+
+    return invalidValidation("Remote $ref '\(reference)' is not yet supported")
   }
 
   func descend(instance: Any, subschema: Any) -> ValidationResult {
-    return allOf(JSONSchema.validators(self.schema)(subschema))(instance)
+    return validate(instance: instance, schema: subschema)
   }
 }
