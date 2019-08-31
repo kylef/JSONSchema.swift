@@ -1,7 +1,7 @@
 class Draft4Validator {
   let schema: [String: Any]
 
-  typealias Validation = (Draft4Validator, Any, Any, Schema) -> (ValidationResult)
+  typealias Validation = (Draft4Validator, Any, Any, [String: Any]) -> (ValidationResult)
   let validations: [String: Validation] = [
     "type": type,
     "required": required,
