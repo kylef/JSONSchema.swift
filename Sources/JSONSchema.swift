@@ -138,39 +138,13 @@ func validatorsDict(_ root: Schema) -> (_ schema: [String: Any]) -> [Validator] 
   return { schema in
     var validators = [Validator]()
 
-    let vs: [String: (Draft4Validator, Any, Any, Schema) -> (ValidationResult)] = [
-      "type": type,
-      "required": required,
-      "propertyNames": propertyNames,
-      "not": not,
-      "pattern": pattern,
-      "multipleOf": multipleOf,
-      "contains": contains,
-      "uniqueItems": uniqueItems,
-      "enum": `enum`,
-      "const": const,
-      "format": format,
-      "dependencies": dependencies,
-      "allOf": allOf,
-      "oneOf": oneOf,
-      "anyOf": anyOf,
-      "minLength": minLength,
-      "maxLength": maxLength,
-      "minimum": minimum,
-      "maximum": maximum,
-      "minItems": minItems,
-      "maxItems": maxItems,
-      "minProperties": minProperties,
-      "maxProperties": maxProperties,
-    ]
-
     if let ref = schema["$ref"] as? String {
       validators.append(root.validatorForReference(ref))
     }
 
     let draftValidator = Draft4Validator(schema: root.schema)
 
-    for (key, v) in vs {
+    for (key, v) in draftValidator.validations {
       if let value = schema[key] {
         validators.append(validatorCurry(v)(draftValidator, value, root))
       }
