@@ -3,6 +3,7 @@ class Draft4Validator {
 
   typealias Validation = (Draft4Validator, Any, Any, [String: Any]) -> (ValidationResult)
   let validations: [String: Validation] = [
+    "$ref": ref,
     "type": type,
     "required": required,
     "propertyNames": propertyNames,
@@ -26,6 +27,11 @@ class Draft4Validator {
     "maxItems": maxItems,
     "minProperties": minProperties,
     "maxProperties": maxProperties,
+    "items": items,
+    "additionalItems": additionalItems,
+    "properties": properties,
+    "patternProperties": patternProperties,
+    "additionalProperties": additionalProperties,
   ]
 
   let formats: [String: Validator] = [
@@ -48,5 +54,9 @@ class Draft4Validator {
 
   func validate(instance: Any) -> ValidationResult {
     return .valid
+  }
+
+  func resolve(ref: String) -> Validator {
+    return Schema(schema).validatorForReference(ref)
   }
 }

@@ -139,111 +139,17 @@ func validatorsDict(_ root: [String: Any]) -> (_ schema: [String: Any]) -> [Vali
     var validators = [Validator]()
     let root = Schema(root)
 
-    if let ref = schema["$ref"] as? String {
-      validators.append(root.validatorForReference(ref))
-    }
-
     let draftValidator = Draft4Validator(schema: root.schema)
 
-    for (key, v) in draftValidator.validations {
-      if let value = schema[key] {
-        validators.append(validatorCurry(v)(draftValidator, value, root.schema))
+    if let ref = schema["$ref"] as? String {
+      let validation = draftValidator.validations["$ref"]!
+      validators.append(validatorCurry(validation)(draftValidator, ref, schema))
+    } else {
+      for (key, v) in draftValidator.validations {
+        if let value = schema[key] {
+          validators.append(validatorCurry(v)(draftValidator, value, schema))
+        }
       }
-    }
-
-    // Array
-
-    if let items = schema["items"] as? [String: Any] {
-      let itemsValidators = allOf(JSONSchema.validators(root.schema)(items))
-
-      func validateItems(_ document:Any) -> ValidationResult {
-        if let document = document as? [Any] {
-          return flatten(document.map(itemsValidators))
-        }
-
-        return .valid
-      }
-
-      validators.append(validateItems)
-    } else if let items = schema["items"] as? Bool {
-      let itemsValidators = allOf(JSONSchema.validators(root.schema)(items))
-
-      func validateItems(_ document:Any) -> ValidationResult {
-        if let document = document as? [Any] {
-          return flatten(document.map(itemsValidators))
-        }
-
-        return .valid
-      }
-
-      validators.append(validateItems)
-    } else if let items = schema["items"] as? [Any] {
-      func createAdditionalItemsValidator(_ additionalItems: Any?) -> Validator {
-        if let additionalItems = additionalItems {
-          return allOf(JSONSchema.validators(root.schema)(additionalItems))
-        }
-
-        let additionalItems = additionalItems as? Bool ?? true
-        if additionalItems {
-          return validValidation
-        }
-
-        return invalidValidation("Additional results are not permitted in this array.")
-      }
-
-      let additionalItemsValidator = createAdditionalItemsValidator(schema["additionalItems"])
-      let itemValidators = items.map(JSONSchema.validators(root.schema))
-
-      func validateItems(_ value: Any) -> ValidationResult {
-        if let value = value as? [Any] {
-          var results = [ValidationResult]()
-
-          for (index, element) in value.enumerated() {
-            if index >= itemValidators.count {
-              results.append(additionalItemsValidator(element))
-            } else {
-              let validators = allOf(itemValidators[index])
-              results.append(validators(element))
-            }
-          }
-
-          return flatten(results)
-        }
-
-        return .valid
-      }
-
-      validators.append(validateItems)
-    }
-
-    if (schema["properties"] != nil) || (schema["patternProperties"] != nil) || (schema["additionalProperties"] != nil) {
-      func createAdditionalPropertiesValidator(_ additionalProperties: Any?) -> Validator {
-        if let additionalProperties = additionalProperties {
-          return allOf(JSONSchema.validators(root.schema)(additionalProperties))
-        }
-
-        let additionalProperties = additionalProperties as? Bool ?? true
-        if additionalProperties {
-          return validValidation
-        }
-
-        return invalidValidation("Additional properties are not permitted in this object.")
-      }
-
-      func createPropertiesValidators(_ properties: [String: Any]?) -> [String: Validator]? {
-        if let properties = properties {
-          return Dictionary(properties.keys.map {
-            key in (key, allOf(JSONSchema.validators(root.schema)(properties[key]!)))
-          })
-        }
-
-        return nil
-      }
-
-      let additionalPropertyValidator = createAdditionalPropertiesValidator(schema["additionalProperties"])
-      let properties = createPropertiesValidators(schema["properties"] as? [String: Any])
-      let patternProperties = createPropertiesValidators(schema["patternProperties"] as? [String: Any])
-      validators.append(validateProperties(properties, patternProperties: patternProperties, additionalProperties: additionalPropertyValidator))
     }
 
     return validators

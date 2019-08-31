@@ -59,6 +59,14 @@ func invalidValidation(_ error: String) -> (_ value: Any) -> ValidationResult {
 
 // MARK: Shared
 
+func ref(validator: Draft4Validator, reference: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+  guard let reference = reference as? String else {
+    return .valid
+  }
+
+  return validator.resolve(ref: reference)(instance)
+}
+
 func type(validator: Draft4Validator, type: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
   func ensureArray(_ value: Any) -> [String]? {
     if let value = value as? [String] {
@@ -335,6 +343,54 @@ func maximum(validator: Draft4Validator, maximum: Any, instance: Any, schema: [S
 
 // MARK: Array
 
+func items(validator: Draft4Validator, items: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+  guard let instance = instance as? [Any] else {
+    return .valid
+  }
+
+  if let items = items as? [String: Any] {
+    let itemsValidators = allOf(JSONSchema.validators(validator.schema)(items))
+    return flatten(instance.map { itemsValidators($0) })
+  }
+
+  if let items = items as? Bool {
+    let itemsValidators = allOf(JSONSchema.validators(validator.schema)(items))
+    return flatten(instance.map { itemsValidators($0) })
+  }
+
+  if let items = items as? [Any] {
+    let itemValidators = items.map(JSONSchema.validators(validator.schema))
+
+    var results = [ValidationResult]()
+
+    for (index, element) in instance.enumerated() where index < itemValidators.count {
+      let validators = allOf(itemValidators[index])
+      results.append(validators(element))
+    }
+
+    return flatten(results)
+  }
+
+  return .valid
+}
+
+func additionalItems(validator: Draft4Validator, additionalItems: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+  guard let instance = instance as? [Any], let items = schema["items"] as? [Any], instance.count > items.count else {
+    return .valid
+  }
+
+  if let additionalItems = additionalItems as? [String: Any] {
+    let valiations = allOf(JSONSchema.validators(validator.schema)(additionalItems))
+    return flatten(instance[items.count...].map { valiations($0) })
+  }
+
+  if let additionalItems = additionalItems as? Bool, !additionalItems {
+    return invalidValidation("Additional results are not permitted in this array.")(instance)
+  }
+
+  return .valid
+}
+
 func validateArrayLength(_ rhs: Int, comparitor: @escaping ((Int, Int) -> Bool), error: String) -> (_ value: Any) -> ValidationResult {
   return { value in
     if let value = value as? [Any] {
@@ -463,48 +519,103 @@ func propertyNames(validator: Draft4Validator, propertyNames: Any, instance: Any
   return flatten(instance.keys.map(validators))
 }
 
-func validateProperties(_ properties: [String: Validator]?, patternProperties: [String: Validator]?, additionalProperties: Validator?) -> (_ value: Any) -> ValidationResult {
-  return { value in
-    if let value = value as? [String: Any] {
-      let allKeys = NSMutableSet()
-      var results = [ValidationResult]()
-
-      if let properties = properties {
-        for (key, validator) in properties {
-          allKeys.add(key)
-
-          if let value: Any = value[key] {
-            results.append(validator(value))
-          }
-        }
-      }
-
-      if let patternProperties = patternProperties {
-        for (pattern, validator) in patternProperties {
-          do {
-            let expression = try NSRegularExpression(pattern: pattern, options: NSRegularExpression.Options(rawValue: 0))
-            let keys = value.keys.filter {
-              (key: String) in expression.matches(in: key, options: NSRegularExpression.MatchingOptions(rawValue: 0), range: NSMakeRange(0, key.count)).count > 0
-            }
-
-            allKeys.addObjects(from: Array(keys))
-            results += keys.map { key in validator(value[key]!) }
-          } catch {
-            return .invalid(["[Schema] '\(pattern)' is not a valid regex pattern for patternProperties"])
-          }
-        }
-      }
-
-      if let additionalProperties = additionalProperties {
-        let additionalKeys = value.keys.filter { !allKeys.contains($0) }
-        results += additionalKeys.map { key in additionalProperties(value[key]!) }
-      }
-
-      return flatten(results)
-    }
-
+func properties(validator: Draft4Validator, properties: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+  guard let instance = instance as? [String: Any] else {
     return .valid
   }
+
+  guard let properties = properties as? [String: Any] else {
+    return .valid
+  }
+
+  var results: [ValidationResult] = []
+
+  for (key, value) in instance {
+    if let schema = properties[key] {
+      let propertyValidation = allOf(JSONSchema.validators(validator.schema)(schema))
+      results.append(propertyValidation(value))
+    }
+  }
+
+  return flatten(results)
+}
+
+func patternProperties(validator: Draft4Validator, patternProperties: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+  guard let instance = instance as? [String: Any] else {
+    return .valid
+  }
+
+  guard let patternProperties = patternProperties as? [String: Any] else {
+    return .valid
+  }
+
+  var results: [ValidationResult] = []
+
+  for (pattern, schema) in patternProperties {
+    do {
+      let expression = try NSRegularExpression(pattern: pattern, options: NSRegularExpression.Options(rawValue: 0))
+      let keys = instance.keys.filter {
+        (key: String) in expression.matches(in: key, options: NSRegularExpression.MatchingOptions(rawValue: 0), range: NSMakeRange(0, key.count)).count > 0
+      }
+
+      for key in keys {
+        let propertyValidation = allOf(JSONSchema.validators(validator.schema)(schema))
+        results.append(propertyValidation(instance[key]!))
+      }
+    } catch {
+      return .invalid(["[Schema] '\(pattern)' is not a valid regex pattern for patternProperties"])
+    }
+  }
+
+  return flatten(results)
+}
+
+func findAdditionalProperties(instance: [String: Any], schema: [String: Any]) -> Set<String> {
+  var keys: Set<String> = Set(instance.keys)
+
+  if let properties = schema["properties"] as? [String: Any] {
+    keys.subtract(properties.keys)
+  }
+
+  if let patternProperties = schema["patternProperties"] as? [String: Any] {
+    let patterns = patternProperties.keys
+      .compactMap { try? NSRegularExpression(pattern: $0, options: NSRegularExpression.Options(rawValue: 0)) }
+
+    for pattern in patterns {
+      for key in keys {
+        if pattern.matches(in: key, options: NSRegularExpression.MatchingOptions(rawValue: 0), range: NSMakeRange(0, key.count)).count > 0 {
+          keys.remove(key)
+        }
+      }
+    }
+  }
+
+  return keys
+}
+
+func additionalProperties(validator: Draft4Validator, additionalProperties: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+  guard let instance = instance as? [String: Any] else {
+    return .valid
+  }
+
+  let extras = findAdditionalProperties(instance: instance, schema: schema)
+
+  if let additionalProperties = additionalProperties as? [String: Any] {
+    var results: [ValidationResult] = []
+
+    for key in extras {
+      let propertyValidation = allOf(JSONSchema.validators(validator.schema)(additionalProperties))
+      results.append(propertyValidation(instance[key]!))
+    }
+
+    return flatten(results)
+  }
+
+  if let additionalProperties = additionalProperties as? Bool, !additionalProperties && !extras.isEmpty {
+    return invalidValidation("Additional properties are not permitted in this object.")(instance)
+  }
+
+  return .valid
 }
 
 
