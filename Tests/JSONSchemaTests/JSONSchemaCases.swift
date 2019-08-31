@@ -16,7 +16,6 @@ class JSONSchemaCases: XCTestCase {
     try test(name: "draft4", excluding: [
       "ref.json",
       "refRemote.json",
-      "definitions.json",
 
       // optional
       "bignum.json",
