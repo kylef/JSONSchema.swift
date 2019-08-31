@@ -30,9 +30,6 @@ public struct Schema {
 
   public let type: [Type]?
 
-  /// validation formats, currently private. If anyone wants to add custom please make a PR to make this public ;)
-  let formats: [String: Validator]
-
   let schema: [String: Any]
 
   public init(_ schema: [String: Any]) {
@@ -52,12 +49,6 @@ public struct Schema {
     }
 
     self.schema = schema
-
-    formats = [
-      "ipv4": validateIPv4,
-      "ipv6": validateIPv6,
-      "uri": validateURI,
-    ]
   }
 
   public func validate(_ data: Any) -> ValidationResult {
@@ -133,12 +124,21 @@ func validatorsBool(_ root: Schema) -> (_ schema: Bool) -> [Validator] {
 }
 
 
+func validatorCurry(_ validator: @escaping (Draft4Validator, Any, Any, Schema) -> ValidationResult) -> ((_ validator: Draft4Validator, _ value: Any, _ schema: Schema) -> ((_ instance: Any) -> ValidationResult)) {
+  return { (v, value, schema) in
+    return { instance in
+      return validator(v, value, instance, schema)
+    }
+  }
+}
+
+
 /// Returns a set of validators for a schema and document
 func validatorsDict(_ root: Schema) -> (_ schema: [String: Any]) -> [Validator] {
   return { schema in
     var validators = [Validator]()
 
-    let vs: [String: (Any, Any, Schema) -> (ValidationResult)] = [
+    let vs: [String: (Draft4Validator, Any, Any, Schema) -> (ValidationResult)] = [
       "type": type,
       "required": required,
       "propertyNames": propertyNames,
@@ -168,9 +168,11 @@ func validatorsDict(_ root: Schema) -> (_ schema: [String: Any]) -> [Validator] 
       validators.append(root.validatorForReference(ref))
     }
 
+    let draftValidator = Draft4Validator(schema: root.schema)
+
     for (key, v) in vs {
       if let value = schema[key] {
-        validators.append(validatorCurry(v)(value, root))
+        validators.append(validatorCurry(v)(draftValidator, value, root))
       }
     }
 
