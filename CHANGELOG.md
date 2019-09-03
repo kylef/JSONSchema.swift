@@ -20,6 +20,8 @@
   For example, `{ "enum": [1] }` incorrectly validated with values of `true`
   and vice-versa.
 
+- Added support for referencing parts using escaped `~` and `/`.
+
 ## 0.3.0
 
 ### Enhancements

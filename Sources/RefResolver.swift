@@ -26,8 +26,13 @@ class RefResolver {
       return nil
     }
 
-    var components = reference.components(separatedBy: "/")
+    var components = reference
+      .components(separatedBy: "/")
+      .map {
+        $0.replacingOccurrences(of: "~1", with: "/").replacingOccurrences(of: "~0", with: "~")
+      }
     var schema: [String: Any] = document
+
     while let component = components.first {
       components.remove(at: components.startIndex)
 
