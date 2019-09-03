@@ -3,6 +3,8 @@ import Foundation
 protocol Validator {
   typealias Validation = (Validator, Any, Any, [String: Any]) -> (ValidationResult)
 
+  var resolver: RefResolver { get }
+
   var schema: [String: Any] { get }
   var validations: [String: Validation] { get }
   var formats: [String: (String) -> (ValidationResult)] { get }
@@ -41,8 +43,8 @@ extension Validator {
     return flatten(results)
   }
 
-  func resolve(ref: String) -> (Any) -> (ValidationResult) {
-    return validatorForReference(ref)
+  func resolve(ref: String) -> Any? {
+    return resolver.resolve(reference: ref)
   }
 
   func validatorForReference(_ reference: String) -> (Any) -> (ValidationResult) {

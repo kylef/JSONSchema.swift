@@ -3,6 +3,7 @@ import Foundation
 public class Draft4Validator: Validator {
   let schema: [String: Any]
   let metaSchema: [String: Any] = DRAFT_04_META_SCHEMA
+  let resolver: RefResolver
 
   typealias Validation = (Validator, Any, Any, [String: Any]) -> (ValidationResult)
   let validations: [String: Validation] = [
@@ -50,10 +51,13 @@ public class Draft4Validator: Validator {
     } else {
       self.schema = ["not": [:]]
     }
+
+    self.resolver = RefResolver(schema: self.schema)
   }
 
   public required init(schema: [String: Any]) {
     self.schema = schema
+    self.resolver = RefResolver(schema: schema)
   }
 }
 

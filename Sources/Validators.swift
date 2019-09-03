@@ -61,7 +61,23 @@ func ref(validator: Validator, reference: Any, instance: Any, schema: [String: A
     return .valid
   }
 
-  return validator.resolve(ref: reference)(instance)
+  if let metaSchemaID = DRAFT_04_META_SCHEMA["id"] as? String, reference == metaSchemaID {
+    return Draft4Validator(schema: DRAFT_04_META_SCHEMA).validate(instance: instance)
+  }
+
+  if let metaSchemaID = DRAFT_06_META_SCHEMA["$id"] as? String, reference == metaSchemaID {
+    return Draft6Validator(schema: DRAFT_06_META_SCHEMA).validate(instance: instance)
+  }
+
+  if let metaSchemaID = DRAFT_07_META_SCHEMA["$id"] as? String, reference == metaSchemaID {
+    return Draft7Validator(schema: DRAFT_07_META_SCHEMA).validate(instance: instance)
+  }
+
+  guard let document = validator.resolve(ref: reference) else {
+    return .invalid(["Reference not found '\(reference)'"])
+  }
+
+  return validator.descend(instance: instance, subschema: document)
 }
 
 func type(validator: Validator, type: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
