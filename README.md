@@ -1,10 +1,13 @@
 # JSON Schema
 
 An implementation of [JSON Schema](http://json-schema.org/) in Swift.
+Supporting JSON Schema Draft 4, 6 and 7.
+
+JSONSchema.swift does not support remote referencing [#9](https://github.com/kylef/JSONSchema.swift/issues/9).
 
 ## Installation
 
-[CocoaPods](http://cocoapods.org/) is the recommended installation method.
+JSONSchema can be installed via [CocoaPods](http://cocoapods.org/).
 
 ```ruby
 pod 'JSONSchema'
@@ -15,16 +18,14 @@ pod 'JSONSchema'
 ```swift
 import JSONSchema
 
-let schema = Schema([
-    "type": "object",
-    "properties": [
-        "name": ["type": "string"],
-        "price": ["type": "number"],
-    ],
-    "required": ["name"],
+JSONSchema.validate(["name": "Eggs", "price": 34.99], schema: [
+  "type": "object",
+  "properties": [
+    "name": ["type": "string"],
+    "price": ["type": "number"],
+  ],
+  "required": ["name"],
 ])
-
-schema.validate(["name": "Eggs", "price": 34.99])
 ```
 
 ### Error handling
@@ -33,12 +34,9 @@ Validate returns an enumeration `ValidationResult` which contains all
 validation errors.
 
 ```python
-print(schema.validate(["price": 34.99]).errors)
+print(validate(["price": 34.99], schema: ["required": ["name"]]).errors)
 >>> "Required property 'name' is missing."
 ```
-
-JSONSchema has full support for the draft4 of the specification. It does not
-yet support remote referencing [#9](https://github.com/kylef/JSONSchema.swift/issues/9).
 
 ## License
 
