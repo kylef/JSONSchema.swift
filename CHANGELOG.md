@@ -1,6 +1,6 @@
 # JSONSchema Changelog
 
-## Master
+## 0.5.0
 
 ### Breaking Changes
 
@@ -9,9 +9,9 @@
 
 ### Enhancements
 
-- `uri` format is now validated.
-- Support for Swift 4 and 5.
 - Added support for JSON Schema Draft 6 and 7.
+- Support for Swift 4 and 5.
+- `uri` format is now validated.
 
 ### Bug Fixes
 

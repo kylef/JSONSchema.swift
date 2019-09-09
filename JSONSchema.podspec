@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
   spec.name = 'JSONSchema'
-  spec.version = '0.4.0'
+  spec.version = '0.5.0'
   spec.summary = 'JSON Schema validator in Swift.'
   spec.homepage = 'https://github.com/kylef/JSONSchema.swift'
   spec.license = { :type => 'BSD', :file => 'LICENSE' }
@@ -11,6 +11,6 @@ Pod::Spec.new do |spec|
   spec.osx.deployment_target = '10.9'
   spec.requires_arc = true
   spec.source_files = 'Sources/*.swift'
-  spec.swift_versions = ['4.2', '5.0']
+  spec.swift_versions = ['4.2', '5.0', '5.1']
 end
 
