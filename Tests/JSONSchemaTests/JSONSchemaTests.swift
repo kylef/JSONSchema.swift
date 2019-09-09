@@ -50,3 +50,51 @@ class JSONSchemaTests: XCTestCase {
     XCTAssertFalse(schema.validate(["price": 34.99]).valid)
   }
 }
+
+
+class ValidateTests: XCTestCase {
+  func testValidateDraft4() {
+    let schema: [String: Any]  = [
+      "$schema": "http://json-schema.org/draft-04/schema#",
+      "type": "object",
+      "properties": [
+        "name": ["type": "string"],
+        "price": ["type": "number"],
+      ],
+      "required": ["name"],
+    ]
+
+    XCTAssertTrue(validate(["name": "Eggs", "price": 34.99], schema: schema).valid)
+    XCTAssertFalse(validate(["price": 34.99], schema: schema).valid)
+  }
+
+  func testValidateDraft6() {
+    let schema: [String: Any]  = [
+      "$schema": "http://json-schema.org/draft-06/schema#",
+      "type": "object",
+      "properties": [
+        "name": ["type": "string"],
+        "price": ["type": "number"],
+      ],
+      "required": ["name"],
+    ]
+
+    XCTAssertTrue(validate(["name": "Eggs", "price": 34.99], schema: schema).valid)
+    XCTAssertFalse(validate(["price": 34.99], schema: schema).valid)
+  }
+
+  func testValidateDraft7() {
+    let schema: [String: Any]  = [
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "properties": [
+        "name": ["type": "string"],
+        "price": ["type": "number"],
+      ],
+      "required": ["name"],
+    ]
+
+    XCTAssertTrue(validate(["name": "Eggs", "price": 34.99], schema: schema).valid)
+    XCTAssertFalse(validate(["price": 34.99], schema: schema).valid)
+  }
+}

@@ -52,7 +52,7 @@ public struct Schema {
   }
 
   public func validate(_ data: Any) -> ValidationResult {
-    let validator = Draft4Validator(schema: schema)
+    let validator = JSONSchema.validator(for: schema)
     return validator.validate(instance: data)
   }
 }
@@ -67,9 +67,29 @@ func validatorCurry(_ validator: @escaping (Draft4Validator, Any, Any, [String: 
 }
 
 
+func validator(for schema: [String: Any]) -> Validator {
+  guard let schemaURI = schema["$schema"] as? String else {
+    return Draft4Validator(schema: schema)
+  }
+
+  if let id = Draft7Validator.metaSchema["$id"] as? String, schemaURI == id {
+    return Draft7Validator(schema: schema)
+  }
+
+  if let id = Draft6Validator.metaSchema["$id"] as? String, schemaURI == id {
+    return Draft6Validator(schema: schema)
+  }
+
+  if let id = Draft4Validator.metaSchema["$id"] as? String, schemaURI == id {
+    return Draft4Validator(schema: schema)
+  }
+
+  return Draft4Validator(schema: schema)
+}
+
+
 public func validate(_ value: Any, schema: [String: Any]) -> ValidationResult {
-  let validator = Draft4Validator(schema: schema)
-  return validator.validate(instance: value)
+  return validator(for: schema).validate(instance: value)
 }
 
 

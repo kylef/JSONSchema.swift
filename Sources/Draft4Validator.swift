@@ -2,7 +2,7 @@ import Foundation
 
 public class Draft4Validator: Validator {
   let schema: [String: Any]
-  let metaSchema: [String: Any] = DRAFT_04_META_SCHEMA
+  static let metaSchema: [String: Any] = DRAFT_04_META_SCHEMA
   let resolver: RefResolver
 
   typealias Validation = (Validator, Any, Any, [String: Any]) -> (ValidationResult)

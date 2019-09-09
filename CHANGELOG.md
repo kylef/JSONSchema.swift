@@ -11,6 +11,7 @@
 
 - `uri` format is now validated.
 - Support for Swift 4 and 5.
+- Added support for JSON Schema Draft 6 and 7.
 
 ### Bug Fixes
 
