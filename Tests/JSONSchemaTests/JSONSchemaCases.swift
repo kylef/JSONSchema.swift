@@ -101,8 +101,8 @@ class JSONSchemaCases: XCTestCase {
     ])
   }
 
-  func testJSONSchemaDraft2019_08() throws {
-    try test(name: "draft2019-08", validator: draft7Validator, excluding: [
+  func testJSONSchemaDraft2019_09() throws {
+    try test(name: "draft2019-09", validator: draft7Validator, excluding: [
       "defs.json",
       "ref.json",
       "refRemote.json",
