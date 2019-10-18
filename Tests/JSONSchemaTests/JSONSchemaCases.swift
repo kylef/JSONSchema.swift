@@ -50,6 +50,19 @@ func draft7Validator(schema: Any, instance: Any) -> ValidationResult {
 }
 
 
+func draft201909Validator(schema: Any, instance: Any) -> ValidationResult {
+  if let schema = schema as? Bool {
+    return Draft201909Validator(schema: schema).validate(instance: instance)
+  }
+
+  if let schema = schema as? [String: Any] {
+    return Draft201909Validator(schema: schema).validate(instance: instance)
+  }
+
+  fatalError()
+}
+
+
 class JSONSchemaCases: XCTestCase {
   func testJSONSchemaDraft4() throws {
     try test(name: "draft4", validator: draft4Validator, excluding: [
@@ -105,7 +118,7 @@ class JSONSchemaCases: XCTestCase {
   }
 
   func testJSONSchemaDraft2019_09() throws {
-    try test(name: "draft2019-09", validator: draft7Validator, excluding: [
+    try test(name: "draft2019-09", validator: draft201909Validator, excluding: [
       "defs.json",
       "ref.json",
       "refRemote.json",

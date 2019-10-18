@@ -62,6 +62,10 @@ extension Validator {
       return { Draft7Validator(schema: DRAFT_07_META_SCHEMA).descend(instance: $0, subschema: DRAFT_07_META_SCHEMA) }
     }
 
+    if reference == "https://json-schema.org/draft/2019-09/schema" {
+      return { Draft201909Validator(schema: DRAFT_2019_09_META_SCHEMA).descend(instance: $0, subschema: DRAFT_2019_09_META_SCHEMA) }
+    }
+
     if let reference = reference.stringByRemovingPrefix("#") {  // Document relative
       if let tmp = reference.stringByRemovingPrefix("/"), let reference = (tmp as NSString).removingPercentEncoding {
         var components = reference.components(separatedBy: "/")

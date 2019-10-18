@@ -73,6 +73,10 @@ func ref(validator: Validator, reference: Any, instance: Any, schema: [String: A
     return Draft7Validator(schema: DRAFT_07_META_SCHEMA).validate(instance: instance)
   }
 
+//  if let metaSchemaID = DRAFT_2019_09_META_SCHEMA["$id"] as? String, reference == metaSchemaID {
+//    return Draft201909Validator(schema: DRAFT_2019_09_META_SCHEMA).validate(instance: instance)
+//  }
+
   guard let document = validator.resolve(ref: reference) else {
     return .invalid(["Reference not found '\(reference)'"])
   }
