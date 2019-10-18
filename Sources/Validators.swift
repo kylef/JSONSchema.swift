@@ -109,48 +109,57 @@ func type(validator: Validator, type: Any, instance: Any, schema: [String: Any])
   return .invalid(["'\(instance)' is not of type \(types)"])
 }
 
+func isInteger(_ instance: Any) -> Bool {
+  guard let number = instance as? NSNumber else { return false }
+  return !CFNumberIsFloatType(number) && CFGetTypeID(number) != CFBooleanGetTypeID()
+}
+
+func isNumber(_ instance: Any) -> Bool {
+  guard let number = instance as? NSNumber else { return false }
+  return CFGetTypeID(number) != CFBooleanGetTypeID()
+}
+
+func isObject(_ instance: Any) -> Bool {
+  return instance is String
+}
+
+func isDictionary(_ instance: Any) -> Bool {
+  return instance is NSDictionary
+}
+
+func isArray(_ instance: Any) -> Bool {
+  return instance is NSArray
+}
+
+func isBoolean(_ instance: Any) -> Bool {
+  guard let number = instance as? NSNumber else { return false }
+  return CFGetTypeID(number) == CFBooleanGetTypeID()
+}
+
+func isNull(_ instance: Any) -> Bool {
+  return instance is NSNull
+}
+
 /// Validate the given value is of the given type
 func isType(_ type: String, _ instance: Any) -> Bool {
   switch type {
   case "integer":
-    if let number = instance as? NSNumber {
-      if !CFNumberIsFloatType(number) && CFGetTypeID(number) != CFBooleanGetTypeID() {
-        return true
-      }
-    }
+    return isInteger(instance)
   case "number":
-    if let number = instance as? NSNumber {
-      if CFGetTypeID(number) != CFBooleanGetTypeID() {
-        return true
-      }
-    }
+    return isNumber(instance)
   case "string":
-    if instance is String {
-      return true
-    }
+    return isObject(instance)
   case "object":
-    if instance is NSDictionary {
-      return true
-    }
+    return isDictionary(instance)
   case "array":
-    if instance is NSArray {
-      return true
-    }
+    return isArray(instance)
   case "boolean":
-    if let number = instance as? NSNumber {
-      if CFGetTypeID(number) == CFBooleanGetTypeID() {
-        return true
-      }
-    }
+    return isBoolean(instance)
   case "null":
-    if instance is NSNull {
-      return true
-    }
+    return isNull(instance)
   default:
-    break
+    return false
   }
-
-  return false
 }
 
 func anyOf(validator: Validator, anyOf: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
