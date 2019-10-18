@@ -58,6 +58,7 @@ class JSONSchemaCases: XCTestCase {
 
       // optional
       "bignum.json",
+      "ecmascript-regex.json",
     ])
   }
 
@@ -70,6 +71,7 @@ class JSONSchemaCases: XCTestCase {
       "bignum.json",
       "format.json",
       "zeroTerminatedFloats.json",
+      "ecmascript-regex.json",
     ])
   }
 
@@ -82,6 +84,7 @@ class JSONSchemaCases: XCTestCase {
       "bignum.json",
       "content.json",
       "zeroTerminatedFloats.json",
+      "ecmascript-regex.json",
 
       // optional, format
       "date-time.json",
@@ -106,12 +109,14 @@ class JSONSchemaCases: XCTestCase {
       "defs.json",
       "ref.json",
       "refRemote.json",
+      "anchor.json",
 
       // optional
       "bignum.json",
       "content.json",
       "ecmascript-regex.json",
       "zeroTerminatedFloats.json",
+      "ecmascript-regex.json",
 
       // optional, format
       "date-time.json",
