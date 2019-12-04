@@ -1,6 +1,6 @@
 import Foundation
 import XCTest
-import JSONSchema
+@testable import JSONSchema
 
 
 class JSONSchemaTests: XCTestCase {
@@ -81,6 +81,11 @@ class ValidateTests: XCTestCase {
 
     XCTAssertTrue(validate(["name": "Eggs", "price": 34.99], schema: schema).valid)
     XCTAssertFalse(validate(["price": 34.99], schema: schema).valid)
+  }
+
+  func testDraft6ValidatorIsAvailable() {
+    let result = validator(for: ["$schema": "http://json-schema.org/draft-06/schema#"])
+    XCTAssertTrue(result is Draft6Validator, "Unexpected type of validator \(result)")
   }
 
   func testValidateDraft7() {
