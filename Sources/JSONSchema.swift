@@ -72,15 +72,15 @@ func validator(for schema: [String: Any]) -> Validator {
     return Draft4Validator(schema: schema)
   }
 
-  if let id = Draft7Validator.metaSchema["$id"] as? String, schemaURI == id {
+  if let id = DRAFT_07_META_SCHEMA["$id"] as? String, schemaURI == id {
     return Draft7Validator(schema: schema)
   }
 
-  if let id = Draft6Validator.metaSchema["$id"] as? String, schemaURI == id {
+  if let id = DRAFT_06_META_SCHEMA["$id"] as? String, schemaURI == id {
     return Draft6Validator(schema: schema)
   }
 
-  if let id = Draft4Validator.metaSchema["$id"] as? String, schemaURI == id {
+  if let id = DRAFT_04_META_SCHEMA["$id"] as? String, schemaURI == id {
     return Draft4Validator(schema: schema)
   }
 
