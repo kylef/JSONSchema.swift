@@ -98,7 +98,7 @@ let DRAFT_2019_09_META_SCHEMA: [String: Any] = {
               "default": {}
           },
           "dependencies": {
-              "$comment": "\"dependencies\" is no longer a keyword, but schema authors should avoid redefining it to facilitate a smooth transition to \"dependentSchemas\" and \"dependentRequired\"",
+              "$comment": "\\"dependencies\\" is no longer a keyword, but schema authors should avoid redefining it to facilitate a smooth transition to \\"dependentSchemas\\" and \\"dependentRequired\\"",
               "type": "object",
               "additionalProperties": {
                   "anyOf": [
