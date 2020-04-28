@@ -21,6 +21,7 @@ public class Draft201909Validator: Validator {
     "const": const,
     "format": format,
     "dependencies": dependencies,
+    "dependentSchemas": dependentSchemas,
     "allOf": allOf,
     "oneOf": oneOf,
     "anyOf": anyOf,

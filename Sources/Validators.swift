@@ -560,6 +560,23 @@ func dependentRequired(validator: Validator, dependentRequired: Any, instance: A
   }))
 }
 
+func dependentSchemas(validator: Validator, dependentRequired: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+  guard let instance = instance as? [String: Any] else {
+    return .valid
+  }
+
+  guard let dependentRequired = dependentRequired as? [String: Any] else {
+    return .valid
+  }
+
+  return flatten(dependentRequired.compactMap({ (key, subschema) -> ValidationResult? in
+    if instance.keys.contains(key) {
+      return validator.descend(instance: instance, subschema: subschema)
+    }
+
+    return nil
+  }))
+}
 
 func propertyNames(validator: Validator, propertyNames: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
   guard let instance = instance as? [String: Any] else {

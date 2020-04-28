@@ -123,7 +123,6 @@ class JSONSchemaCases: XCTestCase {
       "ref.json",
       "refRemote.json",
       "anchor.json",
-      "dependentSchemas.json",
       "unevaluatedProperties.json",
       "unevaluatedItems.json",
 
