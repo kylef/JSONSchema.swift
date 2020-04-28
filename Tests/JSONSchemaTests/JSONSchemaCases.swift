@@ -123,6 +123,10 @@ class JSONSchemaCases: XCTestCase {
       "ref.json",
       "refRemote.json",
       "anchor.json",
+      "dependentRequired.json",
+      "dependentSchemas.json",
+      "unevaluatedProperties.json",
+      "unevaluatedItems.json",
 
       // optional
       "bignum.json",
@@ -134,6 +138,7 @@ class JSONSchemaCases: XCTestCase {
       // optional, format
       "date-time.json",
       "date.json",
+      "duration.json",
       "email.json",
       "hostname.json",
       "idn-email.json",
