@@ -542,6 +542,25 @@ func required(validator: Validator, required: Any, instance: Any, schema: [Strin
   return .invalid(["Required properties are missing '\(required)'"])
 }
 
+func dependentRequired(validator: Validator, dependentRequired: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+  guard let instance = instance as? [String: Any] else {
+    return .valid
+  }
+
+  guard let dependentRequired = dependentRequired as? [String: [String]] else {
+    return .valid
+  }
+
+  return flatten(dependentRequired.compactMap({ (key, required) -> ValidationResult? in
+    if instance.keys.contains(key) {
+      return JSONSchema.required(validator: validator, required: required, instance: instance, schema: schema)
+    }
+
+    return nil
+  }))
+}
+
+
 func propertyNames(validator: Validator, propertyNames: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
   guard let instance = instance as? [String: Any] else {
     return .valid

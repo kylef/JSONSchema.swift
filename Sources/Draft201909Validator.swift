@@ -10,6 +10,7 @@ public class Draft201909Validator: Validator {
     "$ref": ref,
     "type": type,
     "required": required,
+    "dependentRequired": dependentRequired,
     "propertyNames": propertyNames,
     "not": not,
     "pattern": pattern,
