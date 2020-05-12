@@ -57,6 +57,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		1D3336DB246B52730066F1D2 /* Package.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Package.swift; sourceTree = "<group>"; };
 		27B640C61AAB0EDC005C8641 /* JSONSchema.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = JSONSchema.swift; sourceTree = "<group>"; };
 		27B640C91AAB1080005C8641 /* UniversalFramework_Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = UniversalFramework_Base.xcconfig; sourceTree = "<group>"; };
 		27B640CA1AAB1080005C8641 /* UniversalFramework_Framework.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = UniversalFramework_Framework.xcconfig; sourceTree = "<group>"; };
@@ -198,6 +199,7 @@
 		27CF7EDF1A9B9EDA0063FDE4 = {
 			isa = PBXGroup;
 			children = (
+				1D3336DB246B52730066F1D2 /* Package.swift */,
 				27B640C81AAB1080005C8641 /* Configurations */,
 				27CF7EEB1A9B9EDA0063FDE4 /* JSONSchema */,
 				27CF7EF81A9B9EDA0063FDE4 /* Tests */,
