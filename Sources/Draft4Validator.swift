@@ -10,7 +10,7 @@ public class Draft4Validator: Validator {
     "$ref": createSequence(validation: ref),
     "type": createSequence(validation: type),
     "required": createSequence(validation: required),
-    "propertyNames": propertyNames,
+    "propertyNames": createSequence(validation: propertyNames),
     "not": not,
     "pattern": pattern,
     "multipleOf": multipleOf,

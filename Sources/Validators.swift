@@ -590,12 +590,12 @@ func dependentSchemas(validator: Validator, dependentRequired: Any, instance: An
   }))
 }
 
-func propertyNames(validator: Validator, propertyNames: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func propertyNames(validator: Validator, propertyNames: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let instance = instance as? [String: Any] else {
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 
-  return flatten(instance.keys.map { validator.descend(instance: $0, subschema: propertyNames).validationResult() })
+  return flatten(instance.keys.map { validator.descend(instance: $0, subschema: propertyNames) })
 }
 
 func properties(validator: Validator, properties: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {

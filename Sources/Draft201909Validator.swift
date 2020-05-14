@@ -11,7 +11,7 @@ public class Draft201909Validator: Validator {
     "type": createSequence(validation: type),
     "required": createSequence(validation: required),
     "dependentRequired": dependentRequired,
-    "propertyNames": propertyNames,
+    "propertyNames": createSequence(validation: propertyNames),
     "not": not,
     "pattern": pattern,
     "multipleOf": multipleOf,
