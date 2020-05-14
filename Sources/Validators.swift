@@ -25,13 +25,8 @@ public enum ValidationResult {
 }
 
 func flatten(_ results: [AnySequence<ValidationError>]) -> AnySequence<ValidationError> {
-  let results = results.map { $0.validationResult() }
   let errors = results.reduce([String]()) { (accumulator, failure) in
-    if let errors = failure.errors {
-      return accumulator + errors
-    }
-
-    return accumulator
+    return accumulator + Array(failure)
   }
 
   return AnySequence(errors)
@@ -162,7 +157,7 @@ func anyOf(validator: Validator, anyOf: Any, instance: Any, schema: [String: Any
     return AnySequence(EmptyCollection())
   }
 
-  if !anyOf.contains(where: { validator.descend(instance: instance, subschema: $0).validationResult().valid }) {
+  if !anyOf.contains(where: { validator.descend(instance: instance, subschema: $0).isValid }) {
     return AnySequence(["\(instance) does not meet anyOf validation rules."])
   }
 
@@ -174,7 +169,7 @@ func oneOf(validator: Validator, oneOf: Any, instance: Any, schema: [String: Any
     return AnySequence(EmptyCollection())
   }
 
-  if oneOf.filter({ validator.descend(instance: instance, subschema: $0).validationResult().valid }).count != 1 {
+  if oneOf.filter({ validator.descend(instance: instance, subschema: $0).isValid }).count != 1 {
     return AnySequence(["Only one value from `oneOf` should be met"])
   }
 
@@ -190,7 +185,7 @@ func not(validator: Validator, not: Any, instance: Any, schema: [String: Any]) -
 }
 
 func `if`(validator: Validator, `if`: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
-  if validator.validate(instance: instance, schema: `if`).validationResult().valid {
+  if validator.validate(instance: instance, schema: `if`).isValid {
     if let then = schema["then"] {
       return validator.descend(instance: instance, subschema: then)
     }
@@ -481,7 +476,7 @@ func contains(validator: Validator, contains: Any, instance: Any, schema: [Strin
     return AnySequence(EmptyCollection())
   }
 
-  if !instance.contains(where: { validator.descend(instance: $0, subschema: contains).validationResult().valid }) {
+  if !instance.contains(where: { validator.descend(instance: $0, subschema: contains).isValid }) {
     return AnySequence(["\(instance) does not match contains"])
   }
 
@@ -768,5 +763,9 @@ extension Sequence where Iterator.Element == ValidationError {
     }
 
     return .invalid(errors)
+  }
+
+  var isValid: Bool {
+    return Array(self).isEmpty
   }
 }
