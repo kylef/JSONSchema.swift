@@ -58,15 +58,6 @@ public struct Schema {
 }
 
 
-func validatorCurry(_ validator: @escaping (Draft4Validator, Any, Any, [String: Any]) -> ValidationResult) -> ((_ validator: Draft4Validator, _ value: Any, _ schema: [String: Any]) -> ((_ instance: Any) -> ValidationResult)) {
-  return { (v, value, schema) in
-    return { instance in
-      return validator(v, value, instance, schema)
-    }
-  }
-}
-
-
 func validator(for schema: [String: Any]) -> Validator {
   guard let schemaURI = schema["$schema"] as? String else {
     return Draft4Validator(schema: schema)
