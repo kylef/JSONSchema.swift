@@ -24,14 +24,6 @@ public enum ValidationResult {
   }
 }
 
-func flatten(_ results: [AnySequence<ValidationError>]) -> AnySequence<ValidationError> {
-  let errors = results.reduce([String]()) { (accumulator, failure) in
-    return accumulator + Array(failure)
-  }
-
-  return AnySequence(errors)
-}
-
 /// Creates a Validator which always returns an valid result
 func validValidation(_ value: Any) -> AnySequence<ValidationError> {
   return AnySequence(EmptyCollection())
@@ -177,7 +169,7 @@ func oneOf(validator: Validator, oneOf: Any, instance: Any, schema: [String: Any
 }
 
 func not(validator: Validator, not: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
-  guard validator.descend(instance: instance, subschema: not).first(where: { _ in true }) == nil else {
+  guard validator.descend(instance: instance, subschema: not).isValid else {
     return AnySequence(EmptyCollection())
   }
 
@@ -201,7 +193,7 @@ func allOf(validator: Validator, allOf: Any, instance: Any, schema: [String: Any
     return AnySequence(EmptyCollection())
   }
 
-  return flatten(allOf.map({ validator.descend(instance: instance, subschema: $0) }))
+  return AnySequence(allOf.lazy.map({ validator.descend(instance: instance, subschema: $0) }).joined())
 }
 
 func isEqual(_ lhs: NSObject, _ rhs: NSObject) -> Bool {
@@ -377,11 +369,11 @@ func items(validator: Validator, items: Any, instance: Any, schema: [String: Any
   }
 
   if let items = items as? [String: Any] {
-    return AnySequence(flatten(instance.map { validator.descend(instance: $0, subschema: items) }))
+    return AnySequence(instance.map { validator.descend(instance: $0, subschema: items) }.joined())
   }
 
   if let items = items as? Bool {
-    return AnySequence(flatten(instance.map { validator.descend(instance: $0, subschema: items) }))
+    return AnySequence(instance.map { validator.descend(instance: $0, subschema: items) }.joined())
   }
 
   if let items = items as? [Any] {
@@ -391,7 +383,7 @@ func items(validator: Validator, items: Any, instance: Any, schema: [String: Any
       results.append(validator.descend(instance: item, subschema: items[index]))
     }
 
-    return AnySequence(flatten(results))
+    return AnySequence(results.joined())
   }
 
   return AnySequence(EmptyCollection())
@@ -403,7 +395,7 @@ func additionalItems(validator: Validator, additionalItems: Any, instance: Any, 
   }
 
   if let additionalItems = additionalItems as? [String: Any] {
-    return flatten(instance[items.count...].map { validator.descend(instance: $0, subschema: additionalItems) })
+    return AnySequence(instance[items.count...].map { validator.descend(instance: $0, subschema: additionalItems) }.joined())
   }
 
   if let additionalItems = additionalItems as? Bool, !additionalItems {
@@ -538,13 +530,13 @@ func dependentRequired(validator: Validator, dependentRequired: Any, instance: A
     return AnySequence(EmptyCollection())
   }
 
-  return flatten(dependentRequired.compactMap({ (key, required) -> AnySequence<ValidationError> in
+  return AnySequence(dependentRequired.compactMap({ (key, required) -> AnySequence<ValidationError> in
     if instance.keys.contains(key) {
       return JSONSchema.required(validator: validator, required: required, instance: instance, schema: schema)
     }
 
     return AnySequence(EmptyCollection())
-  }))
+  }).joined())
 }
 
 func dependentSchemas(validator: Validator, dependentRequired: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
@@ -556,13 +548,13 @@ func dependentSchemas(validator: Validator, dependentRequired: Any, instance: An
     return AnySequence(EmptyCollection())
   }
 
-  return flatten(dependentRequired.compactMap({ (key, subschema) -> AnySequence<ValidationError> in
+  return AnySequence(dependentRequired.compactMap({ (key, subschema) -> AnySequence<ValidationError> in
     if instance.keys.contains(key) {
       return validator.descend(instance: instance, subschema: subschema)
     }
 
     return AnySequence(EmptyCollection())
-  }))
+  }).joined())
 }
 
 func propertyNames(validator: Validator, propertyNames: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
@@ -570,7 +562,7 @@ func propertyNames(validator: Validator, propertyNames: Any, instance: Any, sche
     return AnySequence(EmptyCollection())
   }
 
-  return flatten(instance.keys.map { validator.descend(instance: $0, subschema: propertyNames) })
+  return AnySequence(instance.keys.map { validator.descend(instance: $0, subschema: propertyNames) }.joined())
 }
 
 func properties(validator: Validator, properties: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
@@ -582,13 +574,13 @@ func properties(validator: Validator, properties: Any, instance: Any, schema: [S
     return AnySequence(EmptyCollection())
   }
 
-  return flatten(instance.map({ (key, value) in
+  return AnySequence(instance.map { (key, value) -> AnySequence<ValidationError> in
     if let schema = properties[key] {
       return validator.descend(instance: value, subschema: schema)
     }
 
     return AnySequence(EmptyCollection())
-  }))
+  }.joined())
 }
 
 func patternProperties(validator: Validator, patternProperties: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
@@ -617,7 +609,7 @@ func patternProperties(validator: Validator, patternProperties: Any, instance: A
     }
   }
 
-  return flatten(results)
+  return AnySequence(results.joined())
 }
 
 func findAdditionalProperties(instance: [String: Any], schema: [String: Any]) -> Set<String> {
@@ -651,7 +643,7 @@ func additionalProperties(validator: Validator, additionalProperties: Any, insta
   let extras = findAdditionalProperties(instance: instance, schema: schema)
 
   if let additionalProperties = additionalProperties as? [String: Any] {
-    return flatten(extras.map { validator.descend(instance: instance[$0]!, subschema: additionalProperties) })
+    return AnySequence(extras.map { validator.descend(instance: instance[$0]!, subschema: additionalProperties) }.joined())
   }
 
   if let additionalProperties = additionalProperties as? Bool, !additionalProperties && !extras.isEmpty {
@@ -684,7 +676,7 @@ func dependencies(validator: Validator, dependencies: Any, instance: Any, schema
     }
   }
 
-  return flatten(results)
+  return AnySequence(results.joined())
 }
 
 // MARK: Format
@@ -766,6 +758,6 @@ extension Sequence where Iterator.Element == ValidationError {
   }
 
   var isValid: Bool {
-    return Array(self).isEmpty
+    return self.first(where: { _ in true }) == nil
   }
 }

@@ -37,13 +37,13 @@ extension Validator {
       return validation(self, ref, instance, schema)
     }
 
-    return flatten(validations.compactMap { (key, validation) -> AnySequence<ValidationError> in
+    return AnySequence(validations.compactMap { (key, validation) -> AnySequence<ValidationError> in
       if let value = schema[key] {
         return validation(self, value, instance, schema)
       }
 
       return AnySequence(EmptyCollection())
-    })
+    }.joined())
   }
 
   func resolve(ref: String) -> Any? {
