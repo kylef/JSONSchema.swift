@@ -1,6 +1,6 @@
 import Foundation
 
-
+typealias ValidationError = String
 public enum ValidationResult {
   case valid
   case invalid([String])
@@ -526,23 +526,23 @@ func maxProperties(validator: Validator, maxProperties: Any, instance: Any, sche
   return validatePropertiesLength(maxProperties, comparitor: >=, error: "Amount of properties is greater than maximum permitted")(instance)
 }
 
-func required(validator: Validator, required: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func requiredSequence(validator: Validator, required: Any, instance: Any, schema: [String: Any]) -> AnySequence<String> {
   guard let instance = instance as? [String: Any] else {
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 
   guard let required = required as? [String] else {
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 
-  let errors = required
-    .filter { key in !instance.keys.contains(key) }
-    .map { "Required property '\($0)' is missing" }
-  guard !errors.isEmpty else {
-    return .valid
-  }
+  return AnySequence(required.lazy.compactMap { key -> String? in
+    guard !instance.keys.contains(key) else { return nil }
+    return "Required property '\(key)' is missing"
+  })
+}
 
-  return .invalid(errors)
+func required(validator: Validator, required: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+  return requiredSequence(validator: validator, required: required, instance: instance, schema: schema).validationResult()
 }
 
 func dependentRequired(validator: Validator, dependentRequired: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
@@ -768,4 +768,16 @@ func validateURI(_ value: Any) -> ValidationResult {
   }
 
   return .valid
+}
+
+
+extension Sequence where Iterator.Element == ValidationError {
+  func validationResult() -> ValidationResult {
+    let errors = Array(self)
+    if errors.isEmpty {
+      return .valid
+    }
+
+    return .invalid(errors)
+  }
 }
