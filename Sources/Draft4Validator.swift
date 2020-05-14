@@ -18,7 +18,7 @@ public class Draft4Validator: Validator {
     "uniqueItems": uniqueItems,
     "enum": `enum`,
     "const": const,
-    "format": format,
+    "format": createSequence(validation: format),
     "dependencies": dependencies,
     "allOf": allOf,
     "oneOf": oneOf,
@@ -39,7 +39,7 @@ public class Draft4Validator: Validator {
     "if": createSequence(validation: `if`),
   ]
 
-  let formats: [String: (String) -> (ValidationResult)] = [
+  let formats: [String: (String) -> (AnySequence<ValidationError>)] = [
     "ipv4": validateIPv4,
     "ipv6": validateIPv6,
     "uri": validateURI,

@@ -8,7 +8,7 @@ protocol Validator {
 
   var schema: [String: Any] { get }
   var validations: [String: Validation] { get }
-  var formats: [String: (String) -> (ValidationResult)] { get }
+  var formats: [String: (String) -> (AnySequence<ValidationError>)] { get }
 }
 
 func createSequence(validation: @escaping Validator.SequenceValidation) -> Validator.Validation {

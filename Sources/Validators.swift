@@ -701,52 +701,52 @@ func dependencies(validator: Validator, dependencies: Any, instance: Any, schema
 
 // MARK: Format
 
-func format(validator: Validator, format: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func format(validator: Validator, format: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let format = format as? String else {
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 
   guard let instance = instance as? String else {
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 
   guard let validator = validator.formats[format] else {
-    return invalidValidation("'format' validation of '\(format)' is not yet supported.")(instance).validationResult()
+    return invalidValidation("'format' validation of '\(format)' is not yet supported.")(instance)
   }
 
   return validator(instance)
 }
 
-func validateIPv4(_ value: Any) -> ValidationResult {
+func validateIPv4(_ value: Any) -> AnySequence<ValidationError> {
   if let ipv4 = value as? String {
     if let expression = try? NSRegularExpression(pattern: "^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", options: NSRegularExpression.Options(rawValue: 0)) {
       if expression.matches(in: ipv4, options: NSRegularExpression.MatchingOptions(rawValue: 0), range: NSMakeRange(0, ipv4.count)).count == 1 {
-        return .valid
+        return AnySequence(EmptyCollection())
       }
     }
 
-    return .invalid(["'\(ipv4)' is not valid IPv4 address."])
+    return AnySequence(["'\(ipv4)' is not valid IPv4 address."])
   }
 
-  return .valid
+  return AnySequence(EmptyCollection())
 }
 
 
-func validateIPv6(_ value: Any) -> ValidationResult {
+func validateIPv6(_ value: Any) -> AnySequence<ValidationError> {
   if let ipv6 = value as? String {
     var buf = UnsafeMutablePointer<Int8>.allocate(capacity: Int(INET6_ADDRSTRLEN))
     if inet_pton(AF_INET6, ipv6, &buf) == 1 {
-      return .valid
+      return AnySequence(EmptyCollection())
     }
 
-    return .invalid(["'\(ipv6)' is not valid IPv6 address."])
+    return AnySequence(["'\(ipv6)' is not valid IPv6 address."])
   }
 
-  return .valid
+  return AnySequence(EmptyCollection())
 }
 
 
-func validateURI(_ value: Any) -> ValidationResult {
+func validateURI(_ value: Any) -> AnySequence<ValidationError> {
   if let uri = value as? String {
     // Using the regex from http://blog.dieweltistgarnichtso.net/constructing-a-regular-expression-that-matches-uris
 
@@ -755,15 +755,15 @@ func validateURI(_ value: Any) -> ValidationResult {
       if result.count == 1 {
         let foundRange = result[0].range
         if foundRange.location == 0 && foundRange.length == uri.count {
-          return .valid
+          return AnySequence(EmptyCollection())
         }
       }
     }
 
-    return .invalid(["'\(uri)' is not a valid URI."])
+    return AnySequence(["'\(uri)' is not a valid URI."])
   }
 
-  return .valid
+  return AnySequence(EmptyCollection())
 }
 
 
