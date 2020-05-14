@@ -7,7 +7,7 @@ public class Draft4Validator: Validator {
 
   typealias Validation = (Validator, Any, Any, [String: Any]) -> (ValidationResult)
   let validations: [String: Validation] = [
-    "$ref": ref,
+    "$ref": createSequence(validation: ref),
     "type": type,
     "required": createSequence(validation: required),
     "propertyNames": propertyNames,

@@ -69,9 +69,9 @@ func invalidValidation(_ error: String) -> (_ value: Any) -> AnySequence<Validat
 
 // MARK: Shared
 
-func ref(validator: Validator, reference: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func ref(validator: Validator, reference: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let reference = reference as? String else {
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 
   if let metaSchemaID = DRAFT_04_META_SCHEMA["id"] as? String, reference == metaSchemaID {
@@ -91,10 +91,10 @@ func ref(validator: Validator, reference: Any, instance: Any, schema: [String: A
 //  }
 
   guard let document = validator.resolve(ref: reference) else {
-    return .invalid(["Reference not found '\(reference)'"])
+    return AnySequence(["Reference not found '\(reference)'"])
   }
 
-  return validator.descend(instance: instance, subschema: document).validationResult()
+  return validator.descend(instance: instance, subschema: document)
 }
 
 func type(validator: Validator, type: Any, instance: Any, schema: [String: Any]) -> ValidationResult {

@@ -22,6 +22,10 @@ extension Validator {
     return validate(instance: instance, schema: schema).validationResult()
   }
 
+  public func validate(instance: Any) -> AnySequence<ValidationError> {
+    return validate(instance: instance, schema: schema)
+  }
+
   func validate(instance: Any, schema: Any) -> AnySequence<ValidationError> {
     if let schema = schema as? Bool {
       if schema == true {
