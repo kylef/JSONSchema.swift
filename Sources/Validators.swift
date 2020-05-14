@@ -535,11 +535,14 @@ func required(validator: Validator, required: Any, instance: Any, schema: [Strin
     return .valid
   }
 
-  if (required.filter { key in !instance.keys.contains(key) }.count == 0) {
+  let errors = required
+    .filter { key in !instance.keys.contains(key) }
+    .map { "Required property '\($0)' is missing" }
+  guard !errors.isEmpty else {
     return .valid
   }
 
-  return .invalid(["Required properties are missing '\(required)'"])
+  return .invalid(errors)
 }
 
 func dependentRequired(validator: Validator, dependentRequired: Any, instance: Any, schema: [String: Any]) -> ValidationResult {

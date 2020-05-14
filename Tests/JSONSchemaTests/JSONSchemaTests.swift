@@ -102,4 +102,22 @@ class ValidateTests: XCTestCase {
     XCTAssertTrue(validate(["name": "Eggs", "price": 34.99], schema: schema).valid)
     XCTAssertFalse(validate(["price": 34.99], schema: schema).valid)
   }
+
+  func testValidatesRequired() {
+    let schema: [String: Any]  = [
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "required": ["one", "two", "three"],
+    ]
+
+    let result = validate(["one": true, "three": true], schema: schema)
+
+    switch result {
+    case .valid:
+      XCTFail("Validation should fail")
+    case .invalid(let errors):
+      XCTAssertEqual(errors, [
+        "Required property 'two' is missing",
+      ])
+    }
+  }
 }
