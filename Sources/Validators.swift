@@ -199,14 +199,12 @@ func oneOf(validator: Validator, oneOf: Any, instance: Any, schema: [String: Any
   return AnySequence(EmptyCollection())
 }
 
-func not(validator: Validator, not: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
-  let result = validator.descend(instance: instance, subschema: not)
-
-  if result.validationResult().valid {
-    return .invalid(["'\(instance)' does not match 'not' validation."])
+func not(validator: Validator, not: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
+  guard validator.descend(instance: instance, subschema: not).first(where: { _ in true }) == nil else {
+    return AnySequence(EmptyCollection())
   }
 
-  return .valid
+  return AnySequence(["'\(instance)' does not match 'not' validation."])
 }
 
 func `if`(validator: Validator, `if`: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {

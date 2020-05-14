@@ -7,7 +7,6 @@ public class Draft7Validator: Validator {
 
   typealias Validation = (Validator, Any, Any, [String: Any]) -> (ValidationResult)
   let validations: [String: Validation] = [
-    "not": not,
     "pattern": pattern,
     "multipleOf": multipleOf,
     "contains": contains,
@@ -33,6 +32,7 @@ public class Draft7Validator: Validator {
 
   let sequenceValidations: [String: SequenceValidation] = [
     "$ref": ref,
+    "not": not,
     "allOf": allOf,
     "oneOf": oneOf,
     "anyOf": anyOf,
