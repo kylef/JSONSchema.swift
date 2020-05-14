@@ -3,7 +3,7 @@ import Foundation
 public typealias ValidationError = String
 public enum ValidationResult {
   case valid
-  case invalid([String])
+  case invalid([ValidationError])
 
   public var valid: Bool {
     switch self {
@@ -14,7 +14,7 @@ public enum ValidationResult {
     }
   }
 
-  public var errors: [String]? {
+  public var errors: [ValidationError]? {
     switch self {
     case .valid:
       return nil
