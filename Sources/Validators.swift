@@ -24,24 +24,6 @@ public enum ValidationResult {
   }
 }
 
-/// Flatten an array of results into a single result (combining all errors)
-func flatten(_ results: [ValidationResult]) -> ValidationResult {
-  let failures = results.filter { result in !result.valid }
-  if failures.count > 0 {
-    let errors = failures.reduce([String]()) { (accumulator, failure) in
-      if let errors = failure.errors {
-        return accumulator + errors
-      }
-
-      return accumulator
-    }
-
-    return .invalid(errors)
-  }
-
-  return .valid
-}
-
 func flatten(_ results: [AnySequence<ValidationError>]) -> AnySequence<ValidationError> {
   let results = results.map { $0.validationResult() }
   let errors = results.reduce([String]()) { (accumulator, failure) in
@@ -235,158 +217,158 @@ func isEqual(_ lhs: NSObject, _ rhs: NSObject) -> Bool {
   return lhs == rhs
 }
 
-func `enum`(validator: Validator, enum: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func `enum`(validator: Validator, enum: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let `enum` = `enum` as? [Any] else {
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 
   let instance = instance as! NSObject
   if (`enum` as! [NSObject]).contains(where: { isEqual(instance, $0) }) {
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 
-  return .invalid(["'\(instance)' is not a valid enumeration value of '\(`enum`)'"])
+  return AnySequence(["'\(instance)' is not a valid enumeration value of '\(`enum`)'"])
 }
 
-func const(validator: Validator, const: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func const(validator: Validator, const: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   if isEqual(instance as! NSObject, const as! NSObject) {
-     return .valid
+     return AnySequence(EmptyCollection())
   }
 
-  return .invalid(["'\(instance)' is not equal to const '\(const)'"])
+  return AnySequence(["'\(instance)' is not equal to const '\(const)'"])
 }
 
 // MARK: String
 
-func validateLength(_ comparitor: @escaping ((Int, Int) -> (Bool)), length: Int, error: String) -> (_ value: Any) -> ValidationResult {
+func validateLength(_ comparitor: @escaping ((Int, Int) -> (Bool)), length: Int, error: String) -> (_ value: Any) -> AnySequence<ValidationError> {
   return { value in
     if let value = value as? String {
       if !comparitor(value.count, length) {
-        return .invalid([error])
+        return AnySequence([error])
       }
     }
 
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 }
 
-func minLength(validator: Validator, minLength: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func minLength(validator: Validator, minLength: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let minLength = minLength as? Int else {
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 
   return validateLength(>=, length: minLength, error: "Length of string is smaller than minimum length \(minLength)")(instance)
 }
 
-func maxLength(validator: Validator, maxLength: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func maxLength(validator: Validator, maxLength: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let maxLength = maxLength as? Int else {
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 
   return validateLength(<=, length: maxLength, error: "Length of string is larger than max length \(maxLength)")(instance)
 }
 
-func pattern(validator: Validator, pattern: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func pattern(validator: Validator, pattern: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let pattern = pattern as? String else {
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 
   guard let instance = instance as? String else {
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 
   guard let expression = try? NSRegularExpression(pattern: pattern, options: NSRegularExpression.Options(rawValue: 0)) else {
-    return .invalid(["[Schema] Regex pattern '\(pattern)' is not valid"])
+    return AnySequence(["[Schema] Regex pattern '\(pattern)' is not valid"])
   }
 
   let range = NSMakeRange(0, instance.count)
   if expression.matches(in: instance, options: NSRegularExpression.MatchingOptions(rawValue: 0), range: range).count == 0 {
-    return .invalid(["'\(instance)' does not match pattern: '\(pattern)'"])
+    return AnySequence(["'\(instance)' does not match pattern: '\(pattern)'"])
   }
 
-  return .valid
+  return AnySequence(EmptyCollection())
 }
 
 // MARK: Numerical
 
-func multipleOf(validator: Validator, multipleOf: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func multipleOf(validator: Validator, multipleOf: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let multipleOf = multipleOf as? Double else {
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 
   guard let instance = instance as? Double, instance > 0.0 else {
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 
   let result = instance / multipleOf
   if result != floor(result) {
-    return .invalid(["\(instance) is not a multiple of \(multipleOf)"])
+    return AnySequence(["\(instance) is not a multiple of \(multipleOf)"])
   }
 
-  return .valid
+  return AnySequence(EmptyCollection())
 }
 
-func validateNumericLength(_ length: Double, comparitor: @escaping ((Double, Double) -> (Bool)), exclusiveComparitor: @escaping ((Double, Double) -> (Bool)), exclusive: Bool?, error: String) -> (_ value: Any) -> ValidationResult {
+func validateNumericLength(_ length: Double, comparitor: @escaping ((Double, Double) -> (Bool)), exclusiveComparitor: @escaping ((Double, Double) -> (Bool)), exclusive: Bool?, error: String) -> (_ value: Any) -> AnySequence<ValidationError> {
   return { value in
     if let value = value as? Double {
       if exclusive ?? false {
         if !exclusiveComparitor(value, length) {
-          return .invalid([error])
+          return AnySequence([error])
         }
       }
 
       if !comparitor(value, length) {
-        return .invalid([error])
+        return AnySequence([error])
       }
     }
 
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 }
 
-func minimumDraft4(validator: Validator, minimum: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func minimumDraft4(validator: Validator, minimum: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let minimum = minimum as? Double else {
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 
   return validateNumericLength(minimum, comparitor: >=, exclusiveComparitor: >, exclusive: schema["exclusiveMinimum"] as? Bool, error: "Value is lower than minimum value of \(minimum)")(instance)
 }
 
-func maximumDraft4(validator: Validator, maximum: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func maximumDraft4(validator: Validator, maximum: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let maximum = maximum as? Double else {
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 
   return validateNumericLength(maximum, comparitor: <=, exclusiveComparitor: <, exclusive: schema["exclusiveMaximum"] as? Bool, error: "Value exceeds maximum value of \(maximum)")(instance)
 }
 
-func minimum(validator: Validator, minimum: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func minimum(validator: Validator, minimum: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let minimum = minimum as? Double else {
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 
   return validateNumericLength(minimum, comparitor: >=, exclusiveComparitor: >, exclusive: false, error: "Value is lower than minimum value of \(minimum)")(instance)
 }
 
-func maximum(validator: Validator, maximum: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func maximum(validator: Validator, maximum: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let maximum = maximum as? Double else {
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 
   return validateNumericLength(maximum, comparitor: <=, exclusiveComparitor: <, exclusive: false, error: "Value exceeds maximum value of \(maximum)")(instance)
 }
 
-func exclusiveMinimum(validator: Validator, minimum: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func exclusiveMinimum(validator: Validator, minimum: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let minimum = minimum as? Double else {
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 
   return validateNumericLength(minimum, comparitor: >=, exclusiveComparitor: >, exclusive: true, error: "Value is lower than exclusive minimum value of \(minimum)")(instance)
 }
 
-func exclusiveMaximum(validator: Validator, maximum: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func exclusiveMaximum(validator: Validator, maximum: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let maximum = maximum as? Double else {
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 
   return validateNumericLength(maximum, comparitor: <=, exclusiveComparitor: <, exclusive: true, error: "Value exceeds exclusive maximum value of \(maximum)")(instance)
@@ -394,83 +376,83 @@ func exclusiveMaximum(validator: Validator, maximum: Any, instance: Any, schema:
 
 // MARK: Array
 
-func items(validator: Validator, items: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func items(validator: Validator, items: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let instance = instance as? [Any] else {
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 
   if let items = items as? [String: Any] {
-    return flatten(instance.map { validator.descend(instance: $0, subschema: items).validationResult() })
+    return AnySequence(flatten(instance.map { validator.descend(instance: $0, subschema: items) }))
   }
 
   if let items = items as? Bool {
-    return flatten(instance.map { validator.descend(instance: $0, subschema: items).validationResult() })
+    return AnySequence(flatten(instance.map { validator.descend(instance: $0, subschema: items) }))
   }
 
   if let items = items as? [Any] {
-    var results = [ValidationResult]()
+    var results = [AnySequence<ValidationError>]()
 
     for (index, item) in instance.enumerated() where index < items.count {
-      results.append(validator.descend(instance: item, subschema: items[index]).validationResult())
+      results.append(validator.descend(instance: item, subschema: items[index]))
     }
 
-    return flatten(results)
+    return AnySequence(flatten(results))
   }
 
-  return .valid
+  return AnySequence(EmptyCollection())
 }
 
-func additionalItems(validator: Validator, additionalItems: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func additionalItems(validator: Validator, additionalItems: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let instance = instance as? [Any], let items = schema["items"] as? [Any], instance.count > items.count else {
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 
   if let additionalItems = additionalItems as? [String: Any] {
-    return flatten(instance[items.count...].map { validator.descend(instance: $0, subschema: additionalItems).validationResult() })
+    return flatten(instance[items.count...].map { validator.descend(instance: $0, subschema: additionalItems) })
   }
 
   if let additionalItems = additionalItems as? Bool, !additionalItems {
-    return invalidValidation("Additional results are not permitted in this array.")(instance).validationResult()
+    return invalidValidation("Additional results are not permitted in this array.")(instance)
   }
 
-  return .valid
+  return AnySequence(EmptyCollection())
 }
 
-func validateArrayLength(_ rhs: Int, comparitor: @escaping ((Int, Int) -> Bool), error: String) -> (_ value: Any) -> ValidationResult {
+func validateArrayLength(_ rhs: Int, comparitor: @escaping ((Int, Int) -> Bool), error: String) -> (_ value: Any) -> AnySequence<ValidationError> {
   return { value in
     if let value = value as? [Any] {
       if !comparitor(value.count, rhs) {
-        return .invalid([error])
+        return AnySequence([error])
       }
     }
 
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 }
 
-func minItems(validator: Validator, minItems: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func minItems(validator: Validator, minItems: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let minItems = minItems as? Int else {
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 
   return validateArrayLength(minItems, comparitor: >=, error: "Length of array is smaller than the minimum \(minItems)")(instance)
 }
 
-func maxItems(validator: Validator, maxItems: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func maxItems(validator: Validator, maxItems: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let maxItems = maxItems as? Int else {
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 
   return validateArrayLength(maxItems, comparitor: <=, error: "Length of array is greater than maximum \(maxItems)")(instance)
 }
 
-func uniqueItems(validator: Validator, uniqueItems: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func uniqueItems(validator: Validator, uniqueItems: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let uniqueItems = uniqueItems as? Bool, uniqueItems else {
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 
   guard let instance = instance as? [Any] else {
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 
   // 1 and true, 0 and false are isEqual for NSNumber's, so logic to count for that below
@@ -488,56 +470,56 @@ func uniqueItems(validator: Validator, uniqueItems: Any, instance: Any, schema: 
   let delta = (hasTrueAndOne ? 1 : 0) + (hasFalseAndZero ? 1 : 0)
 
   if (NSSet(array: instance).count + delta) == instance.count {
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 
-  return .invalid(["\(instance) does not have unique items"])
+  return AnySequence(["\(instance) does not have unique items"])
 }
 
-func contains(validator: Validator, contains: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func contains(validator: Validator, contains: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let instance = instance as? [Any] else {
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 
   if !instance.contains(where: { validator.descend(instance: $0, subschema: contains).validationResult().valid }) {
-    return .invalid(["\(instance) does not match contains"])
+    return AnySequence(["\(instance) does not match contains"])
   }
 
-  return .valid
+  return AnySequence(EmptyCollection())
 }
 
 
 // MARK: Object
 
-func validatePropertiesLength(_ length: Int, comparitor: @escaping ((Int, Int) -> (Bool)), error: String) -> (_ value: Any) -> ValidationResult {
+func validatePropertiesLength(_ length: Int, comparitor: @escaping ((Int, Int) -> (Bool)), error: String) -> (_ value: Any) -> AnySequence<ValidationError> {
   return { value in
     if let value = value as? [String: Any] {
       if !comparitor(length, value.count) {
-        return .invalid([error])
+        return AnySequence([error])
       }
     }
 
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 }
 
-func minProperties(validator: Validator, minProperties: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func minProperties(validator: Validator, minProperties: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let minProperties = minProperties as? Int else {
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 
   return validatePropertiesLength(minProperties, comparitor: <=, error: "Amount of properties is less than the required amount")(instance)
 }
 
-func maxProperties(validator: Validator, maxProperties: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func maxProperties(validator: Validator, maxProperties: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let maxProperties = maxProperties as? Int else {
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 
   return validatePropertiesLength(maxProperties, comparitor: >=, error: "Amount of properties is greater than maximum permitted")(instance)
 }
 
-func required(validator: Validator, required: Any, instance: Any, schema: [String: Any]) -> AnySequence<String> {
+func required(validator: Validator, required: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let instance = instance as? [String: Any] else {
     return AnySequence(EmptyCollection())
   }
@@ -552,39 +534,39 @@ func required(validator: Validator, required: Any, instance: Any, schema: [Strin
   })
 }
 
-func dependentRequired(validator: Validator, dependentRequired: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func dependentRequired(validator: Validator, dependentRequired: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let instance = instance as? [String: Any] else {
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 
   guard let dependentRequired = dependentRequired as? [String: [String]] else {
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 
-  return flatten(dependentRequired.compactMap({ (key, required) -> ValidationResult? in
+  return flatten(dependentRequired.compactMap({ (key, required) -> AnySequence<ValidationError> in
     if instance.keys.contains(key) {
-      return JSONSchema.required(validator: validator, required: required, instance: instance, schema: schema).validationResult()
+      return JSONSchema.required(validator: validator, required: required, instance: instance, schema: schema)
     }
 
-    return nil
+    return AnySequence(EmptyCollection())
   }))
 }
 
-func dependentSchemas(validator: Validator, dependentRequired: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func dependentSchemas(validator: Validator, dependentRequired: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let instance = instance as? [String: Any] else {
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 
   guard let dependentRequired = dependentRequired as? [String: Any] else {
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 
-  return flatten(dependentRequired.compactMap({ (key, subschema) -> ValidationResult? in
+  return flatten(dependentRequired.compactMap({ (key, subschema) -> AnySequence<ValidationError> in
     if instance.keys.contains(key) {
-      return validator.descend(instance: instance, subschema: subschema).validationResult()
+      return validator.descend(instance: instance, subschema: subschema)
     }
 
-    return nil
+    return AnySequence(EmptyCollection())
   }))
 }
 
@@ -614,16 +596,16 @@ func properties(validator: Validator, properties: Any, instance: Any, schema: [S
   }))
 }
 
-func patternProperties(validator: Validator, patternProperties: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func patternProperties(validator: Validator, patternProperties: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let instance = instance as? [String: Any] else {
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 
   guard let patternProperties = patternProperties as? [String: Any] else {
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 
-  var results: [ValidationResult] = []
+  var results: [AnySequence<ValidationError>] = []
 
   for (pattern, schema) in patternProperties {
     do {
@@ -633,10 +615,10 @@ func patternProperties(validator: Validator, patternProperties: Any, instance: A
       }
 
       for key in keys {
-        results.append(validator.descend(instance: instance[key]!, subschema: schema).validationResult())
+        results.append(validator.descend(instance: instance[key]!, subschema: schema))
       }
     } catch {
-      return .invalid(["[Schema] '\(pattern)' is not a valid regex pattern for patternProperties"])
+      return AnySequence(["[Schema] '\(pattern)' is not a valid regex pattern for patternProperties"])
     }
   }
 
@@ -666,44 +648,44 @@ func findAdditionalProperties(instance: [String: Any], schema: [String: Any]) ->
   return keys
 }
 
-func additionalProperties(validator: Validator, additionalProperties: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func additionalProperties(validator: Validator, additionalProperties: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let instance = instance as? [String: Any] else {
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 
   let extras = findAdditionalProperties(instance: instance, schema: schema)
 
   if let additionalProperties = additionalProperties as? [String: Any] {
-    return flatten(extras.map { validator.descend(instance: instance[$0]!, subschema: additionalProperties).validationResult() })
+    return flatten(extras.map { validator.descend(instance: instance[$0]!, subschema: additionalProperties) })
   }
 
   if let additionalProperties = additionalProperties as? Bool, !additionalProperties && !extras.isEmpty {
-    return invalidValidation("Additional properties are not permitted in this object.")(instance).validationResult()
+    return invalidValidation("Additional properties are not permitted in this object.")(instance)
   }
 
-  return .valid
+  return AnySequence(EmptyCollection())
 }
 
-func dependencies(validator: Validator, dependencies: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func dependencies(validator: Validator, dependencies: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let dependencies = dependencies as? [String: Any] else {
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 
   guard let instance = instance as? [String: Any] else {
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 
-  var results: [ValidationResult] = []
+  var results: [AnySequence<ValidationError>] = []
 
   for (property, dependency) in dependencies where instance.keys.contains(property) {
     if let dependency = dependency as? [String] {
       for key in dependency {
         if !instance.keys.contains(key) {
-          results.append(.invalid(["'\(key)' is a dependency for '\(property)'"]))
+          results.append(AnySequence(["'\(key)' is a dependency for '\(property)'"]))
         }
       }
     } else {
-      results.append(validator.descend(instance: instance, subschema: dependency).validationResult())
+      results.append(validator.descend(instance: instance, subschema: dependency))
     }
   }
 

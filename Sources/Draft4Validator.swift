@@ -5,8 +5,8 @@ public class Draft4Validator: Validator {
   static let metaSchema: [String: Any] = DRAFT_04_META_SCHEMA
   let resolver: RefResolver
 
-  typealias Validation = (Validator, Any, Any, [String: Any]) -> (ValidationResult)
   let validations: [String: Validation] = [
+    "$ref": ref,
     "pattern": pattern,
     "multipleOf": multipleOf,
     "contains": contains,
@@ -26,10 +26,6 @@ public class Draft4Validator: Validator {
     "additionalItems": additionalItems,
     "patternProperties": patternProperties,
     "additionalProperties": additionalProperties,
-  ]
-
-  let sequenceValidations: [String: SequenceValidation] = [
-    "$ref": ref,
     "not": not,
     "allOf": allOf,
     "oneOf": oneOf,

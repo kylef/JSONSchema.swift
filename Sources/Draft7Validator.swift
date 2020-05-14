@@ -5,8 +5,18 @@ public class Draft7Validator: Validator {
   static let metaSchema: [String: Any] = DRAFT_07_META_SCHEMA
   let resolver: RefResolver
 
-  typealias Validation = (Validator, Any, Any, [String: Any]) -> (ValidationResult)
   let validations: [String: Validation] = [
+    "$ref": ref,
+    "not": not,
+    "allOf": allOf,
+    "oneOf": oneOf,
+    "anyOf": anyOf,
+    "type": type,
+    "required": required,
+    "propertyNames": propertyNames,
+    "format": format,
+    "properties": properties,
+    "if": `if`,
     "pattern": pattern,
     "multipleOf": multipleOf,
     "contains": contains,
@@ -28,20 +38,6 @@ public class Draft7Validator: Validator {
     "additionalItems": additionalItems,
     "patternProperties": patternProperties,
     "additionalProperties": additionalProperties,
-  ]
-
-  let sequenceValidations: [String: SequenceValidation] = [
-    "$ref": ref,
-    "not": not,
-    "allOf": allOf,
-    "oneOf": oneOf,
-    "anyOf": anyOf,
-    "type": type,
-    "required": required,
-    "propertyNames": propertyNames,
-    "format": format,
-    "properties": properties,
-    "if": `if`,
   ]
 
   let formats: [String: (String) -> (AnySequence<ValidationError>)] = [

@@ -1,14 +1,12 @@
 import Foundation
 
 protocol Validator {
-  typealias Validation = (Validator, Any, Any, [String: Any]) -> (ValidationResult)
-  typealias SequenceValidation = (Validator, Any, Any, [String: Any]) -> AnySequence<ValidationError>
+  typealias Validation = (Validator, Any, Any, [String: Any]) -> AnySequence<ValidationError>
 
   var resolver: RefResolver { get }
 
   var schema: [String: Any] { get }
   var validations: [String: Validation] { get }
-  var sequenceValidations: [String: SequenceValidation] { get }
   var formats: [String: (String) -> (AnySequence<ValidationError>)] { get }
 }
 
@@ -35,27 +33,17 @@ extension Validator {
     }
 
     if let ref = schema["$ref"] as? String {
-      let validation = sequenceValidations["$ref"]!
+      let validation = validations["$ref"]!
       return validation(self, ref, instance, schema)
     }
 
-    let results = validations.compactMap { (key, validation) -> AnySequence<ValidationError> in
-      if let value = schema[key] {
-        return AnySequence(validation(self, value, instance, schema).errors ?? [])
-      }
-
-      return AnySequence(EmptyCollection())
-    }
-
-    let sequenceResult = flatten(sequenceValidations.compactMap { (key, validation) -> AnySequence<ValidationError> in
+    return flatten(validations.compactMap { (key, validation) -> AnySequence<ValidationError> in
       if let value = schema[key] {
         return validation(self, value, instance, schema)
       }
 
       return AnySequence(EmptyCollection())
     })
-
-    return flatten([flatten(results), sequenceResult])
   }
 
   func resolve(ref: String) -> Any? {
