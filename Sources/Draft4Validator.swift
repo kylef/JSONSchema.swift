@@ -36,7 +36,7 @@ public class Draft4Validator: Validator {
     "properties": properties,
     "patternProperties": patternProperties,
     "additionalProperties": additionalProperties,
-    "if": `if`,
+    "if": createSequence(validation: `if`),
   ]
 
   let formats: [String: (String) -> (ValidationResult)] = [

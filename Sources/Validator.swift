@@ -55,7 +55,7 @@ extension Validator {
     return resolver.resolve(reference: ref)
   }
 
-  func validatorForReference(_ reference: String) -> (Any) -> (ValidationResult) {
+  func validatorForReference(_ reference: String) -> (Any) -> (AnySequence<ValidationError>) {
     // TODO: Rewrite this whole block: https://github.com/kylef/JSONSchema.swift/issues/12
 
     if reference == "http://json-schema.org/draft-04/schema#" {
@@ -107,7 +107,7 @@ extension Validator {
     return invalidValidation("Remote $ref '\(reference)' is not yet supported")
   }
 
-  func descend(instance: Any, subschema: Any) -> ValidationResult {
-    return validate(instance: instance, schema: subschema).validationResult()
+  func descend(instance: Any, subschema: Any) -> AnySequence<ValidationError> {
+    return validate(instance: instance, schema: subschema)
   }
 }

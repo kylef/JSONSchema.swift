@@ -43,14 +43,14 @@ func flatten(_ results: [ValidationResult]) -> ValidationResult {
 }
 
 /// Creates a Validator which always returns an valid result
-func validValidation(_ value: Any) -> ValidationResult {
-  return .valid
+func validValidation(_ value: Any) -> AnySequence<ValidationError> {
+  return AnySequence(EmptyCollection())
 }
 
 /// Creates a Validator which always returns an invalid result with the given error
-func invalidValidation(_ error: String) -> (_ value: Any) -> ValidationResult {
+func invalidValidation(_ error: String) -> (_ value: Any) -> AnySequence<ValidationError> {
   return { value in
-    return .invalid([error])
+    return AnySequence([error])
   }
 }
 
@@ -81,7 +81,7 @@ func ref(validator: Validator, reference: Any, instance: Any, schema: [String: A
     return .invalid(["Reference not found '\(reference)'"])
   }
 
-  return validator.descend(instance: instance, subschema: document)
+  return validator.descend(instance: instance, subschema: document).validationResult()
 }
 
 func type(validator: Validator, type: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
@@ -167,7 +167,7 @@ func anyOf(validator: Validator, anyOf: Any, instance: Any, schema: [String: Any
     return .valid
   }
 
-  if !anyOf.contains(where: { validator.descend(instance: instance, subschema: $0).valid }) {
+  if !anyOf.contains(where: { validator.descend(instance: instance, subschema: $0).validationResult().valid }) {
     return .invalid(["\(instance) does not meet anyOf validation rules."])
   }
 
@@ -179,7 +179,7 @@ func oneOf(validator: Validator, oneOf: Any, instance: Any, schema: [String: Any
     return .valid
   }
 
-  if oneOf.filter({ validator.descend(instance: instance, subschema: $0).valid }).count != 1 {
+  if oneOf.filter({ validator.descend(instance: instance, subschema: $0).validationResult().valid }).count != 1 {
     return .invalid(["Only one value from `oneOf` should be met"])
   }
 
@@ -189,14 +189,14 @@ func oneOf(validator: Validator, oneOf: Any, instance: Any, schema: [String: Any
 func not(validator: Validator, not: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
   let result = validator.descend(instance: instance, subschema: not)
 
-  if result.valid {
+  if result.validationResult().valid {
     return .invalid(["'\(instance)' does not match 'not' validation."])
   }
 
   return .valid
 }
 
-func `if`(validator: Validator, `if`: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func `if`(validator: Validator, `if`: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   if validator.validate(instance: instance, schema: `if`).validationResult().valid {
     if let then = schema["then"] {
       return validator.descend(instance: instance, subschema: then)
@@ -205,7 +205,7 @@ func `if`(validator: Validator, `if`: Any, instance: Any, schema: [String: Any])
     return validator.descend(instance: instance, subschema: `else`)
   }
 
-  return .valid
+  return AnySequence(EmptyCollection())
 }
 
 func allOf(validator: Validator, allOf: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
@@ -213,7 +213,7 @@ func allOf(validator: Validator, allOf: Any, instance: Any, schema: [String: Any
     return .valid
   }
 
-  return flatten(allOf.map({ validator.descend(instance: instance, subschema: $0) }))
+  return flatten(allOf.map({ validator.descend(instance: instance, subschema: $0).validationResult() }))
 }
 
 func isEqual(_ lhs: NSObject, _ rhs: NSObject) -> Bool {
@@ -389,18 +389,18 @@ func items(validator: Validator, items: Any, instance: Any, schema: [String: Any
   }
 
   if let items = items as? [String: Any] {
-    return flatten(instance.map { validator.descend(instance: $0, subschema: items) })
+    return flatten(instance.map { validator.descend(instance: $0, subschema: items).validationResult() })
   }
 
   if let items = items as? Bool {
-    return flatten(instance.map { validator.descend(instance: $0, subschema: items) })
+    return flatten(instance.map { validator.descend(instance: $0, subschema: items).validationResult() })
   }
 
   if let items = items as? [Any] {
     var results = [ValidationResult]()
 
     for (index, item) in instance.enumerated() where index < items.count {
-      results.append(validator.descend(instance: item, subschema: items[index]))
+      results.append(validator.descend(instance: item, subschema: items[index]).validationResult())
     }
 
     return flatten(results)
@@ -415,11 +415,11 @@ func additionalItems(validator: Validator, additionalItems: Any, instance: Any, 
   }
 
   if let additionalItems = additionalItems as? [String: Any] {
-    return flatten(instance[items.count...].map { validator.descend(instance: $0, subschema: additionalItems) })
+    return flatten(instance[items.count...].map { validator.descend(instance: $0, subschema: additionalItems).validationResult() })
   }
 
   if let additionalItems = additionalItems as? Bool, !additionalItems {
-    return invalidValidation("Additional results are not permitted in this array.")(instance)
+    return invalidValidation("Additional results are not permitted in this array.")(instance).validationResult()
   }
 
   return .valid
@@ -488,7 +488,7 @@ func contains(validator: Validator, contains: Any, instance: Any, schema: [Strin
     return .valid
   }
 
-  if !instance.contains(where: { validator.descend(instance: $0, subschema: contains).valid }) {
+  if !instance.contains(where: { validator.descend(instance: $0, subschema: contains).validationResult().valid }) {
     return .invalid(["\(instance) does not match contains"])
   }
 
@@ -570,7 +570,7 @@ func dependentSchemas(validator: Validator, dependentRequired: Any, instance: An
 
   return flatten(dependentRequired.compactMap({ (key, subschema) -> ValidationResult? in
     if instance.keys.contains(key) {
-      return validator.descend(instance: instance, subschema: subschema)
+      return validator.descend(instance: instance, subschema: subschema).validationResult()
     }
 
     return nil
@@ -582,7 +582,7 @@ func propertyNames(validator: Validator, propertyNames: Any, instance: Any, sche
     return .valid
   }
 
-  return flatten(instance.keys.map { validator.descend(instance: $0, subschema: propertyNames) })
+  return flatten(instance.keys.map { validator.descend(instance: $0, subschema: propertyNames).validationResult() })
 }
 
 func properties(validator: Validator, properties: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
@@ -596,7 +596,7 @@ func properties(validator: Validator, properties: Any, instance: Any, schema: [S
 
   return flatten(instance.map({ (key, value) in
     if let schema = properties[key] {
-      return validator.descend(instance: value, subschema: schema)
+      return validator.descend(instance: value, subschema: schema).validationResult()
     }
 
     return .valid
@@ -622,7 +622,7 @@ func patternProperties(validator: Validator, patternProperties: Any, instance: A
       }
 
       for key in keys {
-        results.append(validator.descend(instance: instance[key]!, subschema: schema))
+        results.append(validator.descend(instance: instance[key]!, subschema: schema).validationResult())
       }
     } catch {
       return .invalid(["[Schema] '\(pattern)' is not a valid regex pattern for patternProperties"])
@@ -663,11 +663,11 @@ func additionalProperties(validator: Validator, additionalProperties: Any, insta
   let extras = findAdditionalProperties(instance: instance, schema: schema)
 
   if let additionalProperties = additionalProperties as? [String: Any] {
-    return flatten(extras.map { validator.descend(instance: instance[$0]!, subschema: additionalProperties) })
+    return flatten(extras.map { validator.descend(instance: instance[$0]!, subschema: additionalProperties).validationResult() })
   }
 
   if let additionalProperties = additionalProperties as? Bool, !additionalProperties && !extras.isEmpty {
-    return invalidValidation("Additional properties are not permitted in this object.")(instance)
+    return invalidValidation("Additional properties are not permitted in this object.")(instance).validationResult()
   }
 
   return .valid
@@ -692,7 +692,7 @@ func dependencies(validator: Validator, dependencies: Any, instance: Any, schema
         }
       }
     } else {
-      results.append(validator.descend(instance: instance, subschema: dependency))
+      results.append(validator.descend(instance: instance, subschema: dependency).validationResult())
     }
   }
 
@@ -711,7 +711,7 @@ func format(validator: Validator, format: Any, instance: Any, schema: [String: A
   }
 
   guard let validator = validator.formats[format] else {
-    return invalidValidation("'format' validation of '\(format)' is not yet supported.")(instance)
+    return invalidValidation("'format' validation of '\(format)' is not yet supported.")(instance).validationResult()
   }
 
   return validator(instance)
