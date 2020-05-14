@@ -175,28 +175,28 @@ func isType(_ type: String, _ instance: Any) -> Bool {
   }
 }
 
-func anyOf(validator: Validator, anyOf: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func anyOf(validator: Validator, anyOf: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let anyOf = anyOf as? [Any] else {
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 
   if !anyOf.contains(where: { validator.descend(instance: instance, subschema: $0).validationResult().valid }) {
-    return .invalid(["\(instance) does not meet anyOf validation rules."])
+    return AnySequence(["\(instance) does not meet anyOf validation rules."])
   }
 
-  return .valid
+  return AnySequence(EmptyCollection())
 }
 
-func oneOf(validator: Validator, oneOf: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func oneOf(validator: Validator, oneOf: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let oneOf = oneOf as? [Any] else {
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 
   if oneOf.filter({ validator.descend(instance: instance, subschema: $0).validationResult().valid }).count != 1 {
-    return .invalid(["Only one value from `oneOf` should be met"])
+    return AnySequence(["Only one value from `oneOf` should be met"])
   }
 
-  return .valid
+  return AnySequence(EmptyCollection())
 }
 
 func not(validator: Validator, not: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
@@ -221,12 +221,12 @@ func `if`(validator: Validator, `if`: Any, instance: Any, schema: [String: Any])
   return AnySequence(EmptyCollection())
 }
 
-func allOf(validator: Validator, allOf: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func allOf(validator: Validator, allOf: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let allOf = allOf as? [Any] else {
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 
-  return flatten(allOf.map({ validator.descend(instance: instance, subschema: $0).validationResult() }))
+  return flatten(allOf.map({ validator.descend(instance: instance, subschema: $0) }))
 }
 
 func isEqual(_ lhs: NSObject, _ rhs: NSObject) -> Bool {

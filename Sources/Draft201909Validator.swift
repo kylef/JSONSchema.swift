@@ -17,9 +17,6 @@ public class Draft201909Validator: Validator {
     "const": const,
     "dependencies": dependencies,
     "dependentSchemas": dependentSchemas,
-    "allOf": allOf,
-    "oneOf": oneOf,
-    "anyOf": anyOf,
     "minLength": minLength,
     "maxLength": maxLength,
     "minimum": minimum,
@@ -38,6 +35,9 @@ public class Draft201909Validator: Validator {
 
   let sequenceValidations: [String: SequenceValidation] = [
     "$ref": ref,
+    "allOf": allOf,
+    "oneOf": oneOf,
+    "anyOf": anyOf,
     "type": type,
     "required": required,
     "propertyNames":  propertyNames,

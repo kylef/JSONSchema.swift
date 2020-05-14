@@ -15,9 +15,6 @@ public class Draft4Validator: Validator {
     "enum": `enum`,
     "const": const,
     "dependencies": dependencies,
-    "allOf": allOf,
-    "oneOf": oneOf,
-    "anyOf": anyOf,
     "minLength": minLength,
     "maxLength": maxLength,
     "minimum": minimumDraft4,
@@ -34,6 +31,9 @@ public class Draft4Validator: Validator {
 
   let sequenceValidations: [String: SequenceValidation] = [
     "$ref": ref,
+    "allOf": allOf,
+    "oneOf": oneOf,
+    "anyOf": anyOf,
     "type": type,
     "required": required,
     "propertyNames": propertyNames,
