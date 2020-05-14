@@ -5,24 +5,15 @@ public class Draft4Validator: Validator {
   static let metaSchema: [String: Any] = DRAFT_04_META_SCHEMA
   let resolver: RefResolver
 
-  typealias Validation = (Validator, Any, Any, [String: Any]) -> (ValidationResult)
   let validations: [String: Validation] = [
     "$ref": ref,
-    "type": type,
-    "required": required,
-    "propertyNames": propertyNames,
-    "not": not,
     "pattern": pattern,
     "multipleOf": multipleOf,
     "contains": contains,
     "uniqueItems": uniqueItems,
     "enum": `enum`,
     "const": const,
-    "format": format,
     "dependencies": dependencies,
-    "allOf": allOf,
-    "oneOf": oneOf,
-    "anyOf": anyOf,
     "minLength": minLength,
     "maxLength": maxLength,
     "minimum": minimumDraft4,
@@ -33,13 +24,21 @@ public class Draft4Validator: Validator {
     "maxProperties": maxProperties,
     "items": items,
     "additionalItems": additionalItems,
-    "properties": properties,
     "patternProperties": patternProperties,
     "additionalProperties": additionalProperties,
+    "not": not,
+    "allOf": allOf,
+    "oneOf": oneOf,
+    "anyOf": anyOf,
+    "type": type,
+    "required": required,
+    "propertyNames": propertyNames,
+    "format": format,
+    "properties": properties,
     "if": `if`,
   ]
 
-  let formats: [String: (String) -> (ValidationResult)] = [
+  let formats: [String: (String) -> (AnySequence<ValidationError>)] = [
     "ipv4": validateIPv4,
     "ipv6": validateIPv6,
     "uri": validateURI,

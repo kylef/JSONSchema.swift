@@ -1,31 +1,35 @@
 import Foundation
 
 protocol Validator {
-  typealias Validation = (Validator, Any, Any, [String: Any]) -> (ValidationResult)
+  typealias Validation = (Validator, Any, Any, [String: Any]) -> AnySequence<ValidationError>
 
   var resolver: RefResolver { get }
 
   var schema: [String: Any] { get }
   var validations: [String: Validation] { get }
-  var formats: [String: (String) -> (ValidationResult)] { get }
+  var formats: [String: (String) -> (AnySequence<ValidationError>)] { get }
 }
 
 extension Validator {
   public func validate(instance: Any) -> ValidationResult {
+    return validate(instance: instance, schema: schema).validationResult()
+  }
+
+  public func validate(instance: Any) -> AnySequence<ValidationError> {
     return validate(instance: instance, schema: schema)
   }
 
-  func validate(instance: Any, schema: Any) -> ValidationResult {
+  func validate(instance: Any, schema: Any) -> AnySequence<ValidationError> {
     if let schema = schema as? Bool {
       if schema == true {
-        return .valid
+        return AnySequence(EmptyCollection())
       }
 
-      return .invalid(["Falsy schema"])
+      return AnySequence(["Falsy schema"])
     }
 
     guard let schema = schema as? [String: Any] else {
-      return .valid
+      return AnySequence(EmptyCollection())
     }
 
     if let ref = schema["$ref"] as? String {
@@ -33,21 +37,20 @@ extension Validator {
       return validation(self, ref, instance, schema)
     }
 
-    var results = [ValidationResult]()
-    for (key, validation) in validations {
+    return AnySequence(validations.compactMap { (key, validation) -> AnySequence<ValidationError> in
       if let value = schema[key] {
-        results.append(validation(self, value, instance, schema))
+        return validation(self, value, instance, schema)
       }
-    }
 
-    return flatten(results)
+      return AnySequence(EmptyCollection())
+    }.joined())
   }
 
   func resolve(ref: String) -> Any? {
     return resolver.resolve(reference: ref)
   }
 
-  func validatorForReference(_ reference: String) -> (Any) -> (ValidationResult) {
+  func validatorForReference(_ reference: String) -> (Any) -> (AnySequence<ValidationError>) {
     // TODO: Rewrite this whole block: https://github.com/kylef/JSONSchema.swift/issues/12
 
     if reference == "http://json-schema.org/draft-04/schema#" {
@@ -99,7 +102,7 @@ extension Validator {
     return invalidValidation("Remote $ref '\(reference)' is not yet supported")
   }
 
-  func descend(instance: Any, subschema: Any) -> ValidationResult {
+  func descend(instance: Any, subschema: Any) -> AnySequence<ValidationError> {
     return validate(instance: instance, schema: subschema)
   }
 }

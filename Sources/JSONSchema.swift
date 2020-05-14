@@ -55,14 +55,10 @@ public struct Schema {
     let validator = JSONSchema.validator(for: schema)
     return validator.validate(instance: data)
   }
-}
 
-
-func validatorCurry(_ validator: @escaping (Draft4Validator, Any, Any, [String: Any]) -> ValidationResult) -> ((_ validator: Draft4Validator, _ value: Any, _ schema: [String: Any]) -> ((_ instance: Any) -> ValidationResult)) {
-  return { (v, value, schema) in
-    return { instance in
-      return validator(v, value, instance, schema)
-    }
+  public func validate(_ data: Any) -> AnySequence<ValidationError> {
+    let validator = JSONSchema.validator(for: schema)
+    return validator.validate(instance: data)
   }
 }
 
