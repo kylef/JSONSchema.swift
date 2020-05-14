@@ -2,12 +2,19 @@ import Foundation
 
 protocol Validator {
   typealias Validation = (Validator, Any, Any, [String: Any]) -> (ValidationResult)
+  typealias SequenceValidation = (Validator, Any, Any, [String: Any]) -> AnySequence<ValidationError>
 
   var resolver: RefResolver { get }
 
   var schema: [String: Any] { get }
   var validations: [String: Validation] { get }
   var formats: [String: (String) -> (ValidationResult)] { get }
+}
+
+func createSequence(validation: @escaping Validator.SequenceValidation) -> Validator.Validation {
+  return { (validator, value, instance, schema) in
+    return validation(validator, value, instance, schema).validationResult()
+  }
 }
 
 extension Validator {

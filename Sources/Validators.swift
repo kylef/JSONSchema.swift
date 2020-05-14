@@ -526,7 +526,7 @@ func maxProperties(validator: Validator, maxProperties: Any, instance: Any, sche
   return validatePropertiesLength(maxProperties, comparitor: >=, error: "Amount of properties is greater than maximum permitted")(instance)
 }
 
-func requiredSequence(validator: Validator, required: Any, instance: Any, schema: [String: Any]) -> AnySequence<String> {
+func required(validator: Validator, required: Any, instance: Any, schema: [String: Any]) -> AnySequence<String> {
   guard let instance = instance as? [String: Any] else {
     return AnySequence(EmptyCollection())
   }
@@ -541,10 +541,6 @@ func requiredSequence(validator: Validator, required: Any, instance: Any, schema
   })
 }
 
-func required(validator: Validator, required: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
-  return requiredSequence(validator: validator, required: required, instance: instance, schema: schema).validationResult()
-}
-
 func dependentRequired(validator: Validator, dependentRequired: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
   guard let instance = instance as? [String: Any] else {
     return .valid
@@ -556,7 +552,7 @@ func dependentRequired(validator: Validator, dependentRequired: Any, instance: A
 
   return flatten(dependentRequired.compactMap({ (key, required) -> ValidationResult? in
     if instance.keys.contains(key) {
-      return JSONSchema.required(validator: validator, required: required, instance: instance, schema: schema)
+      return JSONSchema.required(validator: validator, required: required, instance: instance, schema: schema).validationResult()
     }
 
     return nil

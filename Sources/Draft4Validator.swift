@@ -9,7 +9,7 @@ public class Draft4Validator: Validator {
   let validations: [String: Validation] = [
     "$ref": ref,
     "type": type,
-    "required": required,
+    "required": createSequence(validation: required),
     "propertyNames": propertyNames,
     "not": not,
     "pattern": pattern,
