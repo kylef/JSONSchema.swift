@@ -197,7 +197,7 @@ func not(validator: Validator, not: Any, instance: Any, schema: [String: Any]) -
 }
 
 func `if`(validator: Validator, `if`: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
-  if validator.validate(instance: instance, schema: `if`).valid {
+  if validator.validate(instance: instance, schema: `if`).validationResult().valid {
     if let then = schema["then"] {
       return validator.descend(instance: instance, subschema: then)
     }

@@ -19,35 +19,36 @@ func createSequence(validation: @escaping Validator.SequenceValidation) -> Valid
 
 extension Validator {
   public func validate(instance: Any) -> ValidationResult {
-    return validate(instance: instance, schema: schema)
+    return validate(instance: instance, schema: schema).validationResult()
   }
 
-  func validate(instance: Any, schema: Any) -> ValidationResult {
+  func validate(instance: Any, schema: Any) -> AnySequence<ValidationError> {
     if let schema = schema as? Bool {
       if schema == true {
-        return .valid
+        return AnySequence(EmptyCollection())
       }
 
-      return .invalid(["Falsy schema"])
+      return AnySequence(["Falsy schema"])
     }
 
     guard let schema = schema as? [String: Any] else {
-      return .valid
+      return AnySequence(EmptyCollection())
     }
 
     if let ref = schema["$ref"] as? String {
       let validation = validations["$ref"]!
-      return validation(self, ref, instance, schema)
+      return AnySequence(validation(self, ref, instance, schema).errors ?? [])
     }
 
-    var results = [ValidationResult]()
-    for (key, validation) in validations {
+    let results = validations.compactMap { (key, validation) -> ValidationResult? in
       if let value = schema[key] {
-        results.append(validation(self, value, instance, schema))
+        return validation(self, value, instance, schema)
       }
+
+      return nil
     }
 
-    return flatten(results)
+    return AnySequence(flatten(results).errors ?? [])
   }
 
   func resolve(ref: String) -> Any? {
@@ -107,6 +108,6 @@ extension Validator {
   }
 
   func descend(instance: Any, subschema: Any) -> ValidationResult {
-    return validate(instance: instance, schema: subschema)
+    return validate(instance: instance, schema: subschema).validationResult()
   }
 }
