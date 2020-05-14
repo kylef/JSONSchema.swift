@@ -42,6 +42,19 @@ func flatten(_ results: [ValidationResult]) -> ValidationResult {
   return .valid
 }
 
+func flatten(_ results: [AnySequence<ValidationError>]) -> AnySequence<ValidationError> {
+  let results = results.map { $0.validationResult() }
+  let errors = results.reduce([String]()) { (accumulator, failure) in
+    if let errors = failure.errors {
+      return accumulator + errors
+    }
+
+    return accumulator
+  }
+
+  return AnySequence(errors)
+}
+
 /// Creates a Validator which always returns an valid result
 func validValidation(_ value: Any) -> AnySequence<ValidationError> {
   return AnySequence(EmptyCollection())
@@ -585,21 +598,21 @@ func propertyNames(validator: Validator, propertyNames: Any, instance: Any, sche
   return flatten(instance.keys.map { validator.descend(instance: $0, subschema: propertyNames).validationResult() })
 }
 
-func properties(validator: Validator, properties: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func properties(validator: Validator, properties: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let instance = instance as? [String: Any] else {
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 
   guard let properties = properties as? [String: Any] else {
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 
   return flatten(instance.map({ (key, value) in
     if let schema = properties[key] {
-      return validator.descend(instance: value, subschema: schema).validationResult()
+      return validator.descend(instance: value, subschema: schema)
     }
 
-    return .valid
+    return AnySequence(EmptyCollection())
   }))
 }
 

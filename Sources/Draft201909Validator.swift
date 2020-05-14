@@ -37,7 +37,7 @@ public class Draft201909Validator: Validator {
     "maxProperties": maxProperties,
     "items": items,
     "additionalItems": additionalItems,
-    "properties": properties,
+    "properties": createSequence(validation: properties),
     "patternProperties": patternProperties,
     "additionalProperties": additionalProperties,
     "if": createSequence(validation: `if`),
