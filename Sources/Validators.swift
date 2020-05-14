@@ -97,7 +97,7 @@ func ref(validator: Validator, reference: Any, instance: Any, schema: [String: A
   return validator.descend(instance: instance, subschema: document)
 }
 
-func type(validator: Validator, type: Any, instance: Any, schema: [String: Any]) -> ValidationResult {
+func type(validator: Validator, type: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   func ensureArray(_ value: Any) -> [String]? {
     if let value = value as? [String] {
       return value
@@ -111,15 +111,15 @@ func type(validator: Validator, type: Any, instance: Any, schema: [String: Any])
   }
 
   guard let type = ensureArray(type) else {
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 
   if type.contains(where :{ isType($0, instance) }) {
-    return .valid
+    return AnySequence(EmptyCollection())
   }
 
   let types = type.map { "'\($0)'" }.joined(separator: ", ")
-  return .invalid(["'\(instance)' is not of type \(types)"])
+  return AnySequence(["'\(instance)' is not of type \(types)"])
 }
 
 func isInteger(_ instance: Any) -> Bool {
