@@ -8,13 +8,8 @@ protocol Validator {
 
   var schema: [String: Any] { get }
   var validations: [String: Validation] { get }
+  var sequenceValidations: [String: SequenceValidation] { get }
   var formats: [String: (String) -> (AnySequence<ValidationError>)] { get }
-}
-
-func createSequence(validation: @escaping Validator.SequenceValidation) -> Validator.Validation {
-  return { (validator, value, instance, schema) in
-    return validation(validator, value, instance, schema).validationResult()
-  }
 }
 
 extension Validator {
@@ -40,19 +35,27 @@ extension Validator {
     }
 
     if let ref = schema["$ref"] as? String {
-      let validation = validations["$ref"]!
-      return AnySequence(validation(self, ref, instance, schema).errors ?? [])
+      let validation = sequenceValidations["$ref"]!
+      return validation(self, ref, instance, schema)
     }
 
-    let results = validations.compactMap { (key, validation) -> ValidationResult? in
+    let results = validations.compactMap { (key, validation) -> AnySequence<ValidationError> in
+      if let value = schema[key] {
+        return AnySequence(validation(self, value, instance, schema).errors ?? [])
+      }
+
+      return AnySequence(EmptyCollection())
+    }
+
+    let sequenceResult = flatten(sequenceValidations.compactMap { (key, validation) -> AnySequence<ValidationError> in
       if let value = schema[key] {
         return validation(self, value, instance, schema)
       }
 
-      return nil
-    }
+      return AnySequence(EmptyCollection())
+    })
 
-    return AnySequence(flatten(results).errors ?? [])
+    return flatten([flatten(results), sequenceResult])
   }
 
   func resolve(ref: String) -> Any? {

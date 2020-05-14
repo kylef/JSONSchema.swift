@@ -7,11 +7,7 @@ public class Draft201909Validator: Validator {
 
   typealias Validation = (Validator, Any, Any, [String: Any]) -> (ValidationResult)
   let validations: [String: Validation] = [
-    "$ref": createSequence(validation: ref),
-    "type": createSequence(validation: type),
-    "required": createSequence(validation: required),
     "dependentRequired": dependentRequired,
-    "propertyNames": createSequence(validation: propertyNames),
     "not": not,
     "pattern": pattern,
     "multipleOf": multipleOf,
@@ -19,7 +15,6 @@ public class Draft201909Validator: Validator {
     "uniqueItems": uniqueItems,
     "enum": `enum`,
     "const": const,
-    "format": createSequence(validation: format),
     "dependencies": dependencies,
     "dependentSchemas": dependentSchemas,
     "allOf": allOf,
@@ -37,10 +32,18 @@ public class Draft201909Validator: Validator {
     "maxProperties": maxProperties,
     "items": items,
     "additionalItems": additionalItems,
-    "properties": createSequence(validation: properties),
     "patternProperties": patternProperties,
     "additionalProperties": additionalProperties,
-    "if": createSequence(validation: `if`),
+  ]
+
+  let sequenceValidations: [String: SequenceValidation] = [
+    "$ref": ref,
+    "type": type,
+    "required": required,
+    "propertyNames":  propertyNames,
+    "properties": properties,
+    "format": format,
+    "if": `if`,
   ]
 
   let formats: [String: (String) -> (AnySequence<ValidationError>)] = [
