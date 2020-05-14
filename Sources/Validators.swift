@@ -1,6 +1,6 @@
 import Foundation
 
-typealias ValidationError = String
+public typealias ValidationError = String
 public enum ValidationResult {
   case valid
   case invalid([String])

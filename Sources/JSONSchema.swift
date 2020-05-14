@@ -55,6 +55,11 @@ public struct Schema {
     let validator = JSONSchema.validator(for: schema)
     return validator.validate(instance: data)
   }
+
+  public func validate(_ data: Any) -> AnySequence<ValidationError> {
+    let validator = JSONSchema.validator(for: schema)
+    return validator.validate(instance: data)
+  }
 }
 
 

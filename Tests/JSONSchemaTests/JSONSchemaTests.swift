@@ -49,6 +49,29 @@ class JSONSchemaTests: XCTestCase {
     XCTAssertTrue(schema.validate(["name": "Eggs", "price": 34.99]).valid)
     XCTAssertFalse(schema.validate(["price": 34.99]).valid)
   }
+
+  func testIterableInterface() {
+    let schema = Schema([
+      "type": "object",
+      "properties": [
+        "name": ["type": "string"],
+        "price": ["type": "number"],
+      ],
+      "required": ["name"],
+    ])
+
+    var counter = 0
+    for error in schema.validate(["price": 34.99]) {
+      XCTAssertEqual(error, "Required property 'name' is missing")
+      counter += 1
+    }
+
+    XCTAssertEqual(counter, 1)
+
+    XCTAssertEqual(Array(schema.validate(["price": 34.99])), [
+      "Required property 'name' is missing"
+    ])
+  }
 }
 
 
