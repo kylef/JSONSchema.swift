@@ -6,7 +6,7 @@ public enum Type: Swift.String {
   case array = "array"
   case string = "string"
   case integer = "integer"
-  case jumber = "number"
+  case number = "number"
   case boolean = "boolean"
   case null = "null"
 }
