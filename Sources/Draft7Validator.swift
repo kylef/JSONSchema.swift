@@ -44,6 +44,9 @@ public class Draft7Validator: Validator {
     "ipv4": validateIPv4,
     "ipv6": validateIPv6,
     "uri": validateURI,
+    "date-time": validateDateTime,
+    "date": validateDate,
+    "time": validateTime
   ]
 
   public required init(schema: Bool) {
