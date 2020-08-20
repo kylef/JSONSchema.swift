@@ -28,6 +28,9 @@
   wouldn't be compared correctly (and thus `[true]` would have been treated as
   equal to `[1]`.
 
+- Fixed `uniqueItems` so that numbers and booleans are not treated equal when
+  found within a collection type (for example unique arrays or objects).
+
 - The `ipv6` format will no longer allow IPv6 addresses containing a zone id.
 
 ## 0.5.0

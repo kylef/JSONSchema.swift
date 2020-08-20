@@ -470,25 +470,15 @@ func uniqueItems(validator: Validator, uniqueItems: Any, instance: Any, schema: 
     return AnySequence(EmptyCollection())
   }
 
-  // 1 and true, 0 and false are isEqual for NSNumber's, so logic to count for that below
-
-  func isBoolean(_ number: NSNumber) -> Bool {
-    return CFGetTypeID(number) != CFBooleanGetTypeID()
+  var items: [Any] = []
+  for item in instance {
+    if items.contains(where: { isEqual(item as! NSObject, $0 as! NSObject) }) {
+      return AnySequence(["\(instance) does not have unique items"])
+    }
+    items.append(item)
   }
 
-  let numbers = instance.filter { value in value is NSNumber } as! [NSNumber]
-  let numerBooleans = numbers.filter(isBoolean)
-  let booleans = (numerBooleans as? [Bool]) ?? []
-  let nonBooleans = numbers.filter { number in !isBoolean(number) }
-  let hasTrueAndOne = booleans.filter { v in v }.count > 0 && nonBooleans.filter { v in v == 1 }.count > 0
-  let hasFalseAndZero = booleans.filter { v in !v }.count > 0 && nonBooleans.filter { v in v == 0 }.count > 0
-  let delta = (hasTrueAndOne ? 1 : 0) + (hasFalseAndZero ? 1 : 0)
-
-  if (NSSet(array: instance).count + delta) == instance.count {
-    return AnySequence(EmptyCollection())
-  }
-
-  return AnySequence(["\(instance) does not have unique items"])
+  return AnySequence(EmptyCollection())
 }
 
 func contains(validator: Validator, contains: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
