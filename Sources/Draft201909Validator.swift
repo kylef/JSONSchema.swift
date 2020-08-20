@@ -40,6 +40,9 @@ public class Draft201909Validator: Validator {
     "properties": properties,
     "format": format,
     "if": `if`,
+
+    "unevaluatedItems": unsupported("unevaluatedItems"),
+    "unevaluatedProperties": unsupported("unevaluatedProperties"),
   ]
 
   let formats: [String: (String) -> (AnySequence<ValidationError>)] = [

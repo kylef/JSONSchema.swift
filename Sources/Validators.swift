@@ -814,3 +814,10 @@ extension Sequence where Iterator.Element == ValidationError {
     return self.first(where: { _ in true }) == nil
   }
 }
+
+
+func unsupported(_ keyword: String) -> (_ validator: Validator, _ value: Any, _ instance: Any, _ schema: [String: Any]) -> AnySequence<ValidationError> {
+  return { (_, _, _, _) in
+    return AnySequence(["'\(keyword)' is not supported."])
+  }
+}

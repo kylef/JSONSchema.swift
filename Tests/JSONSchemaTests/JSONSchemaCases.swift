@@ -135,9 +135,11 @@ class JSONSchemaCases: XCTestCase {
       "ref.json",
       "refRemote.json",
       "anchor.json",
+      "id.json",
+
+      // unsupported
       "unevaluatedProperties.json",
       "unevaluatedItems.json",
-      "id.json",
 
       // optional
       "bignum.json",
