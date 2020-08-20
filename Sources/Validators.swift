@@ -93,7 +93,7 @@ func type(validator: Validator, type: Any, instance: Any, schema: [String: Any])
 
 func isInteger(_ instance: Any) -> Bool {
   guard let number = instance as? NSNumber else { return false }
-  return !CFNumberIsFloatType(number) && CFGetTypeID(number) != CFBooleanGetTypeID()
+  return CFGetTypeID(number) != CFBooleanGetTypeID() && (!CFNumberIsFloatType(number) || NSNumber(value: number.intValue) == number)
 }
 
 func isNumber(_ instance: Any) -> Bool {

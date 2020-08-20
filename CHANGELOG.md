@@ -33,6 +33,9 @@
 
 - The `ipv6` format will no longer allow IPv6 addresses containing a zone id.
 
+- Zero terminates floats such as `1.0` will now validate against the integer
+  type.
+
 ## 0.5.0
 
 ### Breaking Changes
