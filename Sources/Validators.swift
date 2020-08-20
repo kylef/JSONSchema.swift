@@ -486,13 +486,35 @@ func contains(validator: Validator, contains: Any, instance: Any, schema: [Strin
     return AnySequence(EmptyCollection())
   }
 
-  if !instance.contains(where: { validator.descend(instance: $0, subschema: contains).isValid }) {
-    return AnySequence(["\(instance) does not match contains"])
+  let min: Int
+  if let minContains = schema["minContains"] as? Int, minContains >= 0 {
+    min = minContains
+  } else {
+    min = 1
   }
 
-  return AnySequence(EmptyCollection())
-}
+  let max: Int?
+  if let maxContains = schema["maxContains"] as? Int, maxContains > 0 {
+    max = maxContains
+  } else {
+    max = nil
+  }
 
+  if max == nil && min == 0 {
+    return AnySequence(EmptyCollection())
+  }
+
+  let containsCount = instance.filter({ validator.descend(instance: $0, subschema: contains).isValid }).count
+  if let max = max, containsCount > max {
+    return AnySequence(["\(instance) does not match contains + maxContains \(max)"])
+  }
+
+  if min == 0 || containsCount >= min {
+    return AnySequence(EmptyCollection())
+  }
+
+  return AnySequence(["\(instance) does not match contains"])
+}
 
 // MARK: Object
 

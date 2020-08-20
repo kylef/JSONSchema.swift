@@ -139,9 +139,6 @@ class JSONSchemaCases: XCTestCase {
       "unevaluatedItems.json",
       "id.json",
 
-      "minContains.json",
-      "maxContains.json",
-
       // optional
       "bignum.json",
       "content.json",

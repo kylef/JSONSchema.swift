@@ -17,6 +17,9 @@
   }
   ```
 
+- Support for the `minContains` and `maxContains` keywords in JSON Schema draft
+  2019-09.
+
 ### Bug Fixes
 
 - The failing required validation error message incorrectly specified other
