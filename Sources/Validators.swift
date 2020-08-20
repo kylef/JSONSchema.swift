@@ -789,6 +789,17 @@ func validateURI(_ value: Any) -> AnySequence<ValidationError> {
 }
 
 
+func validateUUID(_ value: Any) -> AnySequence<ValidationError> {
+  if let value = value as? String {
+    if UUID(uuidString: value) == nil {
+      return AnySequence(["'\(value)' is not a valid uuid."])
+    }
+  }
+
+  return AnySequence(EmptyCollection())
+}
+
+
 extension Sequence where Iterator.Element == ValidationError {
   func validationResult() -> ValidationResult {
     let errors = Array(self)

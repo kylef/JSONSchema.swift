@@ -161,7 +161,6 @@ class JSONSchemaCases: XCTestCase {
       "time.json",
       "uri-reference.json",
       "uri-template.json",
-      "uuid.json",
     ])
   }
 
