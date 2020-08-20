@@ -201,6 +201,34 @@ func isEqual(_ lhs: NSObject, _ rhs: NSObject) -> Bool {
     return false
   }
 
+  if let lhs = lhs as? NSArray, let rhs = rhs as? NSArray {
+    guard lhs.count == rhs.count else {
+      return false
+    }
+
+    return !zip(lhs, rhs).contains(where: {
+      !isEqual($0.0 as! NSObject, $0.1 as! NSObject)
+    })
+  }
+
+  if let lhs = lhs as? NSDictionary, let rhs = rhs as? NSDictionary {
+    guard lhs.count == rhs.count else {
+      return false
+    }
+
+    for (key, lhsValue) in lhs {
+      guard let rhsValue = rhs[key] else {
+        return false
+      }
+
+      if !isEqual(lhsValue as! NSObject, rhsValue as! NSObject) {
+        return false
+      }
+    }
+
+    return true
+  }
+
   return lhs == rhs
 }
 

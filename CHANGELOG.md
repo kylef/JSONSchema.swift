@@ -24,6 +24,10 @@
   failed.
   [#61](https://github.com/kylef/JSONSchema.swift/issues/61)
 
+- Fixed `const` and `enum` comparisons where numbers inside collection types
+  wouldn't be compared correctly (and thus `[true]` would have been treated as
+  equal to `[1]`.
+
 ## 0.5.0
 
 ### Breaking Changes
