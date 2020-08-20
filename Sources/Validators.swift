@@ -742,9 +742,11 @@ func validateIPv4(_ value: Any) -> AnySequence<ValidationError> {
 
 func validateIPv6(_ value: Any) -> AnySequence<ValidationError> {
   if let ipv6 = value as? String {
-    var buf = UnsafeMutablePointer<Int8>.allocate(capacity: Int(INET6_ADDRSTRLEN))
-    if inet_pton(AF_INET6, ipv6, &buf) == 1 {
-      return AnySequence(EmptyCollection())
+    if !ipv6.contains("%") {
+      var buf = UnsafeMutablePointer<Int8>.allocate(capacity: Int(INET6_ADDRSTRLEN))
+      if inet_pton(AF_INET6, ipv6, &buf) == 1 {
+        return AnySequence(EmptyCollection())
+      }
     }
 
     return AnySequence(["'\(ipv6)' is not valid IPv6 address."])
