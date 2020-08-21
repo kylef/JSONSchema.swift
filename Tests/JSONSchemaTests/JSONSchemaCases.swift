@@ -72,6 +72,12 @@ class JSONSchemaCases: XCTestCase {
       // optional
       "bignum.json",
       "ecmascript-regex.json",
+      "zeroTerminatedFloats.json",
+
+      // optional formats
+      "date-time.json",
+      "email.json",
+      "hostname.json",
     ])
   }
 
@@ -83,8 +89,15 @@ class JSONSchemaCases: XCTestCase {
       // optional
       "bignum.json",
       "format.json",
-      "zeroTerminatedFloats.json",
       "ecmascript-regex.json",
+
+      // optional formats
+      "date-time.json",
+      "email.json",
+      "hostname.json",
+      "json-pointer.json",
+      "uri-reference.json",
+      "uri-template.json",
     ])
   }
 
@@ -96,7 +109,6 @@ class JSONSchemaCases: XCTestCase {
       // optional
       "bignum.json",
       "content.json",
-      "zeroTerminatedFloats.json",
       "ecmascript-regex.json",
 
       // optional, format
@@ -120,6 +132,9 @@ class JSONSchemaCases: XCTestCase {
       "ref.json",
       "refRemote.json",
       "anchor.json",
+      "id.json",
+
+      // unsupported
       "unevaluatedProperties.json",
       "unevaluatedItems.json",
 
@@ -127,7 +142,6 @@ class JSONSchemaCases: XCTestCase {
       "bignum.json",
       "content.json",
       "ecmascript-regex.json",
-      "zeroTerminatedFloats.json",
       "ecmascript-regex.json",
 
       // optional, format
@@ -177,7 +191,6 @@ class JSONSchemaCases: XCTestCase {
     for c in flatCases {
       for (name, assertion) in makeAssertions(c, validator) {
         // TODO: Improve testing
-        print(name)
         assertion()
       }
     }

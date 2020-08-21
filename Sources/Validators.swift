@@ -93,7 +93,7 @@ func type(validator: Validator, type: Any, instance: Any, schema: [String: Any])
 
 func isInteger(_ instance: Any) -> Bool {
   guard let number = instance as? NSNumber else { return false }
-  return !CFNumberIsFloatType(number) && CFGetTypeID(number) != CFBooleanGetTypeID()
+  return CFGetTypeID(number) != CFBooleanGetTypeID() && (!CFNumberIsFloatType(number) || NSNumber(value: number.intValue) == number)
 }
 
 func isNumber(_ instance: Any) -> Bool {
@@ -199,6 +199,34 @@ func allOf(validator: Validator, allOf: Any, instance: Any, schema: [String: Any
 func isEqual(_ lhs: NSObject, _ rhs: NSObject) -> Bool {
   if let lhs = lhs as? NSNumber, let rhs = rhs as? NSNumber, CFGetTypeID(lhs) != CFGetTypeID(rhs) {
     return false
+  }
+
+  if let lhs = lhs as? NSArray, let rhs = rhs as? NSArray {
+    guard lhs.count == rhs.count else {
+      return false
+    }
+
+    return !zip(lhs, rhs).contains(where: {
+      !isEqual($0.0 as! NSObject, $0.1 as! NSObject)
+    })
+  }
+
+  if let lhs = lhs as? NSDictionary, let rhs = rhs as? NSDictionary {
+    guard lhs.count == rhs.count else {
+      return false
+    }
+
+    for (key, lhsValue) in lhs {
+      guard let rhsValue = rhs[key] else {
+        return false
+      }
+
+      if !isEqual(lhsValue as! NSObject, rhsValue as! NSObject) {
+        return false
+      }
+    }
+
+    return true
   }
 
   return lhs == rhs
@@ -442,25 +470,15 @@ func uniqueItems(validator: Validator, uniqueItems: Any, instance: Any, schema: 
     return AnySequence(EmptyCollection())
   }
 
-  // 1 and true, 0 and false are isEqual for NSNumber's, so logic to count for that below
-
-  func isBoolean(_ number: NSNumber) -> Bool {
-    return CFGetTypeID(number) != CFBooleanGetTypeID()
+  var items: [Any] = []
+  for item in instance {
+    if items.contains(where: { isEqual(item as! NSObject, $0 as! NSObject) }) {
+      return AnySequence(["\(instance) does not have unique items"])
+    }
+    items.append(item)
   }
 
-  let numbers = instance.filter { value in value is NSNumber } as! [NSNumber]
-  let numerBooleans = numbers.filter(isBoolean)
-  let booleans = (numerBooleans as? [Bool]) ?? []
-  let nonBooleans = numbers.filter { number in !isBoolean(number) }
-  let hasTrueAndOne = booleans.filter { v in v }.count > 0 && nonBooleans.filter { v in v == 1 }.count > 0
-  let hasFalseAndZero = booleans.filter { v in !v }.count > 0 && nonBooleans.filter { v in v == 0 }.count > 0
-  let delta = (hasTrueAndOne ? 1 : 0) + (hasFalseAndZero ? 1 : 0)
-
-  if (NSSet(array: instance).count + delta) == instance.count {
-    return AnySequence(EmptyCollection())
-  }
-
-  return AnySequence(["\(instance) does not have unique items"])
+  return AnySequence(EmptyCollection())
 }
 
 func contains(validator: Validator, contains: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
@@ -468,13 +486,35 @@ func contains(validator: Validator, contains: Any, instance: Any, schema: [Strin
     return AnySequence(EmptyCollection())
   }
 
-  if !instance.contains(where: { validator.descend(instance: $0, subschema: contains).isValid }) {
-    return AnySequence(["\(instance) does not match contains"])
+  let min: Int
+  if let minContains = schema["minContains"] as? Int, minContains >= 0 {
+    min = minContains
+  } else {
+    min = 1
   }
 
-  return AnySequence(EmptyCollection())
-}
+  let max: Int?
+  if let maxContains = schema["maxContains"] as? Int, maxContains > 0 {
+    max = maxContains
+  } else {
+    max = nil
+  }
 
+  if max == nil && min == 0 {
+    return AnySequence(EmptyCollection())
+  }
+
+  let containsCount = instance.filter({ validator.descend(instance: $0, subschema: contains).isValid }).count
+  if let max = max, containsCount > max {
+    return AnySequence(["\(instance) does not match contains + maxContains \(max)"])
+  }
+
+  if min == 0 || containsCount >= min {
+    return AnySequence(EmptyCollection())
+  }
+
+  return AnySequence(["\(instance) does not match contains"])
+}
 
 // MARK: Object
 
@@ -714,9 +754,11 @@ func validateIPv4(_ value: Any) -> AnySequence<ValidationError> {
 
 func validateIPv6(_ value: Any) -> AnySequence<ValidationError> {
   if let ipv6 = value as? String {
-    var buf = UnsafeMutablePointer<Int8>.allocate(capacity: Int(INET6_ADDRSTRLEN))
-    if inet_pton(AF_INET6, ipv6, &buf) == 1 {
-      return AnySequence(EmptyCollection())
+    if !ipv6.contains("%") {
+      var buf = UnsafeMutablePointer<Int8>.allocate(capacity: Int(INET6_ADDRSTRLEN))
+      if inet_pton(AF_INET6, ipv6, &buf) == 1 {
+        return AnySequence(EmptyCollection())
+      }
     }
 
     return AnySequence(["'\(ipv6)' is not valid IPv6 address."])
@@ -763,6 +805,7 @@ func validateDateTime(_ value: Any) -> AnySequence<ValidationError> {
     return AnySequence(EmptyCollection())
 }
 
+
 func validateDate(_ value: Any) -> AnySequence<ValidationError> {
     if let date = value as? String {
         let rfc3339DateTimeFormatter = DateFormatter()
@@ -778,6 +821,7 @@ func validateDate(_ value: Any) -> AnySequence<ValidationError> {
     
     return AnySequence(EmptyCollection())
 }
+
 
 func validateTime(_ value: Any) -> AnySequence<ValidationError> {
     if let date = value as? String {
@@ -796,6 +840,17 @@ func validateTime(_ value: Any) -> AnySequence<ValidationError> {
 }
 
 
+func validateUUID(_ value: Any) -> AnySequence<ValidationError> {
+  if let value = value as? String {
+    if UUID(uuidString: value) == nil {
+      return AnySequence(["'\(value)' is not a valid uuid."])
+    }
+  }
+
+  return AnySequence(EmptyCollection())
+}
+
+
 extension Sequence where Iterator.Element == ValidationError {
   func validationResult() -> ValidationResult {
     let errors = Array(self)
@@ -808,5 +863,12 @@ extension Sequence where Iterator.Element == ValidationError {
 
   var isValid: Bool {
     return self.first(where: { _ in true }) == nil
+  }
+}
+
+
+func unsupported(_ keyword: String) -> (_ validator: Validator, _ value: Any, _ instance: Any, _ schema: [String: Any]) -> AnySequence<ValidationError> {
+  return { (_, _, _, _) in
+    return AnySequence(["'\(keyword)' is not supported."])
   }
 }

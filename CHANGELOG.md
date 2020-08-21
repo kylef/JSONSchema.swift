@@ -17,12 +17,29 @@
   }
   ```
 
+- Support for the `minContains` and `maxContains` keywords in JSON Schema draft
+  2019-09.
+
+- Support for the `uuid` format in JSON Schema draft 2019-09.
+
 ### Bug Fixes
 
 - The failing required validation error message incorrectly specified other
   found keys were missing under the case where another missing key validation
   failed.
   [#61](https://github.com/kylef/JSONSchema.swift/issues/61)
+
+- Fixed `const` and `enum` comparisons where numbers inside collection types
+  wouldn't be compared correctly (and thus `[true]` would have been treated as
+  equal to `[1]`.
+
+- Fixed `uniqueItems` so that numbers and booleans are not treated equal when
+  found within a collection type (for example unique arrays or objects).
+
+- The `ipv6` format will no longer allow IPv6 addresses containing a zone id.
+
+- Zero terminates floats such as `1.0` will now validate against the integer
+  type.
 
 ## 0.5.0
 

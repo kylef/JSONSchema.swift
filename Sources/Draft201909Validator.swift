@@ -40,6 +40,9 @@ public class Draft201909Validator: Validator {
     "properties": properties,
     "format": format,
     "if": `if`,
+
+    "unevaluatedItems": unsupported("unevaluatedItems"),
+    "unevaluatedProperties": unsupported("unevaluatedProperties"),
   ]
 
   let formats: [String: (String) -> (AnySequence<ValidationError>)] = [
@@ -48,7 +51,8 @@ public class Draft201909Validator: Validator {
     "uri": validateURI,
     "date-time": validateDateTime,
     "date": validateDate,
-    "time": validateTime
+    "time": validateTime,
+    "uuid": validateUUID
   ]
 
   public required init(schema: Bool) {
