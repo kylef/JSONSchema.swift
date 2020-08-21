@@ -100,8 +100,6 @@ class JSONSchemaCases: XCTestCase {
       "ecmascript-regex.json",
 
       // optional, format
-      "date-time.json",
-      "date.json",
       "email.json",
       "hostname.json",
       "idn-email.json",
@@ -111,7 +109,6 @@ class JSONSchemaCases: XCTestCase {
       "json-pointer.json",
       "regex.json",
       "relative-json-pointer.json",
-      "time.json",
       "uri-reference.json",
       "uri-template.json",
     ])
@@ -134,8 +131,6 @@ class JSONSchemaCases: XCTestCase {
       "ecmascript-regex.json",
 
       // optional, format
-      "date-time.json",
-      "date.json",
       "duration.json",
       "email.json",
       "hostname.json",
@@ -146,7 +141,6 @@ class JSONSchemaCases: XCTestCase {
       "json-pointer.json",
       "regex.json",
       "relative-json-pointer.json",
-      "time.json",
       "uri-reference.json",
       "uri-template.json",
     ])
