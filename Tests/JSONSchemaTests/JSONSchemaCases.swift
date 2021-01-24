@@ -151,6 +151,7 @@ class JSONSchemaCases: XCTestCase {
       "refRemote.json",
       "anchor.json",
       "id.json",
+      "recursiveRef.json",
 
       // unsupported
       "unevaluatedProperties.json",
