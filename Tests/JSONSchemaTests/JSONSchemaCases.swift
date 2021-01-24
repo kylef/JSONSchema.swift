@@ -82,6 +82,7 @@ class JSONSchemaCases: XCTestCase {
       "bignum.json",
       "ecmascript-regex.json",
       "zeroTerminatedFloats.json",
+      "float-overflow.json",
 
       // optional formats
       "date-time.json",
@@ -99,6 +100,7 @@ class JSONSchemaCases: XCTestCase {
       "bignum.json",
       "format.json",
       "ecmascript-regex.json",
+      "float-overflow.json",
 
       // optional formats
       "date-time.json",
@@ -119,6 +121,7 @@ class JSONSchemaCases: XCTestCase {
       "bignum.json",
       "content.json",
       "ecmascript-regex.json",
+      "float-overflow.json",
 
       // optional, format
       "date-time.json",
@@ -155,6 +158,7 @@ class JSONSchemaCases: XCTestCase {
       "content.json",
       "ecmascript-regex.json",
       "ecmascript-regex.json",
+      "float-overflow.json",
 
       // optional, format
       "date-time.json",
