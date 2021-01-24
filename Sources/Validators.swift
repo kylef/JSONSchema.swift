@@ -1,3 +1,4 @@
+import CoreFoundation
 import Foundation
 
 public typealias ValidationError = String
@@ -93,7 +94,11 @@ func type(validator: Validator, type: Any, instance: Any, schema: [String: Any])
 
 func isInteger(_ instance: Any) -> Bool {
   guard let number = instance as? NSNumber else { return false }
-  return CFGetTypeID(number) != CFBooleanGetTypeID() && (!CFNumberIsFloatType(number) || NSNumber(value: number.intValue) == number)
+#if os(Linux)
+  return CFGetTypeID(number) != CFBooleanGetTypeID() && NSNumber(value: number.intValue) == number
+#else
+  return CFGetTypeID(number) != CFBooleanGetTypeID() && (!CFNumberIsFloatType(number as! CFNumber) || NSNumber(value: number.intValue) == number)
+#endif
 }
 
 func isNumber(_ instance: Any) -> Bool {
