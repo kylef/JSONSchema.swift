@@ -32,11 +32,6 @@ extension Validator {
       return AnySequence(EmptyCollection())
     }
 
-    if let ref = schema["$ref"] as? String {
-      let validation = validations["$ref"]!
-      return validation(self, ref, instance, schema)
-    }
-
     return AnySequence(validations.compactMap { (key, validation) -> AnySequence<ValidationError> in
       if let value = schema[key] {
         return validation(self, value, instance, schema)
