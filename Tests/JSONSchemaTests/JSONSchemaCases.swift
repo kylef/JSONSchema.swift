@@ -83,6 +83,7 @@ class JSONSchemaCases: XCTestCase {
       "ecmascript-regex.json",
       "zeroTerminatedFloats.json",
       "float-overflow.json",
+      "infinite-loop-detection.json",
 
       // optional formats
       "date-time.json",
@@ -101,6 +102,7 @@ class JSONSchemaCases: XCTestCase {
       "format.json",
       "ecmascript-regex.json",
       "float-overflow.json",
+      "infinite-loop-detection.json",
 
       // optional formats
       "date-time.json",
@@ -122,6 +124,7 @@ class JSONSchemaCases: XCTestCase {
       "content.json",
       "ecmascript-regex.json",
       "float-overflow.json",
+      "infinite-loop-detection.json",
 
       // optional, format
       "date-time.json",
@@ -159,6 +162,7 @@ class JSONSchemaCases: XCTestCase {
       "ecmascript-regex.json",
       "ecmascript-regex.json",
       "float-overflow.json",
+      "infinite-loop-detection.json",
 
       // optional, format
       "date-time.json",
