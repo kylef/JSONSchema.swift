@@ -44,24 +44,27 @@ func ref(validator: Validator, reference: Any, instance: Any, schema: [String: A
     return AnySequence(EmptyCollection())
   }
 
-  if let metaSchemaID = DRAFT_04_META_SCHEMA["id"] as? String, reference == metaSchemaID {
-    return Draft4Validator(schema: DRAFT_04_META_SCHEMA).validate(instance: instance)
-  }
-
-  if let metaSchemaID = DRAFT_06_META_SCHEMA["$id"] as? String, reference == metaSchemaID {
-    return Draft6Validator(schema: DRAFT_06_META_SCHEMA).validate(instance: instance)
-  }
-
-  if let metaSchemaID = DRAFT_07_META_SCHEMA["$id"] as? String, reference == metaSchemaID {
-    return Draft7Validator(schema: DRAFT_07_META_SCHEMA).validate(instance: instance)
-  }
-
-//  if let metaSchemaID = DRAFT_2019_09_META_SCHEMA["$id"] as? String, reference == metaSchemaID {
-//    return Draft201909Validator(schema: DRAFT_2019_09_META_SCHEMA).validate(instance: instance)
-//  }
-
   guard let document = validator.resolve(ref: reference) else {
     return AnySequence(["Reference not found '\(reference)'"])
+  }
+
+  let id: String?
+  if let document = document as? [String: Any],
+     let idValue = document[validator.resolver.idField] as? String
+  {
+    id = urlNormalise(idValue)
+  } else {
+    id = nil
+  }
+
+  if let id = id {
+    validator.resolver.stack.append(id)
+  }
+  defer {
+    if let id = id {
+      assert(validator.resolver.stack.removeLast() == id,
+             "popping id mismatch - if this assertion is triggered, there's probably a bug in JSON Schema validator library")
+    }
   }
 
   return validator.descend(instance: instance, subschema: document)
@@ -198,7 +201,7 @@ func allOf(validator: Validator, allOf: Any, instance: Any, schema: [String: Any
     return AnySequence(EmptyCollection())
   }
 
-  return AnySequence(allOf.lazy.map({ validator.descend(instance: instance, subschema: $0) }).joined())
+  return AnySequence(allOf.map({ validator.descend(instance: instance, subschema: $0) }).joined())
 }
 
 func isEqual(_ lhs: NSObject, _ rhs: NSObject) -> Bool {
@@ -560,7 +563,7 @@ func required(validator: Validator, required: Any, instance: Any, schema: [Strin
     return AnySequence(EmptyCollection())
   }
 
-  return AnySequence(required.lazy.compactMap { key -> String? in
+  return AnySequence(required.compactMap { key -> String? in
     guard !instance.keys.contains(key) else { return nil }
     return "Required property '\(key)' is missing"
   })

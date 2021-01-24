@@ -1,25 +1,69 @@
 import Foundation
 
+func urlSplitFragment(url: String) -> (String, String) {
+  guard let hashIndex = url.index(of: "#") else {
+    return (url, "")
+  }
+
+  return (
+    String(url.prefix(upTo: hashIndex)),
+    String(url.suffix(from: url.index(after: hashIndex)))
+  )
+}
+
+func urlJoin(_ lhs: String, _ rhs: String) -> String {
+  if rhs.hasPrefix("#") {
+    return lhs + rhs
+  }
+  return rhs
+}
+
+func urlNormalise(_ value: String) -> String {
+  if value.hasSuffix("#"), let index = value.lastIndex(of: "#") {
+    return String(value.prefix(upTo: index))
+  }
+
+  return value
+}
+
+
 class RefResolver {
   let referrer: [String: Any]
   var store: [String: Any]
+  var stack: [String]
+  let idField: String
 
   init(schema: [String: Any], metaschemes: [String: Any], idField: String = "$id") {
     self.referrer = schema
     self.store = metaschemes
+    self.idField = idField
 
     if let id = schema[idField] as? String {
       self.store[id] = schema
+      self.stack = [id]
     } else {
       self.store[""] = schema
+      self.stack = [""]
     }
   }
 
   func resolve(reference: String) -> Any? {
-    // TODO: Rewrite this whole block: https://github.com/kylef/JSONSchema.swift/issues/12
+    let url = urlJoin(stack.last!, reference)
+    return resolve(url: url)
+  }
 
-    if let fragment = reference.stringByRemovingPrefix("#") {  // Document relative
-      return resolve(document: referrer, fragment: fragment)
+  func resolve(url: String) -> Any? {
+    let (url, fragment) = urlSplitFragment(url: url)
+    guard let document = store[url] else {
+      return nil
+    }
+
+    if let document = document as? [String: Any] {
+      return resolve(document: document, fragment: fragment)
+    }
+
+    if fragment == "" {
+      return document
     }
 
     return nil
