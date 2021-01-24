@@ -12,10 +12,15 @@ func urlSplitFragment(url: String) -> (String, String) {
 }
 
 func urlJoin(_ lhs: String, _ rhs: String) -> String {
-  if rhs.hasPrefix("#") {
-    return lhs + rhs
+  if lhs.isEmpty {
+    return rhs
   }
-  return rhs
+
+  if rhs.isEmpty {
+    return lhs
+  }
+
+  return URL(string: rhs, relativeTo: URL(string: lhs)!)!.absoluteString
 }
 
 func urlNormalise(_ value: String) -> String {
@@ -69,7 +74,7 @@ class RefResolver {
     return nil
   }
 
-  func resolve(document: [String: Any], fragment: String) -> [String: Any]? {
+  func resolve(document: [String: Any], fragment: String) -> Any? {
     guard !fragment.isEmpty else {
       return document
     }
@@ -100,6 +105,11 @@ class RefResolver {
             continue
           }
         }
+      } else if let subschema = schema[component] as? Bool {
+        if !components.isEmpty {
+          return nil
+        }
+        return subschema
       }
 
       return nil
