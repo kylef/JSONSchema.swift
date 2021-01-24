@@ -62,6 +62,15 @@ func draft201909Validator(schema: Any, instance: Any) -> ValidationResult {
   fatalError()
 }
 
+#if os(Linux)
+  let additionalExclusions = [
+    // optional
+    "non-bmp-regex.json",
+  ]
+#else
+  let additionalExclusions: [String] = []
+#endif
+
 
 class JSONSchemaCases: XCTestCase {
   func testJSONSchemaDraft4() throws {
@@ -78,7 +87,7 @@ class JSONSchemaCases: XCTestCase {
       "date-time.json",
       "email.json",
       "hostname.json",
-    ])
+    ] + additionalExclusions)
   }
 
   func testJSONSchemaDraft6() throws {
@@ -98,7 +107,7 @@ class JSONSchemaCases: XCTestCase {
       "json-pointer.json",
       "uri-reference.json",
       "uri-template.json",
-    ])
+    ] + additionalExclusions)
   }
 
   func testJSONSchemaDraft7() throws {
@@ -126,7 +135,7 @@ class JSONSchemaCases: XCTestCase {
       "time.json",
       "uri-reference.json",
       "uri-template.json",
-    ])
+    ] + additionalExclusions)
   }
 
   func testJSONSchemaDraft2019_09() throws {
@@ -163,7 +172,7 @@ class JSONSchemaCases: XCTestCase {
       "time.json",
       "uri-reference.json",
       "uri-template.json",
-    ])
+    ] + additionalExclusions)
   }
 
   func test(name: String, validator: @escaping ((_ schema: Any, _ instance: Any) -> (ValidationResult)), excluding: [String]) throws {
