@@ -4,9 +4,15 @@ class RefResolver {
   let referrer: [String: Any]
   var store: [String: Any]
 
-  init(schema: [String: Any], metaschemes: [String: Any]) {
+  init(schema: [String: Any], metaschemes: [String: Any], idField: String = "$id") {
     self.referrer = schema
     self.store = metaschemes
+
+    if let id = schema[idField] as? String {
+      self.store[id] = schema
+    } else {
+      self.store[""] = schema
+    }
   }
 
   func resolve(reference: String) -> Any? {
