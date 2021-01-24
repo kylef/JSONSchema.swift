@@ -6,6 +6,7 @@ protocol Validator {
   var resolver: RefResolver { get }
 
   var schema: [String: Any] { get }
+  var metaschmas: [String: Any] { get }
   var validations: [String: Validation] { get }
   var formats: [String: (String) -> (AnySequence<ValidationError>)] { get }
 }

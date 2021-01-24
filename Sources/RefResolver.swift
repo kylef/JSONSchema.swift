@@ -2,9 +2,11 @@ import Foundation
 
 class RefResolver {
   let referrer: [String: Any]
+  var store: [String: Any]
 
-  init(schema: [String: Any]) {
+  init(schema: [String: Any], metaschemes: [String: Any]) {
     self.referrer = schema
+    self.store = metaschemes
   }
 
   func resolve(reference: String) -> Any? {
