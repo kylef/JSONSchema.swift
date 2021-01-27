@@ -808,6 +808,19 @@ func validateUUID(_ value: Any) -> AnySequence<ValidationError> {
 }
 
 
+func validateRegex(_ value: Any) -> AnySequence<ValidationError> {
+  if let value = value as? String {
+    do {
+      _ = try NSRegularExpression(pattern: value)
+    } catch {
+      return AnySequence(["'\(value)' is not a valid regex."])
+    }
+  }
+
+  return AnySequence(EmptyCollection())
+}
+
+
 extension Sequence where Iterator.Element == ValidationError {
   func validationResult() -> ValidationResult {
     let errors = Array(self)

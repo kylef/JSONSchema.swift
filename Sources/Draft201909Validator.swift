@@ -59,6 +59,7 @@ public class Draft201909Validator: Validator {
     "ipv6": validateIPv6,
     "uri": validateURI,
     "uuid": validateUUID,
+    "regex": validateRegex,
   ]
 
   public required init(schema: Bool) {
