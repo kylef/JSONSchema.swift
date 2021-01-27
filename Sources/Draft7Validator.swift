@@ -57,12 +57,12 @@ public class Draft7Validator: Validator {
       self.schema = ["not": [:]]
     }
 
-    self.resolver = RefResolver(schema: self.schema, metaschemes: metaschmas)
+    self.resolver = RefResolver(schema: self.schema, metaschemes: metaschmas, defsField: "definitions")
   }
 
   public required init(schema: [String: Any]) {
     self.schema = schema
-    self.resolver = RefResolver(schema: self.schema, metaschemes: metaschmas)
+    self.resolver = RefResolver(schema: self.schema, metaschemes: metaschmas, defsField: "definitions")
   }
 }
 

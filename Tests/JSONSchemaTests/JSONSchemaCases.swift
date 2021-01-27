@@ -75,7 +75,6 @@ func draft201909Validator(schema: Any, instance: Any) -> ValidationResult {
 class JSONSchemaCases: XCTestCase {
   func testJSONSchemaDraft4() throws {
     try test(name: "draft4", validator: draft4Validator, excluding: [
-      "ref.json",
       "refRemote.json",
 
       // optional
@@ -94,7 +93,6 @@ class JSONSchemaCases: XCTestCase {
 
   func testJSONSchemaDraft6() throws {
     try test(name: "draft6", validator: draft6Validator, excluding: [
-      "ref.json",
       "refRemote.json",
 
       // optional
@@ -116,7 +114,6 @@ class JSONSchemaCases: XCTestCase {
 
   func testJSONSchemaDraft7() throws {
     try test(name: "draft7", validator: draft7Validator, excluding: [
-      "ref.json",
       "refRemote.json",
 
       // optional
@@ -147,7 +144,6 @@ class JSONSchemaCases: XCTestCase {
   func testJSONSchemaDraft2019_09() throws {
     try test(name: "draft2019-09", validator: draft201909Validator, excluding: [
       "defs.json",
-      "ref.json",
       "refRemote.json",
       "anchor.json",
       "id.json",

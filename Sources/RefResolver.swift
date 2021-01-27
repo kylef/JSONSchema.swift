@@ -37,11 +37,13 @@ class RefResolver {
   var store: [String: Any]
   var stack: [String]
   let idField: String
+  let defsField: String
 
-  init(schema: [String: Any], metaschemes: [String: Any], idField: String = "$id") {
+  init(schema: [String: Any], metaschemes: [String: Any], idField: String = "$id", defsField: String = "$defs") {
     self.referrer = schema
     self.store = metaschemes
     self.idField = idField
+    self.defsField = defsField
 
     if let id = schema[idField] as? String {
       self.store[id] = schema
@@ -49,6 +51,30 @@ class RefResolver {
     } else {
       self.store[""] = schema
       self.stack = [""]
+    }
+
+    storeDefinitions(from: schema)
+  }
+
+  func storeDefinitions(from document: Any) {
+    guard
+      let document = document as? [String: Any],
+      let defs = document[defsField] as? [String: Any]
+    else {
+      return
+    }
+
+
+    for (_, defs) in defs {
+      if let def = defs as? [String: Any], let id = def[idField] as? String {
+        let url = urlJoin(stack.last!, id)
+        self.store[url] = def
+
+        // recurse
+        self.stack.append(url)
+        storeDefinitions(from: def)
+        self.stack.removeLast()
+      }
     }
   }
 
@@ -58,6 +84,10 @@ class RefResolver {
   }
 
   func resolve(url: String) -> Any? {
+    if let document = store[url] {
+      return document
+    }
+
     let (url, fragment) = urlSplitFragment(url: url)
     guard let document = store[url] else {
       return nil

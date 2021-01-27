@@ -54,12 +54,12 @@ public class Draft4Validator: Validator {
       self.schema = ["not": [:]]
     }
 
-    self.resolver = RefResolver(schema: self.schema, metaschemes: metaschmas, idField: "id")
+    self.resolver = RefResolver(schema: self.schema, metaschemes: metaschmas, idField: "id", defsField: "definitions")
   }
 
   public required init(schema: [String: Any]) {
     self.schema = schema
-    self.resolver = RefResolver(schema: schema, metaschemes: metaschmas, idField: "id")
+    self.resolver = RefResolver(schema: schema, metaschemes: metaschmas, idField: "id", defsField: "definitions")
   }
 }
 
