@@ -66,15 +66,24 @@ class RefResolver {
 
 
     for (_, defs) in defs {
-      if let def = defs as? [String: Any], let id = def[idField] as? String {
-        let url = urlJoin(stack.last!, id)
-        self.store[url] = def
+      guard let def = defs as? [String: Any] else { continue }
 
-        // recurse
-        self.stack.append(url)
-        storeDefinitions(from: def)
-        self.stack.removeLast()
-      }
+      let id = def[idField] as? String
+      let anchor = def["$anchor"] as? String
+
+      let url: String
+      if let anchor = anchor {
+        url = urlJoin(stack.last!, "\(id ?? "")#\(anchor)")
+      } else if let id = id {
+        url = urlJoin(stack.last!, id)
+      } else { continue }
+
+      self.store[url] = def
+
+      // recurse
+      self.stack.append(url)
+      storeDefinitions(from: def)
+      self.stack.removeLast()
     }
   }
 

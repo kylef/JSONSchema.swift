@@ -145,7 +145,6 @@ class JSONSchemaCases: XCTestCase {
     try test(name: "draft2019-09", validator: draft201909Validator, excluding: [
       "defs.json",
       "refRemote.json",
-      "anchor.json",
       "id.json",
       "recursiveRef.json",
 
