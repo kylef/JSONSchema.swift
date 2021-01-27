@@ -821,6 +821,26 @@ func validateRegex(_ value: Any) -> AnySequence<ValidationError> {
 }
 
 
+func validateJSONPointer(_ value: Any) -> AnySequence<ValidationError> {
+  if let value = value as? String, !value.isEmpty {
+    if !value.hasPrefix("/") {
+      return AnySequence(["'\(value)' is not a valid json-pointer."])
+    }
+
+    if value
+        .replacingOccurrences(of: "~0", with: "")
+        .replacingOccurrences(of: "~1", with: "")
+        .contains("~")
+    {
+      // unescaped ~
+      return AnySequence(["'\(value)' is not a valid json-pointer."])
+    }
+  }
+
+  return AnySequence(EmptyCollection())
+}
+
+
 extension Sequence where Iterator.Element == ValidationError {
   func validationResult() -> ValidationResult {
     let errors = Array(self)

@@ -60,6 +60,7 @@ public class Draft201909Validator: Validator {
     "uri": validateURI,
     "uuid": validateUUID,
     "regex": validateRegex,
+    "json-pointer": validateJSONPointer,
   ]
 
   public required init(schema: Bool) {
