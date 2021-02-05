@@ -4,7 +4,9 @@ func ref(context: Context, reference: Any, instance: Any, schema: [String: Any])
   }
 
   guard let document = context.resolve(ref: reference) else {
-    return AnySequence(["Reference not found '\(reference)'"])
+    return AnySequence([
+      ValidationError("Reference not found '\(reference)'"),
+    ])
   }
 
   let id: String?

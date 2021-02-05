@@ -1,19 +1,9 @@
-public class ValidationError: ExpressibleByStringLiteral, ExpressibleByStringInterpolation {
+public class ValidationError {
   public let description: String
 
   init(_ value: String, instanceLocation: JSONPointer? = nil) {
     self.description = value
     self.instanceLocation = instanceLocation
-  }
-
-  public required init(stringLiteral value: String) {
-    description = value
-    instanceLocation = nil
-  }
-
-  public required init(stringInterpolation: DefaultStringInterpolation) {
-    description = stringInterpolation.description
-    instanceLocation = nil
   }
 
   // FIXME make this part of public interface
