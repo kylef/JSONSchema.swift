@@ -41,7 +41,7 @@ public class Draft4Validator: Validator {
     "if": `if`,
   ]
 
-  let formats: [String: (String) -> (AnySequence<ValidationError>)] = [
+  let formats: [String: (Context, String) -> (AnySequence<ValidationError>)] = [
     "ipv4": validateIPv4,
     "ipv6": validateIPv6,
     "uri": validateURI,

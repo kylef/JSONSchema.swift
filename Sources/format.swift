@@ -19,11 +19,11 @@ func format(context: Context, format: Any, instance: Any, schema: [String: Any])
     ])
   }
 
-  return validator(instance)
+  return validator(context, instance)
 }
 
 
-func validateIPv4(_ value: Any) -> AnySequence<ValidationError> {
+func validateIPv4(_ context: Context, _ value: Any) -> AnySequence<ValidationError> {
   if let ipv4 = value as? String {
     if let expression = try? NSRegularExpression(pattern: "^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$", options: NSRegularExpression.Options(rawValue: 0)) {
       if expression.matches(in: ipv4, options: NSRegularExpression.MatchingOptions(rawValue: 0), range: NSMakeRange(0, ipv4.count)).count == 1 {
@@ -31,7 +31,12 @@ func validateIPv4(_ value: Any) -> AnySequence<ValidationError> {
       }
     }
 
-    return AnySequence(["'\(ipv4)' is not valid IPv4 address."])
+    return AnySequence([
+      ValidationError(
+        "'\(ipv4)' is not a IPv4 address.",
+        instanceLocation: context.instanceLocation
+      )
+    ])
   }
 
   return AnySequence(EmptyCollection())
@@ -39,7 +44,7 @@ func validateIPv4(_ value: Any) -> AnySequence<ValidationError> {
 
 
 
-func validateIPv6(_ value: Any) -> AnySequence<ValidationError> {
+func validateIPv6(_ context: Context, _ value: Any) -> AnySequence<ValidationError> {
   if let ipv6 = value as? String {
     if !ipv6.contains("%") {
       var buf = UnsafeMutablePointer<Int8>.allocate(capacity: Int(INET6_ADDRSTRLEN))
@@ -48,14 +53,19 @@ func validateIPv6(_ value: Any) -> AnySequence<ValidationError> {
       }
     }
 
-    return AnySequence(["'\(ipv6)' is not valid IPv6 address."])
+    return AnySequence([
+      ValidationError(
+        "'\(ipv6)' is not a IPv6 address.",
+        instanceLocation: context.instanceLocation
+      )
+    ])
   }
 
   return AnySequence(EmptyCollection())
 }
 
 
-func validateURI(_ value: Any) -> AnySequence<ValidationError> {
+func validateURI(_ context: Context, _ value: Any) -> AnySequence<ValidationError> {
   if let uri = value as? String {
     // Using the regex from http://blog.dieweltistgarnichtso.net/constructing-a-regular-expression-that-matches-uris
 
@@ -69,17 +79,27 @@ func validateURI(_ value: Any) -> AnySequence<ValidationError> {
       }
     }
 
-    return AnySequence(["'\(uri)' is not a valid URI."])
+    return AnySequence([
+      ValidationError(
+        "'\(uri)' is not a valid uri.",
+        instanceLocation: context.instanceLocation
+      )
+    ])
   }
 
   return AnySequence(EmptyCollection())
 }
 
 
-func validateUUID(_ value: Any) -> AnySequence<ValidationError> {
+func validateUUID(_ context: Context, _ value: Any) -> AnySequence<ValidationError> {
   if let value = value as? String {
     if UUID(uuidString: value) == nil {
-      return AnySequence(["'\(value)' is not a valid uuid."])
+      return AnySequence([
+        ValidationError(
+          "'\(value)' is not a valid uuid.",
+          instanceLocation: context.instanceLocation
+        )
+      ])
     }
   }
 
@@ -87,12 +107,17 @@ func validateUUID(_ value: Any) -> AnySequence<ValidationError> {
 }
 
 
-func validateRegex(_ value: Any) -> AnySequence<ValidationError> {
+func validateRegex(_ context: Context, _ value: Any) -> AnySequence<ValidationError> {
   if let value = value as? String {
     do {
       _ = try NSRegularExpression(pattern: value)
     } catch {
-      return AnySequence(["'\(value)' is not a valid regex."])
+      return AnySequence([
+        ValidationError(
+          "'\(value)' is not a valid regex.",
+          instanceLocation: context.instanceLocation
+        )
+      ])
     }
   }
 
@@ -100,10 +125,15 @@ func validateRegex(_ value: Any) -> AnySequence<ValidationError> {
 }
 
 
-func validateJSONPointer(_ value: Any) -> AnySequence<ValidationError> {
+func validateJSONPointer(_ context: Context, _ value: Any) -> AnySequence<ValidationError> {
   if let value = value as? String, !value.isEmpty {
     if !value.hasPrefix("/") {
-      return AnySequence(["'\(value)' is not a valid json-pointer."])
+      return AnySequence([
+        ValidationError(
+          "'\(value)' is not a valid json-pointer.",
+          instanceLocation: context.instanceLocation
+        )
+      ])
     }
 
     if value
@@ -112,7 +142,12 @@ func validateJSONPointer(_ value: Any) -> AnySequence<ValidationError> {
         .contains("~")
     {
       // unescaped ~
-      return AnySequence(["'\(value)' is not a valid json-pointer."])
+      return AnySequence([
+        ValidationError(
+          "'\(value)' is not a valid json-pointer.",
+          instanceLocation: context.instanceLocation
+        )
+      ])
     }
   }
 

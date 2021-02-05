@@ -60,7 +60,7 @@ protocol Validator {
   var schema: [String: Any] { get }
   var metaschmas: [String: Any] { get }
   var validations: [String: Validation] { get }
-  var formats: [String: (String) -> (AnySequence<ValidationError>)] { get }
+  var formats: [String: (Context, String) -> (AnySequence<ValidationError>)] { get }
 }
 
 extension Validator {
