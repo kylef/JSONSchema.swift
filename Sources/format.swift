@@ -1,62 +1,6 @@
 import Foundation
 
 
-func validateLength(_ comparitor: @escaping ((Int, Int) -> (Bool)), length: Int, error: String) -> (_ value: Any) -> AnySequence<ValidationError> {
-  return { value in
-    if let value = value as? String {
-      if !comparitor(value.count, length) {
-        return AnySequence([ValidationError(error)])
-      }
-    }
-
-    return AnySequence(EmptyCollection())
-  }
-}
-
-
-func minLength(context: Context, minLength: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
-  guard let minLength = minLength as? Int else {
-    return AnySequence(EmptyCollection())
-  }
-
-  return validateLength(>=, length: minLength, error: "Length of string is smaller than minimum length \(minLength)")(instance)
-}
-
-
-func maxLength(context: Context, maxLength: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
-  guard let maxLength = maxLength as? Int else {
-    return AnySequence(EmptyCollection())
-  }
-
-  return validateLength(<=, length: maxLength, error: "Length of string is larger than max length \(maxLength)")(instance)
-}
-
-
-func pattern(context: Context, pattern: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
-  guard let pattern = pattern as? String else {
-    return AnySequence(EmptyCollection())
-  }
-
-  guard let instance = instance as? String else {
-    return AnySequence(EmptyCollection())
-  }
-
-  guard let expression = try? NSRegularExpression(pattern: pattern, options: NSRegularExpression.Options(rawValue: 0)) else {
-    return AnySequence(["[Schema] Regex pattern '\(pattern)' is not valid"])
-  }
-
-  let range = NSMakeRange(0, instance.count)
-  if expression.matches(in: instance, options: NSRegularExpression.MatchingOptions(rawValue: 0), range: range).count == 0 {
-    return AnySequence(["'\(instance)' does not match pattern: '\(pattern)'"])
-  }
-
-  return AnySequence(EmptyCollection())
-}
-
-
-// MARK: Format
-
-
 func format(context: Context, format: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let format = format as? String else {
     return AnySequence(EmptyCollection())
