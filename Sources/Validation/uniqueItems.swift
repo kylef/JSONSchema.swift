@@ -13,7 +13,12 @@ func uniqueItems(context: Context, uniqueItems: Any, instance: Any, schema: [Str
   var items: [Any] = []
   for item in instance {
     if items.contains(where: { isEqual(item as! NSObject, $0 as! NSObject) }) {
-      return AnySequence(["\(instance) does not have unique items"])
+      return AnySequence([
+        ValidationError(
+          "\(instance) does not have unique items",
+          instanceLocation: context.instanceLocation
+        )
+      ])
     }
     items.append(item)
   }

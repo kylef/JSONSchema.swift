@@ -28,12 +28,22 @@ func contains(context: Context, contains: Any, instance: Any, schema: [String: A
     return context.descend(instance: subinstance, subschema: contains).isValid
   }).count
   if let max = max, containsCount > max {
-    return AnySequence(["\(instance) does not match contains + maxContains \(max)"])
+    return AnySequence([
+      ValidationError(
+        "\(instance) does not match contains + maxContains \(max)",
+        instanceLocation: context.instanceLocation
+      )
+    ])
   }
 
   if min == 0 || containsCount >= min {
     return AnySequence(EmptyCollection())
   }
 
-  return AnySequence(["\(instance) does not match contains"])
+  return AnySequence([
+    ValidationError(
+      "'\(instance) does not match contains",
+      instanceLocation: context.instanceLocation
+    )
+  ])
 }

@@ -12,7 +12,12 @@ func multipleOf(context: Context, multipleOf: Any, instance: Any, schema: [Strin
 
   let result = instance / multipleOf
   if result != floor(result) {
-    return AnySequence(["\(instance) is not a multiple of \(multipleOf)"])
+    return AnySequence([
+      ValidationError(
+        "\(instance) is not a multiple of \(multipleOf)",
+        instanceLocation: context.instanceLocation
+      )
+    ])
   }
 
   return AnySequence(EmptyCollection())

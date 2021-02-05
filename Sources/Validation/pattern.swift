@@ -11,12 +11,22 @@ func pattern(context: Context, pattern: Any, instance: Any, schema: [String: Any
   }
 
   guard let expression = try? NSRegularExpression(pattern: pattern, options: NSRegularExpression.Options(rawValue: 0)) else {
-    return AnySequence(["[Schema] Regex pattern '\(pattern)' is not valid"])
+    return AnySequence([
+      ValidationError(
+        "[Schema] Regex pattern '\(pattern)' is not valid",
+        instanceLocation: context.instanceLocation
+      )
+    ])
   }
 
   let range = NSMakeRange(0, instance.count)
   if expression.matches(in: instance, options: NSRegularExpression.MatchingOptions(rawValue: 0), range: range).count == 0 {
-    return AnySequence(["'\(instance)' does not match pattern: '\(pattern)'"])
+    return AnySequence([
+      ValidationError(
+        "'\(instance)' does not match pattern: '\(pattern)'",
+        instanceLocation: context.instanceLocation
+      )
+    ])
   }
 
   return AnySequence(EmptyCollection())

@@ -4,7 +4,12 @@ func anyOf(context: Context, anyOf: Any, instance: Any, schema: [String: Any]) -
   }
 
   if !anyOf.contains(where: { context.descend(instance: instance, subschema: $0).isValid }) {
-    return AnySequence(["\(instance) does not meet anyOf validation rules."])
+    return AnySequence([
+      ValidationError(
+        "\(instance) does not meet anyOf validation rules.",
+        instanceLocation: context.instanceLocation
+      ),
+    ])
   }
 
   return AnySequence(EmptyCollection())

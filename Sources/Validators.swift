@@ -37,7 +37,12 @@ func type(context: Context, type: Any, instance: Any, schema: [String: Any]) -> 
   }
 
   let types = type.map { "'\($0)'" }.joined(separator: ", ")
-  return AnySequence(["'\(instance)' is not of type \(types)"])
+  return AnySequence([
+    ValidationError(
+      "'\(instance)' is not of type \(types)",
+      instanceLocation: context.instanceLocation
+    )
+  ])
 }
 
 func isInteger(_ instance: Any) -> Bool {
@@ -151,7 +156,12 @@ extension Sequence where Iterator.Element == ValidationError {
 
 
 func unsupported(_ keyword: String) -> (_ context: Context, _ value: Any, _ instance: Any, _ schema: [String: Any]) -> AnySequence<ValidationError> {
-  return { (_, _, _, _) in
-    return AnySequence(["'\(keyword)' is not supported."])
+  return { (context, _, _, _) in
+    return AnySequence([
+      ValidationError(
+        "'\(keyword)' is not supported.",
+        instanceLocation: context.instanceLocation
+      ),
+    ])
   }
 }

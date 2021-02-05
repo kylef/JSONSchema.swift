@@ -13,7 +13,12 @@ func dependencies(context: Context, dependencies: Any, instance: Any, schema: [S
     if let dependency = dependency as? [String] {
       for key in dependency {
         if !instance.keys.contains(key) {
-          results.append(AnySequence(["'\(key)' is a dependency for '\(property)'"]))
+          results.append(AnySequence([
+            ValidationError(
+              "'\(key)' is a dependency for '\(property)'",
+              instanceLocation: context.instanceLocation
+            ),
+          ]))
         }
       }
     } else {

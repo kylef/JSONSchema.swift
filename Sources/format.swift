@@ -11,7 +11,12 @@ func format(context: Context, format: Any, instance: Any, schema: [String: Any])
   }
 
   guard let validator = context.validator.formats[format] else {
-    return invalidValidation("'format' validation of '\(format)' is not yet supported.")(instance)
+    return AnySequence([
+      ValidationError(
+        "'format' validation of '\(format)' is not yet supported.",
+        instanceLocation: context.instanceLocation
+      )
+    ])
   }
 
   return validator(instance)

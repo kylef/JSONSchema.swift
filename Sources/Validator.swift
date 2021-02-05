@@ -17,7 +17,9 @@ class Context {
         return AnySequence(EmptyCollection())
       }
 
-      return AnySequence(["Falsy schema"])
+      return AnySequence([
+        ValidationError("Falsy schema", instanceLocation: instanceLocation),
+      ])
     }
 
     guard let schema = schema as? [String: Any] else {

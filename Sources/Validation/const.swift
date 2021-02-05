@@ -6,5 +6,10 @@ func const(context: Context, const: Any, instance: Any, schema: [String: Any]) -
      return AnySequence(EmptyCollection())
   }
 
-  return AnySequence(["'\(instance)' is not equal to const '\(const)'"])
+  return AnySequence([
+    ValidationError(
+      "'\(instance)' is not equal to const '\(const)'",
+      instanceLocation: context.instanceLocation
+    )
+  ])
 }

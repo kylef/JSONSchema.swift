@@ -11,5 +11,10 @@ func `enum`(context: Context, enum: Any, instance: Any, schema: [String: Any]) -
     return AnySequence(EmptyCollection())
   }
 
-  return AnySequence(["'\(instance)' is not a valid enumeration value of '\(`enum`)'"])
+  return AnySequence([
+    ValidationError(
+      "'\(instance)' is not a valid enumeration value of '\(`enum`)'",
+      instanceLocation: context.instanceLocation
+    )
+  ])
 }
