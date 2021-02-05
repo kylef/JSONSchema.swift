@@ -24,12 +24,12 @@ func validateNumericLength(_ length: Double, comparitor: @escaping ((Double, Dou
     if let value = value as? Double {
       if exclusive ?? false {
         if !exclusiveComparitor(value, length) {
-          return AnySequence([error])
+          return AnySequence([ValidationError(error)])
         }
       }
 
       if !comparitor(value, length) {
-        return AnySequence([error])
+        return AnySequence([ValidationError(error)])
       }
     }
 

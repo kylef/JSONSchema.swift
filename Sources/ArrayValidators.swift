@@ -49,7 +49,7 @@ func validateArrayLength(_ rhs: Int, comparitor: @escaping ((Int, Int) -> Bool),
   return { value in
     if let value = value as? [Any] {
       if !comparitor(value.count, rhs) {
-        return AnySequence([error])
+        return AnySequence([ValidationError(error)])
       }
     }
 

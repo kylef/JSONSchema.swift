@@ -5,7 +5,7 @@ func validateLength(_ comparitor: @escaping ((Int, Int) -> (Bool)), length: Int,
   return { value in
     if let value = value as? String {
       if !comparitor(value.count, length) {
-        return AnySequence([error])
+        return AnySequence([ValidationError(error)])
       }
     }
 

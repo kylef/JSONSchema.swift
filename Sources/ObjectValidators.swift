@@ -5,7 +5,7 @@ func validatePropertiesLength(_ length: Int, comparitor: @escaping ((Int, Int) -
   return { value in
     if let value = value as? [String: Any] {
       if !comparitor(length, value.count) {
-        return AnySequence([error])
+        return AnySequence([ValidationError(error)])
       }
     }
 
@@ -41,7 +41,7 @@ func required(validator: Validator, required: Any, instance: Any, schema: [Strin
     return AnySequence(EmptyCollection())
   }
 
-  return AnySequence(required.compactMap { key -> String? in
+  return AnySequence(required.compactMap { key -> ValidationError? in
     guard !instance.keys.contains(key) else { return nil }
     return "Required property '\(key)' is missing"
   })

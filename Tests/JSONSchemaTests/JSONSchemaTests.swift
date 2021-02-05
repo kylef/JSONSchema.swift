@@ -62,13 +62,15 @@ class JSONSchemaTests: XCTestCase {
 
     var counter = 0
     for error in schema.validate(["price": 34.99]) {
-      XCTAssertEqual(error, "Required property 'name' is missing")
+      XCTAssertEqual(error.description, "Required property 'name' is missing")
       counter += 1
     }
 
     XCTAssertEqual(counter, 1)
 
-    XCTAssertEqual(Array(schema.validate(["price": 34.99])), [
+    let result = Array(schema.validate(["price": 34.99]))
+
+    XCTAssertEqual(result.map(\.description), [
       "Required property 'name' is missing"
     ])
   }
@@ -138,7 +140,7 @@ class ValidateTests: XCTestCase {
     case .valid:
       XCTFail("Validation should fail")
     case .invalid(let errors):
-      XCTAssertEqual(errors, [
+      XCTAssertEqual(errors.map(\.description), [
         "Required property 'two' is missing",
       ])
     }
