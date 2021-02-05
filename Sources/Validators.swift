@@ -7,9 +7,11 @@ func validValidation(_ value: Any) -> AnySequence<ValidationError> {
 }
 
 /// Creates a Validator which always returns an invalid result with the given error
-func invalidValidation(_ error: String) -> (_ value: Any) -> AnySequence<ValidationError> {
+func invalidValidation(_ context: Context, _ error: String) -> (_ value: Any) -> AnySequence<ValidationError> {
   return { value in
-    return AnySequence([ValidationError(error)])
+    return AnySequence([
+      ValidationError(error, instanceLocation: context.instanceLocation),
+    ])
   }
 }
 

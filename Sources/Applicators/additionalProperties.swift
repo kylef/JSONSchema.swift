@@ -37,7 +37,7 @@ func additionalProperties(context: Context, additionalProperties: Any, instance:
   }
 
   if let additionalProperties = additionalProperties as? Bool, !additionalProperties && !extras.isEmpty {
-    return invalidValidation("Additional properties are not permitted in this object.")(instance)
+    return invalidValidation(context, "Additional properties are not permitted in this object.")(instance)
   }
 
   return AnySequence(EmptyCollection())

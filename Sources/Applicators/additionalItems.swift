@@ -12,7 +12,7 @@ func additionalItems(context: Context, additionalItems: Any, instance: Any, sche
   }
 
   if let additionalItems = additionalItems as? Bool, !additionalItems {
-    return invalidValidation("Additional results are not permitted in this array.")(instance)
+    return invalidValidation(context, "Additional results are not permitted in this array.")(instance)
   }
 
   return AnySequence(EmptyCollection())

@@ -1,7 +1,7 @@
 public class ValidationError {
   public let description: String
 
-  init(_ value: String, instanceLocation: JSONPointer? = nil) {
+  init(_ value: String, instanceLocation: JSONPointer?) {
     self.description = value
     self.instanceLocation = instanceLocation
   }

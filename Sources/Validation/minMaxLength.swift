@@ -1,8 +1,10 @@
-func validateLength(_ comparitor: @escaping ((Int, Int) -> (Bool)), length: Int, error: String) -> (_ value: Any) -> AnySequence<ValidationError> {
+func validateLength(_ context: Context, _ comparitor: @escaping ((Int, Int) -> (Bool)), length: Int, error: String) -> (_ value: Any) -> AnySequence<ValidationError> {
   return { value in
     if let value = value as? String {
       if !comparitor(value.count, length) {
-        return AnySequence([ValidationError(error)])
+        return AnySequence([
+          ValidationError(error, instanceLocation: context.instanceLocation),
+        ])
       }
     }
 
@@ -16,7 +18,7 @@ func minLength(context: Context, minLength: Any, instance: Any, schema: [String:
     return AnySequence(EmptyCollection())
   }
 
-  return validateLength(>=, length: minLength, error: "Length of string is smaller than minimum length \(minLength)")(instance)
+  return validateLength(context, >=, length: minLength, error: "Length of string is smaller than minimum length \(minLength)")(instance)
 }
 
 
@@ -25,5 +27,5 @@ func maxLength(context: Context, maxLength: Any, instance: Any, schema: [String:
     return AnySequence(EmptyCollection())
   }
 
-  return validateLength(<=, length: maxLength, error: "Length of string is larger than max length \(maxLength)")(instance)
+  return validateLength(context, <=, length: maxLength, error: "Length of string is larger than max length \(maxLength)")(instance)
 }
