@@ -20,7 +20,9 @@ func patternProperties(context: Context, patternProperties: Any, instance: Any, 
       }
 
       for key in keys {
+        context.instanceLocation.push(key)
         results.append(context.descend(instance: instance[key]!, subschema: schema))
+        context.instanceLocation.pop()
       }
     } catch {
       return AnySequence(["[Schema] '\(pattern)' is not a valid regex pattern for patternProperties"])

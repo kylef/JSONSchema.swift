@@ -4,6 +4,8 @@ class Context {
   let resolver: RefResolver
   let validator: Validator
 
+  var instanceLocation = JSONPointer()
+
   init(resolver: RefResolver, validator: Validator) {
     self.resolver = RefResolver(resolver: resolver)
     self.validator = validator

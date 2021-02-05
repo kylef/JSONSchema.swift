@@ -22,7 +22,11 @@ func contains(context: Context, contains: Any, instance: Any, schema: [String: A
     return AnySequence(EmptyCollection())
   }
 
-  let containsCount = instance.filter({ context.descend(instance: $0, subschema: contains).isValid }).count
+  let containsCount = Array(instance.enumerated()).filter({ (index, subinstance) -> Bool in
+    context.instanceLocation.push(index.description)
+    defer { context.instanceLocation.pop() }
+    return context.descend(instance: subinstance, subschema: contains).isValid
+  }).count
   if let max = max, containsCount > max {
     return AnySequence(["\(instance) does not match contains + maxContains \(max)"])
   }

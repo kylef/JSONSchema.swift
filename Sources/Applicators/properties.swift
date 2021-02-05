@@ -9,6 +9,8 @@ func properties(context: Context, properties: Any, instance: Any, schema: [Strin
 
   return AnySequence(instance.map { (key, value) -> AnySequence<ValidationError> in
     if let schema = properties[key] {
+      context.instanceLocation.push(key)
+      defer { context.instanceLocation.pop() }
       return context.descend(instance: value, subschema: schema)
     }
 

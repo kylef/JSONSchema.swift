@@ -4,16 +4,20 @@ import Foundation
 struct JSONPointer {
   var components: [String]
 
+  init() {
+    components = [""]
+  }
+
   init(path: String) {
-    if path.isEmpty {
-      components = []
-    } else {
-      components = path
-        .components(separatedBy: "/")
-        .map {
-          $0.replacingOccurrences(of: "~1", with: "/").replacingOccurrences(of: "~0", with: "~")
-        }
-    }
+    components = path
+      .components(separatedBy: "/")
+      .map {
+        $0.replacingOccurrences(of: "~1", with: "/").replacingOccurrences(of: "~0", with: "~")
+      }
+  }
+
+  var path: String {
+    return components.joined(separator: "/")
   }
 
   func resolve(document: Any) -> Any? {
@@ -38,5 +42,23 @@ struct JSONPointer {
 
     return instance
   }
+
+  mutating func push(_ component: String) {
+    components.append(
+      component
+        .replacingOccurrences(of: "~1", with: "/")
+        .replacingOccurrences(of: "~0", with: "~")
+    )
+  }
+
+  mutating func pop() {
+    components.removeLast()
+  }
 }
 
+
+func + (lhs: JSONPointer, rhs: String) -> JSONPointer {
+  var pointer = lhs
+  pointer.components.append(rhs)
+  return pointer
+}

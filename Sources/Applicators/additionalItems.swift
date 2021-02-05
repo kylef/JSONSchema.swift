@@ -4,7 +4,11 @@ func additionalItems(context: Context, additionalItems: Any, instance: Any, sche
   }
 
   if let additionalItems = additionalItems as? [String: Any] {
-    return AnySequence(instance[items.count...].map { context.descend(instance: $0, subschema: additionalItems) }.joined())
+    return AnySequence(Array(instance.enumerated())[items.count...].map { (index, subinstance) -> AnySequence<ValidationError> in
+      context.instanceLocation.push(index.description)
+      defer { context.instanceLocation.pop() }
+      return context.descend(instance: subinstance, subschema: additionalItems)
+    }.joined())
   }
 
   if let additionalItems = additionalItems as? Bool, !additionalItems {
