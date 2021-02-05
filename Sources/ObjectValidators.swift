@@ -14,7 +14,7 @@ func validatePropertiesLength(_ length: Int, comparitor: @escaping ((Int, Int) -
 }
 
 
-func minProperties(validator: Validator, minProperties: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
+func minProperties(context: Context, minProperties: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let minProperties = minProperties as? Int else {
     return AnySequence(EmptyCollection())
   }
@@ -23,7 +23,7 @@ func minProperties(validator: Validator, minProperties: Any, instance: Any, sche
 }
 
 
-func maxProperties(validator: Validator, maxProperties: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
+func maxProperties(context: Context, maxProperties: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let maxProperties = maxProperties as? Int else {
     return AnySequence(EmptyCollection())
   }
@@ -32,7 +32,7 @@ func maxProperties(validator: Validator, maxProperties: Any, instance: Any, sche
 }
 
 
-func required(validator: Validator, required: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
+func required(context: Context, required: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let instance = instance as? [String: Any] else {
     return AnySequence(EmptyCollection())
   }
@@ -48,7 +48,7 @@ func required(validator: Validator, required: Any, instance: Any, schema: [Strin
 }
 
 
-func dependentRequired(validator: Validator, dependentRequired: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
+func dependentRequired(context: Context, dependentRequired: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let instance = instance as? [String: Any] else {
     return AnySequence(EmptyCollection())
   }
@@ -59,7 +59,7 @@ func dependentRequired(validator: Validator, dependentRequired: Any, instance: A
 
   return AnySequence(dependentRequired.compactMap({ (key, required) -> AnySequence<ValidationError> in
     if instance.keys.contains(key) {
-      return JSONSchema.required(validator: validator, required: required, instance: instance, schema: schema)
+      return JSONSchema.required(context: context, required: required, instance: instance, schema: schema)
     }
 
     return AnySequence(EmptyCollection())
@@ -67,7 +67,7 @@ func dependentRequired(validator: Validator, dependentRequired: Any, instance: A
 }
 
 
-func dependentSchemas(validator: Validator, dependentRequired: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
+func dependentSchemas(context: Context, dependentRequired: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let instance = instance as? [String: Any] else {
     return AnySequence(EmptyCollection())
   }
@@ -78,7 +78,7 @@ func dependentSchemas(validator: Validator, dependentRequired: Any, instance: An
 
   return AnySequence(dependentRequired.compactMap({ (key, subschema) -> AnySequence<ValidationError> in
     if instance.keys.contains(key) {
-      return validator.descend(instance: instance, subschema: subschema)
+      return context.descend(instance: instance, subschema: subschema)
     }
 
     return AnySequence(EmptyCollection())
@@ -86,16 +86,16 @@ func dependentSchemas(validator: Validator, dependentRequired: Any, instance: An
 }
 
 
-func propertyNames(validator: Validator, propertyNames: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
+func propertyNames(context: Context, propertyNames: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let instance = instance as? [String: Any] else {
     return AnySequence(EmptyCollection())
   }
 
-  return AnySequence(instance.keys.map { validator.descend(instance: $0, subschema: propertyNames) }.joined())
+  return AnySequence(instance.keys.map { context.descend(instance: $0, subschema: propertyNames) }.joined())
 }
 
 
-func properties(validator: Validator, properties: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
+func properties(context: Context, properties: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let instance = instance as? [String: Any] else {
     return AnySequence(EmptyCollection())
   }
@@ -106,7 +106,7 @@ func properties(validator: Validator, properties: Any, instance: Any, schema: [S
 
   return AnySequence(instance.map { (key, value) -> AnySequence<ValidationError> in
     if let schema = properties[key] {
-      return validator.descend(instance: value, subschema: schema)
+      return context.descend(instance: value, subschema: schema)
     }
 
     return AnySequence(EmptyCollection())
@@ -114,7 +114,7 @@ func properties(validator: Validator, properties: Any, instance: Any, schema: [S
 }
 
 
-func patternProperties(validator: Validator, patternProperties: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
+func patternProperties(context: Context, patternProperties: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let instance = instance as? [String: Any] else {
     return AnySequence(EmptyCollection())
   }
@@ -133,7 +133,7 @@ func patternProperties(validator: Validator, patternProperties: Any, instance: A
       }
 
       for key in keys {
-        results.append(validator.descend(instance: instance[key]!, subschema: schema))
+        results.append(context.descend(instance: instance[key]!, subschema: schema))
       }
     } catch {
       return AnySequence(["[Schema] '\(pattern)' is not a valid regex pattern for patternProperties"])
@@ -168,7 +168,7 @@ func findAdditionalProperties(instance: [String: Any], schema: [String: Any]) ->
 }
 
 
-func additionalProperties(validator: Validator, additionalProperties: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
+func additionalProperties(context: Context, additionalProperties: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let instance = instance as? [String: Any] else {
     return AnySequence(EmptyCollection())
   }
@@ -176,7 +176,7 @@ func additionalProperties(validator: Validator, additionalProperties: Any, insta
   let extras = findAdditionalProperties(instance: instance, schema: schema)
 
   if let additionalProperties = additionalProperties as? [String: Any] {
-    return AnySequence(extras.map { validator.descend(instance: instance[$0]!, subschema: additionalProperties) }.joined())
+    return AnySequence(extras.map { context.descend(instance: instance[$0]!, subschema: additionalProperties) }.joined())
   }
 
   if let additionalProperties = additionalProperties as? Bool, !additionalProperties && !extras.isEmpty {
@@ -187,7 +187,7 @@ func additionalProperties(validator: Validator, additionalProperties: Any, insta
 }
 
 
-func dependencies(validator: Validator, dependencies: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
+func dependencies(context: Context, dependencies: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let dependencies = dependencies as? [String: Any] else {
     return AnySequence(EmptyCollection())
   }
@@ -206,7 +206,7 @@ func dependencies(validator: Validator, dependencies: Any, instance: Any, schema
         }
       }
     } else {
-      results.append(validator.descend(instance: instance, subschema: dependency))
+      results.append(context.descend(instance: instance, subschema: dependency))
     }
   }
 

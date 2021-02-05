@@ -14,7 +14,7 @@ func validateLength(_ comparitor: @escaping ((Int, Int) -> (Bool)), length: Int,
 }
 
 
-func minLength(validator: Validator, minLength: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
+func minLength(context: Context, minLength: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let minLength = minLength as? Int else {
     return AnySequence(EmptyCollection())
   }
@@ -23,7 +23,7 @@ func minLength(validator: Validator, minLength: Any, instance: Any, schema: [Str
 }
 
 
-func maxLength(validator: Validator, maxLength: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
+func maxLength(context: Context, maxLength: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let maxLength = maxLength as? Int else {
     return AnySequence(EmptyCollection())
   }
@@ -32,7 +32,7 @@ func maxLength(validator: Validator, maxLength: Any, instance: Any, schema: [Str
 }
 
 
-func pattern(validator: Validator, pattern: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
+func pattern(context: Context, pattern: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let pattern = pattern as? String else {
     return AnySequence(EmptyCollection())
   }
@@ -57,7 +57,7 @@ func pattern(validator: Validator, pattern: Any, instance: Any, schema: [String:
 // MARK: Format
 
 
-func format(validator: Validator, format: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
+func format(context: Context, format: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let format = format as? String else {
     return AnySequence(EmptyCollection())
   }
@@ -66,7 +66,7 @@ func format(validator: Validator, format: Any, instance: Any, schema: [String: A
     return AnySequence(EmptyCollection())
   }
 
-  guard let validator = validator.formats[format] else {
+  guard let validator = context.validator.formats[format] else {
     return invalidValidation("'format' validation of '\(format)' is not yet supported.")(instance)
   }
 

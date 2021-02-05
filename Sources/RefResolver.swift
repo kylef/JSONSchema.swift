@@ -56,6 +56,14 @@ class RefResolver {
     storeDefinitions(from: schema)
   }
 
+  init(resolver: RefResolver) {
+    referrer = resolver.referrer
+    store = resolver.store
+    stack = resolver.stack
+    idField = resolver.idField
+    defsField = resolver.defsField
+  }
+
   func storeDefinitions(from document: Any) {
     guard
       let document = document as? [String: Any],

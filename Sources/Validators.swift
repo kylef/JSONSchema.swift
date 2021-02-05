@@ -15,18 +15,18 @@ func invalidValidation(_ error: String) -> (_ value: Any) -> AnySequence<Validat
 
 // MARK: Shared
 
-func ref(validator: Validator, reference: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
+func ref(context: Context, reference: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let reference = reference as? String else {
     return AnySequence(EmptyCollection())
   }
 
-  guard let document = validator.resolve(ref: reference) else {
+  guard let document = context.resolve(ref: reference) else {
     return AnySequence(["Reference not found '\(reference)'"])
   }
 
   let id: String?
   if let document = document as? [String: Any],
-     let idValue = document[validator.resolver.idField] as? String
+     let idValue = document[context.resolver.idField] as? String
   {
     id = urlNormalise(idValue)
   } else {
@@ -34,19 +34,19 @@ func ref(validator: Validator, reference: Any, instance: Any, schema: [String: A
   }
 
   if let id = id {
-    validator.resolver.stack.append(id)
+    context.resolver.stack.append(id)
   }
   defer {
     if let id = id {
-      assert(validator.resolver.stack.removeLast() == id,
-             "popping id mismatch - if this assertion is triggered, there's probably a bug in JSON Schema validator library")
+      assert(context.resolver.stack.removeLast() == id,
+             "popping id mismatch - if this assertion is triggered, there's probably a bug in JSON Schema context library")
     }
   }
 
-  return validator.descend(instance: instance, subschema: document)
+  return context.descend(instance: instance, subschema: document)
 }
 
-func type(validator: Validator, type: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
+func type(context: Context, type: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   func ensureArray(_ value: Any) -> [String]? {
     if let value = value as? [String] {
       return value
@@ -128,56 +128,56 @@ func isType(_ type: String, _ instance: Any) -> Bool {
   }
 }
 
-func anyOf(validator: Validator, anyOf: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
+func anyOf(context: Context, anyOf: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let anyOf = anyOf as? [Any] else {
     return AnySequence(EmptyCollection())
   }
 
-  if !anyOf.contains(where: { validator.descend(instance: instance, subschema: $0).isValid }) {
+  if !anyOf.contains(where: { context.descend(instance: instance, subschema: $0).isValid }) {
     return AnySequence(["\(instance) does not meet anyOf validation rules."])
   }
 
   return AnySequence(EmptyCollection())
 }
 
-func oneOf(validator: Validator, oneOf: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
+func oneOf(context: Context, oneOf: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let oneOf = oneOf as? [Any] else {
     return AnySequence(EmptyCollection())
   }
 
-  if oneOf.filter({ validator.descend(instance: instance, subschema: $0).isValid }).count != 1 {
+  if oneOf.filter({ context.descend(instance: instance, subschema: $0).isValid }).count != 1 {
     return AnySequence(["Only one value from `oneOf` should be met"])
   }
 
   return AnySequence(EmptyCollection())
 }
 
-func not(validator: Validator, not: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
-  guard validator.descend(instance: instance, subschema: not).isValid else {
+func not(context: Context, not: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
+  guard context.descend(instance: instance, subschema: not).isValid else {
     return AnySequence(EmptyCollection())
   }
 
   return AnySequence(["'\(instance)' does not match 'not' validation."])
 }
 
-func `if`(validator: Validator, `if`: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
-  if validator.validate(instance: instance, schema: `if`).isValid {
+func `if`(context: Context, `if`: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
+  if context.validate(instance: instance, schema: `if`).isValid {
     if let then = schema["then"] {
-      return validator.descend(instance: instance, subschema: then)
+      return context.descend(instance: instance, subschema: then)
     }
   } else if let `else` = schema["else"] {
-    return validator.descend(instance: instance, subschema: `else`)
+    return context.descend(instance: instance, subschema: `else`)
   }
 
   return AnySequence(EmptyCollection())
 }
 
-func allOf(validator: Validator, allOf: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
+func allOf(context: Context, allOf: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let allOf = allOf as? [Any] else {
     return AnySequence(EmptyCollection())
   }
 
-  return AnySequence(allOf.map({ validator.descend(instance: instance, subschema: $0) }).joined())
+  return AnySequence(allOf.map({ context.descend(instance: instance, subschema: $0) }).joined())
 }
 
 func isEqual(_ lhs: NSObject, _ rhs: NSObject) -> Bool {
@@ -216,7 +216,7 @@ func isEqual(_ lhs: NSObject, _ rhs: NSObject) -> Bool {
   return lhs == rhs
 }
 
-func `enum`(validator: Validator, enum: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
+func `enum`(context: Context, enum: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let `enum` = `enum` as? [Any] else {
     return AnySequence(EmptyCollection())
   }
@@ -229,7 +229,7 @@ func `enum`(validator: Validator, enum: Any, instance: Any, schema: [String: Any
   return AnySequence(["'\(instance)' is not a valid enumeration value of '\(`enum`)'"])
 }
 
-func const(validator: Validator, const: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
+func const(context: Context, const: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   if isEqual(instance as! NSObject, const as! NSObject) {
      return AnySequence(EmptyCollection())
   }
@@ -253,7 +253,7 @@ extension Sequence where Iterator.Element == ValidationError {
 }
 
 
-func unsupported(_ keyword: String) -> (_ validator: Validator, _ value: Any, _ instance: Any, _ schema: [String: Any]) -> AnySequence<ValidationError> {
+func unsupported(_ keyword: String) -> (_ context: Context, _ value: Any, _ instance: Any, _ schema: [String: Any]) -> AnySequence<ValidationError> {
   return { (_, _, _, _) in
     return AnySequence(["'\(keyword)' is not supported."])
   }

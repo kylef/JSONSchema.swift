@@ -1,7 +1,7 @@
 import Foundation
 
 
-func multipleOf(validator: Validator, multipleOf: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
+func multipleOf(context: Context, multipleOf: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let multipleOf = multipleOf as? Double else {
     return AnySequence(EmptyCollection())
   }
@@ -38,7 +38,7 @@ func validateNumericLength(_ length: Double, comparitor: @escaping ((Double, Dou
 }
 
 
-func minimumDraft4(validator: Validator, minimum: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
+func minimumDraft4(context: Context, minimum: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let minimum = minimum as? Double else {
     return AnySequence(EmptyCollection())
   }
@@ -47,7 +47,7 @@ func minimumDraft4(validator: Validator, minimum: Any, instance: Any, schema: [S
 }
 
 
-func maximumDraft4(validator: Validator, maximum: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
+func maximumDraft4(context: Context, maximum: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let maximum = maximum as? Double else {
     return AnySequence(EmptyCollection())
   }
@@ -56,7 +56,7 @@ func maximumDraft4(validator: Validator, maximum: Any, instance: Any, schema: [S
 }
 
 
-func minimum(validator: Validator, minimum: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
+func minimum(context: Context, minimum: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let minimum = minimum as? Double else {
     return AnySequence(EmptyCollection())
   }
@@ -65,7 +65,7 @@ func minimum(validator: Validator, minimum: Any, instance: Any, schema: [String:
 }
 
 
-func maximum(validator: Validator, maximum: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
+func maximum(context: Context, maximum: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let maximum = maximum as? Double else {
     return AnySequence(EmptyCollection())
   }
@@ -74,7 +74,7 @@ func maximum(validator: Validator, maximum: Any, instance: Any, schema: [String:
 }
 
 
-func exclusiveMinimum(validator: Validator, minimum: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
+func exclusiveMinimum(context: Context, minimum: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let minimum = minimum as? Double else {
     return AnySequence(EmptyCollection())
   }
@@ -83,7 +83,7 @@ func exclusiveMinimum(validator: Validator, minimum: Any, instance: Any, schema:
 }
 
 
-func exclusiveMaximum(validator: Validator, maximum: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
+func exclusiveMaximum(context: Context, maximum: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
   guard let maximum = maximum as? Double else {
     return AnySequence(EmptyCollection())
   }
