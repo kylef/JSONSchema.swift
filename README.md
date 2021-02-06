@@ -18,7 +18,7 @@ pod 'JSONSchema'
 ```swift
 import JSONSchema
 
-JSONSchema.validate(["name": "Eggs", "price": 34.99], schema: [
+try JSONSchema.validate(["name": "Eggs", "price": 34.99], schema: [
   "type": "object",
   "properties": [
     "name": ["type": "string"],
@@ -34,7 +34,7 @@ Validate returns an enumeration `ValidationResult` which contains all
 validation errors.
 
 ```python
-print(validate(["price": 34.99], schema: ["required": ["name"]]).errors)
+print(try validate(["price": 34.99], schema: ["required": ["name"]]).errors)
 >>> "Required property 'name' is missing."
 ```
 

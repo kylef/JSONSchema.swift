@@ -11,52 +11,52 @@ func JSONFixture(_ path: Path) throws -> [[String: Any]] {
 }
 
 
-func draft4Validator(schema: Any, instance: Any) -> ValidationResult {
+func draft4Validator(schema: Any, instance: Any) throws -> ValidationResult {
   if let schema = schema as? Bool {
-    return Draft4Validator(schema: schema).validate(instance: instance)
+    return try Draft4Validator(schema: schema).validate(instance: instance)
   }
 
   if let schema = schema as? [String: Any] {
-    return validate(instance, schema: schema)
+    return try validate(instance, schema: schema)
   }
 
   fatalError()
 }
 
 
-func draft6Validator(schema: Any, instance: Any) -> ValidationResult {
+func draft6Validator(schema: Any, instance: Any) throws -> ValidationResult {
   if let schema = schema as? Bool {
-    return Draft6Validator(schema: schema).validate(instance: instance)
+    return try Draft6Validator(schema: schema).validate(instance: instance)
   }
 
   if let schema = schema as? [String: Any] {
-    return Draft6Validator(schema: schema).validate(instance: instance)
+    return try Draft6Validator(schema: schema).validate(instance: instance)
   }
 
   fatalError()
 }
 
 
-func draft7Validator(schema: Any, instance: Any) -> ValidationResult {
+func draft7Validator(schema: Any, instance: Any) throws -> ValidationResult {
   if let schema = schema as? Bool {
-    return Draft7Validator(schema: schema).validate(instance: instance)
+    return try Draft7Validator(schema: schema).validate(instance: instance)
   }
 
   if let schema = schema as? [String: Any] {
-    return Draft7Validator(schema: schema).validate(instance: instance)
+    return try Draft7Validator(schema: schema).validate(instance: instance)
   }
 
   fatalError()
 }
 
 
-func draft201909Validator(schema: Any, instance: Any) -> ValidationResult {
+func draft201909Validator(schema: Any, instance: Any) throws -> ValidationResult {
   if let schema = schema as? Bool {
-    return Draft201909Validator(schema: schema).validate(instance: instance)
+    return try Draft201909Validator(schema: schema).validate(instance: instance)
   }
 
   if let schema = schema as? [String: Any] {
-    return Draft201909Validator(schema: schema).validate(instance: instance)
+    return try Draft201909Validator(schema: schema).validate(instance: instance)
   }
 
   fatalError()
@@ -174,7 +174,7 @@ class JSONSchemaCases: XCTestCase {
     ] + additionalExclusions)
   }
 
-  func test(name: String, validator: @escaping ((_ schema: Any, _ instance: Any) -> (ValidationResult)), excluding: [String]) throws {
+  func test(name: String, validator: @escaping ((_ schema: Any, _ instance: Any) throws -> (ValidationResult)), excluding: [String]) throws {
     let filePath = #file
     let path = Path(filePath) + ".." + ".." + "Cases" + "tests" + name
 
@@ -203,7 +203,7 @@ class JSONSchemaCases: XCTestCase {
 
     let flatCases = cases.reduce([Case](), +)
     for c in flatCases {
-      for (name, assertion) in makeAssertions(c, validator) {
+      for (_, assertion) in makeAssertions(c, validator) {
         // TODO: Improve testing
         assertion()
       }
@@ -244,16 +244,26 @@ func makeCase(_ filename: String) -> (_ object: [String: Any]) -> Case {
 typealias Assertion = (String, () -> ())
 
 
-func makeAssertions(_ c: Case, _ validator: @escaping ((_ schema: Any, _ instance: Any) -> (ValidationResult))) -> ([Assertion]) {
+func makeAssertions(_ c: Case, _ validator: @escaping ((_ schema: Any, _ instance: Any) throws -> (ValidationResult))) -> ([Assertion]) {
   return c.tests.map { test -> Assertion in
     let label = "\(c.description) \(test.description)"
     return (label, {
       let result: ValidationResult
 
       if let schema = c.schema as? [String: Any] {
-        result = validator(schema, test.data)
+        do {
+          result = try validator(schema, test.data)
+        } catch {
+          XCTFail(error.localizedDescription)
+          return
+        }
       } else if let schema = c.schema as? Bool {
-        result = validator(schema, test.data)
+        do {
+          result = try validator(schema, test.data)
+        } catch {
+          XCTFail(error.localizedDescription)
+          return
+        }
       } else {
         fatalError()
       }

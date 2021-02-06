@@ -64,12 +64,12 @@ protocol Validator {
 }
 
 extension Validator {
-  public func validate(instance: Any) -> ValidationResult {
+  public func validate(instance: Any) throws -> ValidationResult {
     let context = Context(resolver: resolver, validator: self)
     return context.validate(instance: instance, schema: schema).validationResult()
   }
 
-  public func validate(instance: Any) -> AnySequence<ValidationError> {
+  public func validate(instance: Any) throws -> AnySequence<ValidationError> {
     let context = Context(resolver: resolver, validator: self)
     return context.validate(instance: instance, schema: schema)
   }

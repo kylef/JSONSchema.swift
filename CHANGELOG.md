@@ -2,6 +2,11 @@
 
 ## Master
 
+### Breaking Changes
+
+- The validation API may now throw errors if the provided JSON Schema is
+  invalid.
+
 ### Enhancements
 
 - The failing required validation error message is now emitted for each

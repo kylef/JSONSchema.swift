@@ -51,14 +51,14 @@ public struct Schema {
     self.schema = schema
   }
 
-  public func validate(_ data: Any) -> ValidationResult {
+  public func validate(_ data: Any) throws -> ValidationResult {
     let validator = JSONSchema.validator(for: schema)
-    return validator.validate(instance: data)
+    return try validator.validate(instance: data)
   }
 
-  public func validate(_ data: Any) -> AnySequence<ValidationError> {
+  public func validate(_ data: Any) throws -> AnySequence<ValidationError> {
     let validator = JSONSchema.validator(for: schema)
-    return validator.validate(instance: data)
+    return try validator.validate(instance: data)
   }
 }
 
@@ -84,12 +84,12 @@ func validator(for schema: [String: Any]) -> Validator {
 }
 
 
-public func validate(_ value: Any, schema: [String: Any]) -> ValidationResult {
-  return validator(for: schema).validate(instance: value)
+public func validate(_ value: Any, schema: [String: Any]) throws -> ValidationResult {
+  return try validator(for: schema).validate(instance: value)
 }
 
 
-public func validate(_ value: Any, schema: Bool) -> ValidationResult {
+public func validate(_ value: Any, schema: Bool) throws -> ValidationResult {
   let validator = Draft4Validator(schema: schema)
-  return validator.validate(instance: value)
+  return try validator.validate(instance: value)
 }
