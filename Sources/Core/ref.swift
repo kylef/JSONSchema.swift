@@ -1,12 +1,14 @@
+enum ReferenceError: Error {
+  case notFound
+}
+
 func ref(context: Context, reference: Any, instance: Any, schema: [String: Any]) throws -> AnySequence<ValidationError> {
   guard let reference = reference as? String else {
     return AnySequence(EmptyCollection())
   }
 
   guard let document = context.resolve(ref: reference) else {
-    return AnySequence([
-      ValidationError("Reference not found '\(reference)'", instanceLocation: nil),
-    ])
+    throw ReferenceError.notFound
   }
 
   let id: String?

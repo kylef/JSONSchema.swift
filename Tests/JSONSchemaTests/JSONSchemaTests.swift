@@ -167,4 +167,18 @@ class ValidateTests: XCTestCase {
       XCTAssertEqual(error.instanceLocation?.path, "/0")
     }
   }
+
+  func testReferenceNotFound() {
+    let schema: [String: Any] = [
+      "$ref": "#/unknown",
+    ]
+
+    do {
+      _ = try validate("anything", schema: schema)
+    } catch {
+      return
+    }
+
+    XCTFail("Validation did not throw error")
+  }
 }
