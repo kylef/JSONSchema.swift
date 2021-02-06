@@ -115,4 +115,16 @@ class JSONPointerTests: XCTestCase {
 
     XCTAssertNil(pointer.resolve(document: document))
   }
+
+  // MARK: - #path
+
+  func testPath() {
+    let pointer = JSONPointer(path: "/foo")
+    XCTAssertEqual(pointer.path, "/foo")
+  }
+
+  func testPathWithSlash() {
+    let pointer = JSONPointer(path: "/a~1b")
+    XCTAssertEqual(pointer.path, "/a~1b")
+  }
 }

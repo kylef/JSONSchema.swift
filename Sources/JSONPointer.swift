@@ -17,7 +17,13 @@ struct JSONPointer {
   }
 
   var path: String {
-    return components.joined(separator: "/")
+    return components
+      .map {
+        $0
+          .replacingOccurrences(of: "~", with: "~0")
+          .replacingOccurrences(of: "/", with: "~1")
+      }
+      .joined(separator: "/")
   }
 
   func resolve(document: Any) -> Any? {
