@@ -164,7 +164,7 @@ class ValidateTests: XCTestCase {
       let error = errors[0]
 
       XCTAssertEqual(error.description, "Required property 'test' is missing")
-      XCTAssertEqual(error.instanceLocation?.path, "/0")
+      XCTAssertEqual(error.instanceLocation.path, "/0")
     }
   }
 

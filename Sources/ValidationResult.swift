@@ -1,13 +1,13 @@
 public class ValidationError {
   public let description: String
 
-  init(_ value: String, instanceLocation: JSONPointer?) {
+  init(_ value: String, instanceLocation: JSONPointer) {
     self.description = value
     self.instanceLocation = instanceLocation
   }
 
   // FIXME make this part of public interface
-  let instanceLocation: JSONPointer?
+  let instanceLocation: JSONPointer
 }
 
 
