@@ -1,4 +1,4 @@
-func contains(context: Context, contains: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
+func contains(context: Context, contains: Any, instance: Any, schema: [String: Any]) throws -> AnySequence<ValidationError> {
   guard let instance = instance as? [Any] else {
     return AnySequence(EmptyCollection())
   }
@@ -22,10 +22,10 @@ func contains(context: Context, contains: Any, instance: Any, schema: [String: A
     return AnySequence(EmptyCollection())
   }
 
-  let containsCount = Array(instance.enumerated()).filter({ (index, subinstance) -> Bool in
+  let containsCount = try Array(instance.enumerated()).filter({ (index, subinstance) throws -> Bool in
     context.instanceLocation.push(index.description)
     defer { context.instanceLocation.pop() }
-    return context.descend(instance: subinstance, subschema: contains).isValid
+    return try context.descend(instance: subinstance, subschema: contains).isValid
   }).count
   if let max = max, containsCount > max {
     return AnySequence([

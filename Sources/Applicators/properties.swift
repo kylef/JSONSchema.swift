@@ -1,4 +1,4 @@
-func properties(context: Context, properties: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
+func properties(context: Context, properties: Any, instance: Any, schema: [String: Any]) throws -> AnySequence<ValidationError> {
   guard let instance = instance as? [String: Any] else {
     return AnySequence(EmptyCollection())
   }
@@ -7,11 +7,11 @@ func properties(context: Context, properties: Any, instance: Any, schema: [Strin
     return AnySequence(EmptyCollection())
   }
 
-  return AnySequence(instance.map { (key, value) -> AnySequence<ValidationError> in
+  return try AnySequence(instance.map { (key, value) throws -> AnySequence<ValidationError> in
     if let schema = properties[key] {
       context.instanceLocation.push(key)
       defer { context.instanceLocation.pop() }
-      return context.descend(instance: value, subschema: schema)
+      return try context.descend(instance: value, subschema: schema)
     }
 
     return AnySequence(EmptyCollection())

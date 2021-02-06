@@ -1,4 +1,4 @@
-func required(context: Context, required: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
+func required(context: Context, required: Any, instance: Any, schema: [String: Any]) throws -> AnySequence<ValidationError> {
   guard let instance = instance as? [String: Any] else {
     return AnySequence(EmptyCollection())
   }

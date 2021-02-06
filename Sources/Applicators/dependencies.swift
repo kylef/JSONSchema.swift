@@ -1,4 +1,4 @@
-func dependencies(context: Context, dependencies: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
+func dependencies(context: Context, dependencies: Any, instance: Any, schema: [String: Any]) throws -> AnySequence<ValidationError> {
   guard let dependencies = dependencies as? [String: Any] else {
     return AnySequence(EmptyCollection())
   }
@@ -22,7 +22,7 @@ func dependencies(context: Context, dependencies: Any, instance: Any, schema: [S
         }
       }
     } else {
-      results.append(context.descend(instance: instance, subschema: dependency))
+      results.append(try context.descend(instance: instance, subschema: dependency))
     }
   }
 

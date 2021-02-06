@@ -1,7 +1,7 @@
 import Foundation
 
 
-func format(context: Context, format: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
+func format(context: Context, format: Any, instance: Any, schema: [String: Any]) throws -> AnySequence<ValidationError> {
   guard let format = format as? String else {
     return AnySequence(EmptyCollection())
   }

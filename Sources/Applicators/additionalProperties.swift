@@ -25,7 +25,7 @@ func findAdditionalProperties(instance: [String: Any], schema: [String: Any]) ->
 }
 
 
-func additionalProperties(context: Context, additionalProperties: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
+func additionalProperties(context: Context, additionalProperties: Any, instance: Any, schema: [String: Any]) throws -> AnySequence<ValidationError> {
   guard let instance = instance as? [String: Any] else {
     return AnySequence(EmptyCollection())
   }
@@ -33,7 +33,9 @@ func additionalProperties(context: Context, additionalProperties: Any, instance:
   let extras = findAdditionalProperties(instance: instance, schema: schema)
 
   if let additionalProperties = additionalProperties as? [String: Any] {
-    return AnySequence(extras.map { context.descend(instance: instance[$0]!, subschema: additionalProperties) }.joined())
+    return try AnySequence(extras.map {
+      try context.descend(instance: instance[$0]!, subschema: additionalProperties)
+    }.joined())
   }
 
   if let additionalProperties = additionalProperties as? Bool, !additionalProperties && !extras.isEmpty {

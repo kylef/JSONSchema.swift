@@ -1,4 +1,4 @@
-func ref(context: Context, reference: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
+func ref(context: Context, reference: Any, instance: Any, schema: [String: Any]) throws -> AnySequence<ValidationError> {
   guard let reference = reference as? String else {
     return AnySequence(EmptyCollection())
   }
@@ -28,5 +28,5 @@ func ref(context: Context, reference: Any, instance: Any, schema: [String: Any])
     }
   }
 
-  return context.descend(instance: instance, subschema: document)
+  return try context.descend(instance: instance, subschema: document)
 }

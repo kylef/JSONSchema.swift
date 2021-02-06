@@ -11,7 +11,7 @@ class Context {
     self.validator = validator
   }
 
-  func validate(instance: Any, schema: Any) -> AnySequence<ValidationError> {
+  func validate(instance: Any, schema: Any) throws -> AnySequence<ValidationError> {
     if let schema = schema as? Bool {
       if schema == true {
         return AnySequence(EmptyCollection())
@@ -30,13 +30,13 @@ class Context {
       // Older versions of JSON Schema, $ref ignores any alongside keywords
       if let ref = schema["$ref"] as? String {
         let validation = validator.validations["$ref"]!
-        return validation(self, ref, instance, schema)
+        return try validation(self, ref, instance, schema)
       }
     }
 
-    return AnySequence(validator.validations.compactMap { (key, validation) -> AnySequence<ValidationError> in
+    return try AnySequence(validator.validations.compactMap { (key, validation) -> AnySequence<ValidationError> in
       if let value = schema[key] {
-        return validation(self, value, instance, schema)
+        return try validation(self, value, instance, schema)
       }
 
       return AnySequence(EmptyCollection())
@@ -47,13 +47,13 @@ class Context {
     return resolver.resolve(reference: ref)
   }
 
-  func descend(instance: Any, subschema: Any) -> AnySequence<ValidationError> {
-    return validate(instance: instance, schema: subschema)
+  func descend(instance: Any, subschema: Any) throws -> AnySequence<ValidationError> {
+    return try validate(instance: instance, schema: subschema)
   }
 }
 
 protocol Validator {
-  typealias Validation = (Context, Any, Any, [String: Any]) -> AnySequence<ValidationError>
+  typealias Validation = (Context, Any, Any, [String: Any]) throws -> AnySequence<ValidationError>
 
   var resolver: RefResolver { get }
 
@@ -66,11 +66,11 @@ protocol Validator {
 extension Validator {
   public func validate(instance: Any) throws -> ValidationResult {
     let context = Context(resolver: resolver, validator: self)
-    return context.validate(instance: instance, schema: schema).validationResult()
+    return try context.validate(instance: instance, schema: schema).validationResult()
   }
 
   public func validate(instance: Any) throws -> AnySequence<ValidationError> {
     let context = Context(resolver: resolver, validator: self)
-    return context.validate(instance: instance, schema: schema)
+    return try context.validate(instance: instance, schema: schema)
   }
 }

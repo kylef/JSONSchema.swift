@@ -1,4 +1,4 @@
-func dependentSchemas(context: Context, dependentRequired: Any, instance: Any, schema: [String: Any]) -> AnySequence<ValidationError> {
+func dependentSchemas(context: Context, dependentRequired: Any, instance: Any, schema: [String: Any]) throws -> AnySequence<ValidationError> {
   guard let instance = instance as? [String: Any] else {
     return AnySequence(EmptyCollection())
   }
@@ -7,9 +7,9 @@ func dependentSchemas(context: Context, dependentRequired: Any, instance: Any, s
     return AnySequence(EmptyCollection())
   }
 
-  return AnySequence(dependentRequired.compactMap({ (key, subschema) -> AnySequence<ValidationError> in
+  return try AnySequence(dependentRequired.compactMap({ (key, subschema) throws -> AnySequence<ValidationError> in
     if instance.keys.contains(key) {
-      return context.descend(instance: instance, subschema: subschema)
+      return try context.descend(instance: instance, subschema: subschema)
     }
 
     return AnySequence(EmptyCollection())
