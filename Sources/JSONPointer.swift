@@ -1,7 +1,7 @@
 import Foundation
 
 
-struct JSONPointer {
+public struct JSONPointer {
   var components: [String]
 
   init() {
@@ -16,7 +16,7 @@ struct JSONPointer {
       }
   }
 
-  var path: String {
+  public var path: String {
     return components
       .map {
         $0

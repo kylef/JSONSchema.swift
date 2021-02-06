@@ -6,8 +6,7 @@ public class ValidationError {
     self.instanceLocation = instanceLocation
   }
 
-  // FIXME make this part of public interface
-  let instanceLocation: JSONPointer
+  public let instanceLocation: JSONPointer
 }
 
 
