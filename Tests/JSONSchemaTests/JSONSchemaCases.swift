@@ -62,6 +62,20 @@ func draft201909Validator(schema: Any, instance: Any) throws -> ValidationResult
   fatalError()
 }
 
+
+func draft202012Validator(schema: Any, instance: Any) throws -> ValidationResult {
+  if let schema = schema as? Bool {
+    return try Draft202012Validator(schema: schema).validate(instance: instance)
+  }
+
+  if let schema = schema as? [String: Any] {
+    return try Draft202012Validator(schema: schema).validate(instance: instance)
+  }
+
+  fatalError()
+}
+
+
 #if os(Linux)
   let additionalExclusions = [
     // optional
@@ -156,6 +170,45 @@ class JSONSchemaCases: XCTestCase {
       "ecmascript-regex.json",
       "float-overflow.json",
       "infinite-loop-detection.json",
+
+      // optional, format
+      "format.json",
+      "date-time.json",
+      "date.json",
+      "duration.json",
+      "email.json",
+      "hostname.json",
+      "idn-email.json",
+      "idn-hostname.json",
+      "iri-reference.json",
+      "iri.json",
+      "relative-json-pointer.json",
+      "time.json",
+      "uri-reference.json",
+      "uri-template.json",
+    ] + additionalExclusions)
+  }
+
+  func testJSONSchemaDraft2020_12() throws {
+    try test(name: "draft2020-12", validator: draft202012Validator, excluding: [
+      "defs.json",
+      "refRemote.json",
+      "id.json",
+
+      "ref.json",
+      "uniqueItems.json",
+      "prefixItems.json",
+      "dynamicRef.json",
+      "items.json",
+
+      // unsupported
+      "unevaluatedProperties.json",
+      "unevaluatedItems.json",
+
+      // optional
+      "bignum.json",
+      "ecmascript-regex.json",
+      "float-overflow.json",
 
       // optional, format
       "format.json",
