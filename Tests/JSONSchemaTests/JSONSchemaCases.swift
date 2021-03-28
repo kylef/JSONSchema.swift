@@ -158,6 +158,7 @@ class JSONSchemaCases: XCTestCase {
       "infinite-loop-detection.json",
 
       // optional, format
+      "format.json",
       "date-time.json",
       "date.json",
       "duration.json",
