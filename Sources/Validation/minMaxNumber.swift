@@ -4,14 +4,22 @@ func validateNumericLength(_ context: Context, _ length: Double, comparitor: @es
       if exclusive ?? false {
         if !exclusiveComparitor(value, length) {
           return AnySequence([
-            ValidationError(error, instanceLocation: context.instanceLocation),
+            ValidationError(
+              error,
+              instanceLocation: context.instanceLocation,
+              keywordLocation: context.keywordLocation
+            )
           ])
         }
       }
 
       if !comparitor(value, length) {
         return AnySequence([
-          ValidationError(error, instanceLocation: context.instanceLocation),
+          ValidationError(
+            error,
+            instanceLocation: context.instanceLocation,
+            keywordLocation: context.keywordLocation
+          )
         ])
       }
     }

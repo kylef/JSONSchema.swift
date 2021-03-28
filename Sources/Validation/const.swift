@@ -9,7 +9,8 @@ func const(context: Context, const: Any, instance: Any, schema: [String: Any]) -
   return AnySequence([
     ValidationError(
       "'\(instance)' is not equal to const '\(const)'",
-      instanceLocation: context.instanceLocation
+      instanceLocation: context.instanceLocation,
+      keywordLocation: context.keywordLocation
     )
   ])
 }

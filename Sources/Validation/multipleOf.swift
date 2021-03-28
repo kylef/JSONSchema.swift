@@ -15,7 +15,8 @@ func multipleOf(context: Context, multipleOf: Any, instance: Any, schema: [Strin
     return AnySequence([
       ValidationError(
         "\(instance) is not a multiple of \(multipleOf)",
-        instanceLocation: context.instanceLocation
+        instanceLocation: context.instanceLocation,
+        keywordLocation: context.keywordLocation
       )
     ])
   }

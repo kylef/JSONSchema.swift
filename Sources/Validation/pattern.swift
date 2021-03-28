@@ -14,7 +14,8 @@ func pattern(context: Context, pattern: Any, instance: Any, schema: [String: Any
     return AnySequence([
       ValidationError(
         "[Schema] Regex pattern '\(pattern)' is not valid",
-        instanceLocation: context.instanceLocation
+        instanceLocation: context.instanceLocation,
+        keywordLocation: context.keywordLocation
       )
     ])
   }
@@ -24,7 +25,8 @@ func pattern(context: Context, pattern: Any, instance: Any, schema: [String: Any
     return AnySequence([
       ValidationError(
         "'\(instance)' does not match pattern: '\(pattern)'",
-        instanceLocation: context.instanceLocation
+        instanceLocation: context.instanceLocation,
+        keywordLocation: context.keywordLocation
       )
     ])
   }

@@ -28,7 +28,8 @@ func patternProperties(context: Context, patternProperties: Any, instance: Any, 
       return AnySequence([
         ValidationError(
           "[Schema] '\(pattern)' is not a valid regex pattern for patternProperties",
-          instanceLocation: context.instanceLocation
+          instanceLocation: context.instanceLocation,
+          keywordLocation: context.keywordLocation
         ),
       ])
     }

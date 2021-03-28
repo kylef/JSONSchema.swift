@@ -19,7 +19,11 @@ class Context {
       }
 
       return AnySequence([
-        ValidationError("Falsy schema", instanceLocation: instanceLocation),
+        ValidationError(
+          "Falsy schema",
+          instanceLocation: instanceLocation,
+          keywordLocation: keywordLocation
+        )
       ])
     }
 

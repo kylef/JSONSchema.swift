@@ -22,7 +22,7 @@ class RequiredTests: XCTestCase {
 
       XCTAssertEqual(error.description, "Required property 'test' is missing")
       XCTAssertEqual(error.instanceLocation.path, "/0")
-      XCTAssertEqual(error.keywordLocation?.path, "#/items/required")
+      XCTAssertEqual(error.keywordLocation.path, "#/items/required")
     }
   }
 }

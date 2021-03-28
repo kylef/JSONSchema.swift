@@ -6,7 +6,8 @@ func not(context: Context, not: Any, instance: Any, schema: [String: Any]) throw
   return AnySequence([
     ValidationError(
       "'\(instance)' does not match 'not' validation.",
-      instanceLocation: context.instanceLocation
+      instanceLocation: context.instanceLocation,
+      keywordLocation: context.keywordLocation
     )
   ])
 }

@@ -31,7 +31,8 @@ func contains(context: Context, contains: Any, instance: Any, schema: [String: A
     return AnySequence([
       ValidationError(
         "\(instance) does not match contains + maxContains \(max)",
-        instanceLocation: context.instanceLocation
+        instanceLocation: context.instanceLocation,
+        keywordLocation: context.keywordLocation
       )
     ])
   }
@@ -43,7 +44,8 @@ func contains(context: Context, contains: Any, instance: Any, schema: [String: A
   return AnySequence([
     ValidationError(
       "'\(instance) does not match contains",
-      instanceLocation: context.instanceLocation
+      instanceLocation: context.instanceLocation,
+      keywordLocation: context.keywordLocation
     )
   ])
 }

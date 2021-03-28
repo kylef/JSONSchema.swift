@@ -7,7 +7,8 @@ class ValidationErrorTests: XCTestCase {
   func testEncodableAsJSON() throws {
     let error = ValidationError(
       "example description",
-      instanceLocation: JSONPointer(path: "/test/1")
+      instanceLocation: JSONPointer(path: "/test/1"),
+      keywordLocation: JSONPointer(path: "#/example")
     )
 
     let jsonData = try JSONEncoder().encode(error)
@@ -16,6 +17,7 @@ class ValidationErrorTests: XCTestCase {
     XCTAssertEqual(json as! NSDictionary, [
       "error": "example description",
       "instanceLocation": "/test/1",
+      "keywordLocation": "#/example",
     ])
   }
 }

@@ -16,7 +16,8 @@ func uniqueItems(context: Context, uniqueItems: Any, instance: Any, schema: [Str
       return AnySequence([
         ValidationError(
           "\(instance) does not have unique items",
-          instanceLocation: context.instanceLocation
+          instanceLocation: context.instanceLocation,
+          keywordLocation: context.keywordLocation
         )
       ])
     }

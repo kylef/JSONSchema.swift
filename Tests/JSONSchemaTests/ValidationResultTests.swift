@@ -18,7 +18,8 @@ class ValidationResultsTests: XCTestCase {
   func testInvalidEncodableAsJSON() throws {
     let error = ValidationError(
       "example description",
-      instanceLocation: JSONPointer(path: "/test/1")
+      instanceLocation: JSONPointer(path: "/test/1"),
+      keywordLocation: JSONPointer(path: "#/example")
     )
     let result = ValidationResult.invalid([error])
 
@@ -31,6 +32,7 @@ class ValidationResultsTests: XCTestCase {
         [
           "error": "example description",
           "instanceLocation": "/test/1",
+          "keywordLocation": "#/example",
         ],
       ],
     ])

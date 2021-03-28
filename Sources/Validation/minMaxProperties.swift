@@ -3,7 +3,11 @@ func validatePropertiesLength(_ context: Context, _ length: Int, comparitor: @es
     if let value = value as? [String: Any] {
       if !comparitor(length, value.count) {
         return AnySequence([
-          ValidationError(error, instanceLocation: context.instanceLocation),
+          ValidationError(
+            error,
+            instanceLocation: context.instanceLocation,
+            keywordLocation: context.keywordLocation
+          ),
         ])
       }
     }

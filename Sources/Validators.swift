@@ -10,7 +10,11 @@ func validValidation(_ value: Any) -> AnySequence<ValidationError> {
 func invalidValidation(_ context: Context, _ error: String) -> (_ value: Any) -> AnySequence<ValidationError> {
   return { value in
     return AnySequence([
-      ValidationError(error, instanceLocation: context.instanceLocation),
+      ValidationError(
+        error,
+        instanceLocation: context.instanceLocation,
+        keywordLocation: context.keywordLocation
+      )
     ])
   }
 }
@@ -42,7 +46,8 @@ func type(context: Context, type: Any, instance: Any, schema: [String: Any]) -> 
   return AnySequence([
     ValidationError(
       "'\(instance)' is not of type \(types)",
-      instanceLocation: context.instanceLocation
+      instanceLocation: context.instanceLocation,
+      keywordLocation: context.keywordLocation
     )
   ])
 }
@@ -162,7 +167,8 @@ func unsupported(_ keyword: String) -> (_ context: Context, _ value: Any, _ inst
     return AnySequence([
       ValidationError(
         "'\(keyword)' is not supported.",
-        instanceLocation: context.instanceLocation
+        instanceLocation: context.instanceLocation,
+        keywordLocation: context.keywordLocation
       ),
     ])
   }

@@ -5,7 +5,8 @@ func validateArrayLength(_ context: Context, _ rhs: Int, comparitor: @escaping (
         return AnySequence([
           ValidationError(
             error,
-            instanceLocation: context.instanceLocation
+            instanceLocation: context.instanceLocation,
+            keywordLocation: context.keywordLocation
           )
         ])
       }

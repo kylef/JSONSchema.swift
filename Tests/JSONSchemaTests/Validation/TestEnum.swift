@@ -20,7 +20,7 @@ class EnumTests: XCTestCase {
 
       //XCTAssertEqual(error.description, "is not a valid enumeration value of '[\"one\"]'")
       XCTAssertEqual(error.instanceLocation.path, "")
-      XCTAssertEqual(error.keywordLocation?.path, "#/enum")
+      XCTAssertEqual(error.keywordLocation.path, "#/enum")
     }
   }
 }

@@ -16,7 +16,8 @@ func dependencies(context: Context, dependencies: Any, instance: Any, schema: [S
           results.append(AnySequence([
             ValidationError(
               "'\(key)' is a dependency for '\(property)'",
-              instanceLocation: context.instanceLocation
+              instanceLocation: context.instanceLocation,
+              keywordLocation: context.keywordLocation
             ),
           ]))
         }

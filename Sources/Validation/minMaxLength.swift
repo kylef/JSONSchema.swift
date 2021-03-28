@@ -3,7 +3,11 @@ func validateLength(_ context: Context, _ comparitor: @escaping ((Int, Int) -> (
     if let value = value as? String {
       if !comparitor(value.count, length) {
         return AnySequence([
-          ValidationError(error, instanceLocation: context.instanceLocation),
+          ValidationError(
+            error,
+            instanceLocation: context.instanceLocation,
+            keywordLocation: context.keywordLocation
+          ),
         ])
       }
     }

@@ -7,7 +7,8 @@ func oneOf(context: Context, oneOf: Any, instance: Any, schema: [String: Any]) t
     return AnySequence([
       ValidationError(
         "Only one value from `oneOf` should be met",
-        instanceLocation: context.instanceLocation
+        instanceLocation: context.instanceLocation,
+        keywordLocation: context.keywordLocation
       ),
     ])
   }

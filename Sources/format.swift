@@ -14,7 +14,8 @@ func format(context: Context, format: Any, instance: Any, schema: [String: Any])
     return AnySequence([
       ValidationError(
         "'format' validation of '\(format)' is not yet supported.",
-        instanceLocation: context.instanceLocation
+        instanceLocation: context.instanceLocation,
+        keywordLocation: context.keywordLocation
       )
     ])
   }
@@ -34,7 +35,8 @@ func validateIPv4(_ context: Context, _ value: Any) -> AnySequence<ValidationErr
     return AnySequence([
       ValidationError(
         "'\(ipv4)' is not a IPv4 address.",
-        instanceLocation: context.instanceLocation
+        instanceLocation: context.instanceLocation,
+        keywordLocation: context.keywordLocation
       )
     ])
   }
@@ -56,7 +58,8 @@ func validateIPv6(_ context: Context, _ value: Any) -> AnySequence<ValidationErr
     return AnySequence([
       ValidationError(
         "'\(ipv6)' is not a IPv6 address.",
-        instanceLocation: context.instanceLocation
+        instanceLocation: context.instanceLocation,
+        keywordLocation: context.keywordLocation
       )
     ])
   }
@@ -82,7 +85,8 @@ func validateURI(_ context: Context, _ value: Any) -> AnySequence<ValidationErro
     return AnySequence([
       ValidationError(
         "'\(uri)' is not a valid uri.",
-        instanceLocation: context.instanceLocation
+        instanceLocation: context.instanceLocation,
+        keywordLocation: context.keywordLocation
       )
     ])
   }
@@ -97,7 +101,8 @@ func validateUUID(_ context: Context, _ value: Any) -> AnySequence<ValidationErr
       return AnySequence([
         ValidationError(
           "'\(value)' is not a valid uuid.",
-          instanceLocation: context.instanceLocation
+          instanceLocation: context.instanceLocation,
+          keywordLocation: context.keywordLocation
         )
       ])
     }
@@ -115,7 +120,8 @@ func validateRegex(_ context: Context, _ value: Any) -> AnySequence<ValidationEr
       return AnySequence([
         ValidationError(
           "'\(value)' is not a valid regex.",
-          instanceLocation: context.instanceLocation
+          instanceLocation: context.instanceLocation,
+          keywordLocation: context.keywordLocation
         )
       ])
     }
@@ -131,7 +137,8 @@ func validateJSONPointer(_ context: Context, _ value: Any) -> AnySequence<Valida
       return AnySequence([
         ValidationError(
           "'\(value)' is not a valid json-pointer.",
-          instanceLocation: context.instanceLocation
+          instanceLocation: context.instanceLocation,
+          keywordLocation: context.keywordLocation
         )
       ])
     }
@@ -145,7 +152,8 @@ func validateJSONPointer(_ context: Context, _ value: Any) -> AnySequence<Valida
       return AnySequence([
         ValidationError(
           "'\(value)' is not a valid json-pointer.",
-          instanceLocation: context.instanceLocation
+          instanceLocation: context.instanceLocation,
+          keywordLocation: context.keywordLocation
         )
       ])
     }

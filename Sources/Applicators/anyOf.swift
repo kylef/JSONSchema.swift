@@ -7,7 +7,8 @@ func anyOf(context: Context, anyOf: Any, instance: Any, schema: [String: Any]) t
     return AnySequence([
       ValidationError(
         "\(instance) does not meet anyOf validation rules.",
-        instanceLocation: context.instanceLocation
+        instanceLocation: context.instanceLocation,
+        keywordLocation: context.keywordLocation
       ),
     ])
   }
