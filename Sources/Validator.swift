@@ -34,6 +34,8 @@ class Context {
     if validator is Draft4Validator || validator is Draft6Validator {
       // Older versions of JSON Schema, $ref ignores any alongside keywords
       if let ref = schema["$ref"] as? String {
+        keywordLocation.push("$ref")
+        defer { keywordLocation.pop() }
         let validation = validator.validations["$ref"]!
         return try validation(self, ref, instance, schema)
       }
