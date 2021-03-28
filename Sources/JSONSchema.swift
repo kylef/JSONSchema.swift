@@ -68,6 +68,14 @@ func validator(for schema: [String: Any]) -> Validator {
     return Draft4Validator(schema: schema)
   }
 
+  if let id = DRAFT_2020_12_META_SCHEMA["$id"] as? String, schemaURI == id {
+    return Draft202012Validator(schema: schema)
+  }
+
+  if let id = DRAFT_2019_09_META_SCHEMA["$id"] as? String, schemaURI == id {
+    return Draft201909Validator(schema: schema)
+  }
+
   if let id = DRAFT_07_META_SCHEMA["$id"] as? String, schemaURI == id {
     return Draft7Validator(schema: schema)
   }
