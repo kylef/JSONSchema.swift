@@ -5,6 +5,7 @@ class Context {
   let validator: Validator
 
   var instanceLocation = JSONPointer()
+  var keywordLocation = JSONPointer(path: "#")
 
   init(resolver: RefResolver, validator: Validator) {
     self.resolver = RefResolver(resolver: resolver)
@@ -36,6 +37,8 @@ class Context {
 
     return try AnySequence(validator.validations.compactMap { (key, validation) -> AnySequence<ValidationError> in
       if let value = schema[key] {
+        keywordLocation.push(key)
+        defer { keywordLocation.pop() }
         return try validation(self, value, instance, schema)
       }
 

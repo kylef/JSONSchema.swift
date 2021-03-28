@@ -1,9 +1,10 @@
 public class ValidationError: Encodable {
   public let description: String
 
-  init(_ value: String, instanceLocation: JSONPointer) {
+  init(_ value: String, instanceLocation: JSONPointer, keywordLocation: JSONPointer? = nil) {
     self.description = value
     self.instanceLocation = instanceLocation
+    self.keywordLocation = keywordLocation
   }
 
   enum CodingKeys: String, CodingKey {
@@ -18,6 +19,7 @@ public class ValidationError: Encodable {
   }
 
   public let instanceLocation: JSONPointer
+  public let keywordLocation: JSONPointer?
 }
 
 

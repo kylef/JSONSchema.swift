@@ -12,7 +12,8 @@ func required(context: Context, required: Any, instance: Any, schema: [String: A
     guard !instance.keys.contains(key) else { return nil }
     return ValidationError(
       "Required property '\(key)' is missing",
-      instanceLocation: context.instanceLocation
+      instanceLocation: context.instanceLocation,
+      keywordLocation: context.keywordLocation
     )
   })
 }
