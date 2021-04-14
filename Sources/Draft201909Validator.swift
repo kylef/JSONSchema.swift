@@ -53,8 +53,8 @@ public class Draft201909Validator: Validator {
     "unevaluatedItems": unsupported("unevaluatedItems"),
     "unevaluatedProperties": unsupported("unevaluatedProperties"),
   ]
-
-  let formats: [String: (Context, String) -> (AnySequence<ValidationError>)] = [
+    
+  let formats: [String: ValidationClosure] = [
     "ipv4": validateIPv4,
     "ipv6": validateIPv6,
     "uri": validateURI,
