@@ -1,6 +1,15 @@
 # JSONSchema Changelog
 
-## Master
+## 0.6.0
+
+### Breaking Changes
+
+- The validation API may now throw errors if the provided JSON Schema is
+  invalid.
+
+- The structure of ValidationError has changed to include further information
+  such as the location of the failing instance. ValidationError was previous a
+  String.
 
 ### Enhancements
 

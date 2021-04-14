@@ -29,14 +29,14 @@ class JSONSchemaTests: XCTestCase {
   }
 
   func testSuccessfulValidation() {
-    XCTAssertTrue(schema.validate([String: Any]()).valid)
+    try XCTAssertTrue(schema.validate([String: Any]()).valid)
   }
 
   func testUnsuccessfulValidation() {
-    XCTAssertFalse(schema.validate([String]()).valid)
+    try XCTAssertFalse(schema.validate([String]()).valid)
   }
 
-  func testReadme() {
+  func testReadme() throws {
     let schema = Schema([
       "type": "object",
       "properties": [
@@ -46,11 +46,11 @@ class JSONSchemaTests: XCTestCase {
       "required": ["name"],
     ])
 
-    XCTAssertTrue(schema.validate(["name": "Eggs", "price": 34.99]).valid)
-    XCTAssertFalse(schema.validate(["price": 34.99]).valid)
+    try XCTAssertTrue(schema.validate(["name": "Eggs", "price": 34.99]).valid)
+    try XCTAssertFalse(schema.validate(["price": 34.99]).valid)
   }
 
-  func testIterableInterface() {
+  func testIterableInterface() throws {
     let schema = Schema([
       "type": "object",
       "properties": [
@@ -61,14 +61,16 @@ class JSONSchemaTests: XCTestCase {
     ])
 
     var counter = 0
-    for error in schema.validate(["price": 34.99]) {
-      XCTAssertEqual(error, "Required property 'name' is missing")
+    for error in try schema.validate(["price": 34.99]) {
+      XCTAssertEqual(error.description, "Required property 'name' is missing")
       counter += 1
     }
 
     XCTAssertEqual(counter, 1)
 
-    XCTAssertEqual(Array(schema.validate(["price": 34.99])), [
+    let result = try Array(schema.validate(["price": 34.99]))
+
+    XCTAssertEqual(result.map(\.description), [
       "Required property 'name' is missing"
     ])
   }
@@ -87,8 +89,8 @@ class ValidateTests: XCTestCase {
       "required": ["name"],
     ]
 
-    XCTAssertTrue(validate(["name": "Eggs", "price": 34.99], schema: schema).valid)
-    XCTAssertFalse(validate(["price": 34.99], schema: schema).valid)
+    try XCTAssertTrue(validate(["name": "Eggs", "price": 34.99], schema: schema).valid)
+    try XCTAssertFalse(validate(["price": 34.99], schema: schema).valid)
   }
 
   func testValidateDraft6() {
@@ -102,8 +104,8 @@ class ValidateTests: XCTestCase {
       "required": ["name"],
     ]
 
-    XCTAssertTrue(validate(["name": "Eggs", "price": 34.99], schema: schema).valid)
-    XCTAssertFalse(validate(["price": 34.99], schema: schema).valid)
+    try XCTAssertTrue(validate(["name": "Eggs", "price": 34.99], schema: schema).valid)
+    try XCTAssertFalse(validate(["price": 34.99], schema: schema).valid)
   }
 
   func testDraft6ValidatorIsAvailable() {
@@ -111,7 +113,7 @@ class ValidateTests: XCTestCase {
     XCTAssertTrue(result is Draft6Validator, "Unexpected type of validator \(result)")
   }
 
-  func testValidateDraft7() {
+  func testValidateDraft7() throws {
     let schema: [String: Any]  = [
       "$schema": "http://json-schema.org/draft-07/schema#",
       "type": "object",
@@ -122,25 +124,61 @@ class ValidateTests: XCTestCase {
       "required": ["name"],
     ]
 
-    XCTAssertTrue(validate(["name": "Eggs", "price": 34.99], schema: schema).valid)
-    XCTAssertFalse(validate(["price": 34.99], schema: schema).valid)
+    try XCTAssertTrue(validate(["name": "Eggs", "price": 34.99], schema: schema).valid)
+    try XCTAssertFalse(validate(["price": 34.99], schema: schema).valid)
   }
 
-  func testValidatesRequired() {
-    let schema: [String: Any]  = [
+  func testValidatesRequired() throws {
+    let schema: [String: Any] = [
       "$schema": "http://json-schema.org/draft-07/schema#",
       "required": ["one", "two", "three"],
     ]
 
-    let result = validate(["one": true, "three": true], schema: schema)
+    let result = try validate(["one": true, "three": true], schema: schema)
 
     switch result {
     case .valid:
       XCTFail("Validation should fail")
     case .invalid(let errors):
-      XCTAssertEqual(errors, [
+      XCTAssertEqual(errors.map(\.description), [
         "Required property 'two' is missing",
       ])
     }
+  }
+
+  func testRequiredValidationLocation() throws {
+    let schema: [String: Any] = [
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "items": [
+        "required": ["test"],
+      ]
+    ]
+
+    let result = try validate([[:]], schema: schema)
+
+    switch result {
+    case .valid:
+      XCTFail("Validation should fail")
+    case .invalid(let errors):
+      XCTAssertEqual(errors.count, 1)
+      let error = errors[0]
+
+      XCTAssertEqual(error.description, "Required property 'test' is missing")
+      XCTAssertEqual(error.instanceLocation.path, "/0")
+    }
+  }
+
+  func testReferenceNotFound() {
+    let schema: [String: Any] = [
+      "$ref": "#/unknown",
+    ]
+
+    do {
+      _ = try validate("anything", schema: schema)
+    } catch {
+      return
+    }
+
+    XCTFail("Validation did not throw error")
   }
 }

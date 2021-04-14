@@ -2,8 +2,12 @@ import Foundation
 
 public class Draft7Validator: Validator {
   let schema: [String: Any]
-  static let metaSchema: [String: Any] = DRAFT_07_META_SCHEMA
   let resolver: RefResolver
+
+  let metaschmas: [String : Any] = [
+    "http://json-schema.org/draft-06/schema": DRAFT_06_META_SCHEMA,
+    "http://json-schema.org/draft-07/schema": DRAFT_07_META_SCHEMA,
+  ]
 
   let validations: [String: Validation] = [
     "$ref": ref,
@@ -40,13 +44,15 @@ public class Draft7Validator: Validator {
     "additionalProperties": additionalProperties,
   ]
 
-  let formats: [String: (String) -> (AnySequence<ValidationError>)] = [
+  let formats: [String: (Context, String) -> (AnySequence<ValidationError>)] = [
     "ipv4": validateIPv4,
     "ipv6": validateIPv6,
     "uri": validateURI,
     "date-time": validateDateTime,
     "date": validateDate,
-    "time": validateTime
+    "time": validateTime,
+    "json-pointer": validateJSONPointer,
+    "regex": validateRegex,
   ]
 
   public required init(schema: Bool) {
@@ -56,12 +62,12 @@ public class Draft7Validator: Validator {
       self.schema = ["not": [:]]
     }
 
-    self.resolver = RefResolver(schema: self.schema)
+    self.resolver = RefResolver(schema: self.schema, metaschemes: metaschmas, defsField: "definitions")
   }
 
   public required init(schema: [String: Any]) {
     self.schema = schema
-    self.resolver = RefResolver(schema: self.schema)
+    self.resolver = RefResolver(schema: self.schema, metaschemes: metaschmas, defsField: "definitions")
   }
 }
 

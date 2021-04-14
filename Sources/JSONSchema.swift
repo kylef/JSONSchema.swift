@@ -6,7 +6,7 @@ public enum Type: Swift.String {
   case array = "array"
   case string = "string"
   case integer = "integer"
-  case jumber = "number"
+  case number = "number"
   case boolean = "boolean"
   case null = "null"
 }
@@ -51,14 +51,14 @@ public struct Schema {
     self.schema = schema
   }
 
-  public func validate(_ data: Any) -> ValidationResult {
+  public func validate(_ data: Any) throws -> ValidationResult {
     let validator = JSONSchema.validator(for: schema)
-    return validator.validate(instance: data)
+    return try validator.validate(instance: data)
   }
 
-  public func validate(_ data: Any) -> AnySequence<ValidationError> {
+  public func validate(_ data: Any) throws -> AnySequence<ValidationError> {
     let validator = JSONSchema.validator(for: schema)
-    return validator.validate(instance: data)
+    return try validator.validate(instance: data)
   }
 }
 
@@ -66,6 +66,14 @@ public struct Schema {
 func validator(for schema: [String: Any]) -> Validator {
   guard let schemaURI = schema["$schema"] as? String else {
     return Draft4Validator(schema: schema)
+  }
+
+  if let id = DRAFT_2020_12_META_SCHEMA["$id"] as? String, schemaURI == id {
+    return Draft202012Validator(schema: schema)
+  }
+
+  if let id = DRAFT_2019_09_META_SCHEMA["$id"] as? String, schemaURI == id {
+    return Draft201909Validator(schema: schema)
   }
 
   if let id = DRAFT_07_META_SCHEMA["$id"] as? String, schemaURI == id {
@@ -84,12 +92,12 @@ func validator(for schema: [String: Any]) -> Validator {
 }
 
 
-public func validate(_ value: Any, schema: [String: Any]) -> ValidationResult {
-  return validator(for: schema).validate(instance: value)
+public func validate(_ value: Any, schema: [String: Any]) throws -> ValidationResult {
+  return try validator(for: schema).validate(instance: value)
 }
 
 
-public func validate(_ value: Any, schema: Bool) -> ValidationResult {
+public func validate(_ value: Any, schema: Bool) throws -> ValidationResult {
   let validator = Draft4Validator(schema: schema)
-  return validator.validate(instance: value)
+  return try validator.validate(instance: value)
 }

@@ -2,8 +2,11 @@ import Foundation
 
 public class Draft4Validator: Validator {
   let schema: [String: Any]
-  static let metaSchema: [String: Any] = DRAFT_04_META_SCHEMA
   let resolver: RefResolver
+
+  let metaschmas: [String : Any] = [
+    "http://json-schema.org/draft-04/schema": DRAFT_04_META_SCHEMA,
+  ]
 
   let validations: [String: Validation] = [
     "$ref": ref,
@@ -38,7 +41,7 @@ public class Draft4Validator: Validator {
     "if": `if`,
   ]
 
-  let formats: [String: (String) -> (AnySequence<ValidationError>)] = [
+  let formats: [String: (Context, String) -> (AnySequence<ValidationError>)] = [
     "ipv4": validateIPv4,
     "ipv6": validateIPv6,
     "uri": validateURI,
@@ -51,12 +54,12 @@ public class Draft4Validator: Validator {
       self.schema = ["not": [:]]
     }
 
-    self.resolver = RefResolver(schema: self.schema)
+    self.resolver = RefResolver(schema: self.schema, metaschemes: metaschmas, idField: "id", defsField: "definitions")
   }
 
   public required init(schema: [String: Any]) {
     self.schema = schema
-    self.resolver = RefResolver(schema: schema)
+    self.resolver = RefResolver(schema: schema, metaschemes: metaschmas, idField: "id", defsField: "definitions")
   }
 }
 

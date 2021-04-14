@@ -11,105 +11,130 @@ func JSONFixture(_ path: Path) throws -> [[String: Any]] {
 }
 
 
-func draft4Validator(schema: Any, instance: Any) -> ValidationResult {
+func draft4Validator(schema: Any, instance: Any) throws -> ValidationResult {
   if let schema = schema as? Bool {
-    return Draft4Validator(schema: schema).validate(instance: instance)
+    return try Draft4Validator(schema: schema).validate(instance: instance)
   }
 
   if let schema = schema as? [String: Any] {
-    return validate(instance, schema: schema)
+    return try validate(instance, schema: schema)
   }
 
   fatalError()
 }
 
 
-func draft6Validator(schema: Any, instance: Any) -> ValidationResult {
+func draft6Validator(schema: Any, instance: Any) throws -> ValidationResult {
   if let schema = schema as? Bool {
-    return Draft6Validator(schema: schema).validate(instance: instance)
+    return try Draft6Validator(schema: schema).validate(instance: instance)
   }
 
   if let schema = schema as? [String: Any] {
-    return Draft6Validator(schema: schema).validate(instance: instance)
+    return try Draft6Validator(schema: schema).validate(instance: instance)
   }
 
   fatalError()
 }
 
 
-func draft7Validator(schema: Any, instance: Any) -> ValidationResult {
+func draft7Validator(schema: Any, instance: Any) throws -> ValidationResult {
   if let schema = schema as? Bool {
-    return Draft7Validator(schema: schema).validate(instance: instance)
+    return try Draft7Validator(schema: schema).validate(instance: instance)
   }
 
   if let schema = schema as? [String: Any] {
-    return Draft7Validator(schema: schema).validate(instance: instance)
+    return try Draft7Validator(schema: schema).validate(instance: instance)
   }
 
   fatalError()
 }
 
 
-func draft201909Validator(schema: Any, instance: Any) -> ValidationResult {
+func draft201909Validator(schema: Any, instance: Any) throws -> ValidationResult {
   if let schema = schema as? Bool {
-    return Draft201909Validator(schema: schema).validate(instance: instance)
+    return try Draft201909Validator(schema: schema).validate(instance: instance)
   }
 
   if let schema = schema as? [String: Any] {
-    return Draft201909Validator(schema: schema).validate(instance: instance)
+    return try Draft201909Validator(schema: schema).validate(instance: instance)
   }
 
   fatalError()
 }
+
+
+func draft202012Validator(schema: Any, instance: Any) throws -> ValidationResult {
+  if let schema = schema as? Bool {
+    return try Draft202012Validator(schema: schema).validate(instance: instance)
+  }
+
+  if let schema = schema as? [String: Any] {
+    return try Draft202012Validator(schema: schema).validate(instance: instance)
+  }
+
+  fatalError()
+}
+
+
+#if os(Linux)
+  let additionalExclusions = [
+    // optional
+    "non-bmp-regex.json",
+  ]
+#else
+  let additionalExclusions: [String] = []
+#endif
 
 
 class JSONSchemaCases: XCTestCase {
   func testJSONSchemaDraft4() throws {
     try test(name: "draft4", validator: draft4Validator, excluding: [
-      "ref.json",
       "refRemote.json",
 
       // optional
       "bignum.json",
       "ecmascript-regex.json",
       "zeroTerminatedFloats.json",
+      "float-overflow.json",
+      "infinite-loop-detection.json",
 
       // optional formats
       "date-time.json",
       "email.json",
       "hostname.json",
-    ])
+    ] + additionalExclusions)
   }
 
   func testJSONSchemaDraft6() throws {
     try test(name: "draft6", validator: draft6Validator, excluding: [
-      "ref.json",
       "refRemote.json",
 
       // optional
       "bignum.json",
       "format.json",
       "ecmascript-regex.json",
+      "float-overflow.json",
+      "infinite-loop-detection.json",
 
       // optional formats
       "date-time.json",
       "email.json",
       "hostname.json",
-      "json-pointer.json",
       "uri-reference.json",
       "uri-template.json",
-    ])
+    ] + additionalExclusions)
   }
 
   func testJSONSchemaDraft7() throws {
     try test(name: "draft7", validator: draft7Validator, excluding: [
-      "ref.json",
       "refRemote.json",
 
       // optional
       "bignum.json",
       "content.json",
       "ecmascript-regex.json",
+      "float-overflow.json",
+      "infinite-loop-detection.json",
 
       // optional, format
       "email.json",
@@ -118,21 +143,18 @@ class JSONSchemaCases: XCTestCase {
       "idn-hostname.json",
       "iri-reference.json",
       "iri.json",
-      "json-pointer.json",
-      "regex.json",
       "relative-json-pointer.json",
       "uri-reference.json",
       "uri-template.json",
-    ])
+    ] + additionalExclusions)
   }
 
   func testJSONSchemaDraft2019_09() throws {
     try test(name: "draft2019-09", validator: draft201909Validator, excluding: [
       "defs.json",
-      "ref.json",
       "refRemote.json",
-      "anchor.json",
       "id.json",
+      "recursiveRef.json",
 
       // unsupported
       "unevaluatedProperties.json",
@@ -143,8 +165,13 @@ class JSONSchemaCases: XCTestCase {
       "content.json",
       "ecmascript-regex.json",
       "ecmascript-regex.json",
+      "float-overflow.json",
+      "infinite-loop-detection.json",
 
       // optional, format
+      "format.json",
+      "date-time.json",
+      "date.json",
       "duration.json",
       "email.json",
       "hostname.json",
@@ -152,15 +179,52 @@ class JSONSchemaCases: XCTestCase {
       "idn-hostname.json",
       "iri-reference.json",
       "iri.json",
-      "json-pointer.json",
-      "regex.json",
+      "relative-json-pointer.json",
+      "time.json",
+      "uri-reference.json",
+      "uri-template.json",
+    ] + additionalExclusions)
+  }
+
+  func testJSONSchemaDraft2020_12() throws {
+    try test(name: "draft2020-12", validator: draft202012Validator, excluding: [
+      "defs.json",
+      "refRemote.json",
+      "id.json",
+
+      "ref.json",
+      "uniqueItems.json",
+      "prefixItems.json",
+      "dynamicRef.json",
+      "items.json",
+
+      // unsupported
+      "unevaluatedProperties.json",
+      "unevaluatedItems.json",
+
+      // optional
+      "bignum.json",
+      "ecmascript-regex.json",
+      "float-overflow.json",
+
+      // optional, format
+      "format.json",
+      "date-time.json",
+      "date.json",
+      "duration.json",
+      "email.json",
+      "hostname.json",
+      "idn-email.json",
+      "idn-hostname.json",
+      "iri-reference.json",
+      "iri.json",
       "relative-json-pointer.json",
       "uri-reference.json",
       "uri-template.json",
-    ])
+    ] + additionalExclusions)
   }
 
-  func test(name: String, validator: @escaping ((_ schema: Any, _ instance: Any) -> (ValidationResult)), excluding: [String]) throws {
+  func test(name: String, validator: @escaping ((_ schema: Any, _ instance: Any) throws -> (ValidationResult)), excluding: [String]) throws {
     let filePath = #file
     let path = Path(filePath) + ".." + ".." + "Cases" + "tests" + name
 
@@ -189,7 +253,7 @@ class JSONSchemaCases: XCTestCase {
 
     let flatCases = cases.reduce([Case](), +)
     for c in flatCases {
-      for (name, assertion) in makeAssertions(c, validator) {
+      for (_, assertion) in makeAssertions(c, validator) {
         // TODO: Improve testing
         assertion()
       }
@@ -230,16 +294,26 @@ func makeCase(_ filename: String) -> (_ object: [String: Any]) -> Case {
 typealias Assertion = (String, () -> ())
 
 
-func makeAssertions(_ c: Case, _ validator: @escaping ((_ schema: Any, _ instance: Any) -> (ValidationResult))) -> ([Assertion]) {
+func makeAssertions(_ c: Case, _ validator: @escaping ((_ schema: Any, _ instance: Any) throws -> (ValidationResult))) -> ([Assertion]) {
   return c.tests.map { test -> Assertion in
     let label = "\(c.description) \(test.description)"
     return (label, {
       let result: ValidationResult
 
       if let schema = c.schema as? [String: Any] {
-        result = validator(schema, test.data)
+        do {
+          result = try validator(schema, test.data)
+        } catch {
+          XCTFail(error.localizedDescription)
+          return
+        }
       } else if let schema = c.schema as? Bool {
-        result = validator(schema, test.data)
+        do {
+          result = try validator(schema, test.data)
+        } catch {
+          XCTFail(error.localizedDescription)
+          return
+        }
       } else {
         fatalError()
       }

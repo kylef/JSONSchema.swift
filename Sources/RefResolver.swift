@@ -1,58 +1,135 @@
 import Foundation
 
+func urlSplitFragment(url: String) -> (String, String) {
+  guard let hashIndex = url.index(of: "#") else {
+    return (url, "")
+  }
+
+  return (
+    String(url.prefix(upTo: hashIndex)),
+    String(url.suffix(from: url.index(after: hashIndex)))
+  )
+}
+
+func urlJoin(_ lhs: String, _ rhs: String) -> String {
+  if lhs.isEmpty {
+    return rhs
+  }
+
+  if rhs.isEmpty {
+    return lhs
+  }
+
+  return URL(string: rhs, relativeTo: URL(string: lhs)!)!.absoluteString
+}
+
+func urlNormalise(_ value: String) -> String {
+  if value.hasSuffix("#"), let index = value.lastIndex(of: "#") {
+    return String(value.prefix(upTo: index))
+  }
+
+  return value
+}
+
+
 class RefResolver {
   let referrer: [String: Any]
+  var store: [String: Any]
+  var stack: [String]
+  let idField: String
+  let defsField: String
 
-  init(schema: [String: Any]) {
+  init(schema: [String: Any], metaschemes: [String: Any], idField: String = "$id", defsField: String = "$defs") {
     self.referrer = schema
+    self.store = metaschemes
+    self.idField = idField
+    self.defsField = defsField
+
+    if let id = schema[idField] as? String {
+      self.store[id] = schema
+      self.stack = [id]
+    } else {
+      self.store[""] = schema
+      self.stack = [""]
+    }
+
+    storeDefinitions(from: schema)
+  }
+
+  init(resolver: RefResolver) {
+    referrer = resolver.referrer
+    store = resolver.store
+    stack = resolver.stack
+    idField = resolver.idField
+    defsField = resolver.defsField
+  }
+
+  func storeDefinitions(from document: Any) {
+    guard
+      let document = document as? [String: Any],
+      let defs = document[defsField] as? [String: Any]
+    else {
+      return
+    }
+
+
+    for (_, defs) in defs {
+      guard let def = defs as? [String: Any] else { continue }
+
+      let id = def[idField] as? String
+      let anchor = def["$anchor"] as? String
+
+      let url: String
+      if let anchor = anchor {
+        url = urlJoin(stack.last!, "\(id ?? "")#\(anchor)")
+      } else if let id = id {
+        url = urlJoin(stack.last!, id)
+      } else { continue }
+
+      self.store[url] = def
+
+      // recurse
+      self.stack.append(url)
+      storeDefinitions(from: def)
+      self.stack.removeLast()
+    }
   }
 
   func resolve(reference: String) -> Any? {
-    // TODO: Rewrite this whole block: https://github.com/kylef/JSONSchema.swift/issues/12
+    let url = urlJoin(stack.last!, reference)
+    return resolve(url: url)
+  }
 
-    if let fragment = reference.stringByRemovingPrefix("#") {  // Document relative
-      return resolve(document: referrer, fragment: fragment)
+  func resolve(url: String) -> Any? {
+    if let document = store[url] {
+      return document
+    }
+
+    let (url, fragment) = urlSplitFragment(url: url)
+    guard let document = store[url] else {
+      return nil
+    }
+
+    if let document = document as? [String: Any] {
+      return resolve(document: document, fragment: fragment)
+    }
+
+    if fragment == "" {
+      return document
     }
 
     return nil
   }
 
-  func resolve(document: [String: Any], fragment: String) -> [String: Any]? {
+  func resolve(document: [String: Any], fragment: String) -> Any? {
     guard !fragment.isEmpty else {
       return document
     }
 
-    guard let tmp = fragment.stringByRemovingPrefix("/"), let reference = (tmp as NSString).removingPercentEncoding else {
+    guard let reference = (fragment as NSString).removingPercentEncoding else {
       return nil
     }
-
-    var components = reference
-      .components(separatedBy: "/")
-      .map {
-        $0.replacingOccurrences(of: "~1", with: "/").replacingOccurrences(of: "~0", with: "~")
-      }
-    var schema: [String: Any] = document
-
-    while let component = components.first {
-      components.remove(at: components.startIndex)
-
-      if let subschema = schema[component] as? [String: Any] {
-        schema = subschema
-        continue
-      } else if let schemas = schema[component] as? [[String:Any]] {
-        if let component = components.first, let index = Int(component) {
-          components.remove(at: components.startIndex)
-
-          if schemas.count > index {
-            schema = schemas[index]
-            continue
-          }
-        }
-      }
-
-      return nil
-    }
-
-    return schema
+    let pointer = JSONPointer(path: reference)
+    return pointer.resolve(document: document)
   }
 }
