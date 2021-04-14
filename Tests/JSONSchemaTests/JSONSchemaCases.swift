@@ -137,6 +137,8 @@ class JSONSchemaCases: XCTestCase {
       "infinite-loop-detection.json",
 
       // optional, format
+      "date-time.json",
+      "date.json",
       "email.json",
       "hostname.json",
       "idn-email.json",
@@ -144,6 +146,7 @@ class JSONSchemaCases: XCTestCase {
       "iri-reference.json",
       "iri.json",
       "relative-json-pointer.json",
+      "time.json",
       "uri-reference.json",
       "uri-template.json",
     ] + additionalExclusions)
@@ -219,6 +222,7 @@ class JSONSchemaCases: XCTestCase {
       "iri-reference.json",
       "iri.json",
       "relative-json-pointer.json",
+      "time.json",
       "uri-reference.json",
       "uri-template.json",
     ] + additionalExclusions)

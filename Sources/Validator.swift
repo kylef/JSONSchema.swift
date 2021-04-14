@@ -63,7 +63,6 @@ class Context {
 
 protocol Validator {
   typealias Validation = (Context, Any, Any, [String: Any]) throws -> AnySequence<ValidationError>
-  typealias ValidationClosure = (Context, String) -> (AnySequence<ValidationError>)
 
   var resolver: RefResolver { get }
 
