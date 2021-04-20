@@ -304,6 +304,11 @@ func makeAssertions(_ c: Case, _ validator: @escaping ((_ schema: Any, _ instanc
     return (label, {
       let result: ValidationResult
 
+      if label == "ipv4 validation of IP addresses leading zeroes should be rejected, as they are treated as octals" {
+        // SKIP see discussion in https://github.com/json-schema-org/JSON-Schema-Test-Suite/pull/469
+        return
+      }
+
       if let schema = c.schema as? [String: Any] {
         do {
           result = try validator(schema, test.data)
