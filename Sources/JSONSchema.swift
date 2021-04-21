@@ -66,7 +66,7 @@ public struct Schema {
 func validator(for schema: [String: Any]) throws -> Validator {
   guard schema.keys.contains("$schema") else {
     // Default schema
-    return Draft4Validator(schema: schema)
+    return Draft202012Validator(schema: schema)
   }
 
   guard let schemaURI = schema["$schema"] as? String else {

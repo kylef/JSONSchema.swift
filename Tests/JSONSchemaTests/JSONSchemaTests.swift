@@ -110,7 +110,7 @@ class ValidateTests: XCTestCase {
 
   func testDefaultValidator() throws {
     let result = try validator(for: [:])
-    XCTAssertTrue(result is Draft4Validator, "Unexpected type of validator \(result)")
+    XCTAssertTrue(result is Draft202012Validator, "Unexpected type of validator \(result)")
   }
 
   func testDraft4ValidatorIsAvailable() throws {

@@ -17,7 +17,7 @@ func draft4Validator(schema: Any, instance: Any) throws -> ValidationResult {
   }
 
   if let schema = schema as? [String: Any] {
-    return try validate(instance, schema: schema)
+    return try Draft4Validator(schema: schema).validate(instance: instance)
   }
 
   fatalError()
