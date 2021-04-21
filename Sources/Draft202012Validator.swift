@@ -62,6 +62,7 @@ public class Draft202012Validator: Validator {
     "uuid": validateUUID,
     "regex": validateRegex,
     "json-pointer": validateJSONPointer,
+    "duration": validateDuration,
   ]
 
   public required init(schema: Bool) {
