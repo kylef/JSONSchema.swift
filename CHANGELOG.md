@@ -12,6 +12,12 @@
   error will now be thrown instead of the schema being silently treated as a
   draft 4 schema.
 
+### Enhancements
+
+- `$schema` matching will now operate on normalise URIs and thus will handle
+  cases when the meta spec or the `$schema` URI both contain and don't contain
+  empty trailing fragments as the same meta schema.
+
 ## 0.6.0
 
 ### Breaking Changes

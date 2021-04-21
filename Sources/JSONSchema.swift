@@ -73,23 +73,23 @@ func validator(for schema: [String: Any]) throws -> Validator {
     throw ReferenceError.notFound
   }
 
-  if let id = DRAFT_2020_12_META_SCHEMA["$id"] as? String, schemaURI == id {
+  if let id = DRAFT_2020_12_META_SCHEMA["$id"] as? String, urlEqual(schemaURI, id) {
     return Draft202012Validator(schema: schema)
   }
 
-  if let id = DRAFT_2019_09_META_SCHEMA["$id"] as? String, schemaURI == id {
+  if let id = DRAFT_2019_09_META_SCHEMA["$id"] as? String, urlEqual(schemaURI, id) {
     return Draft201909Validator(schema: schema)
   }
 
-  if let id = DRAFT_07_META_SCHEMA["$id"] as? String, schemaURI == id {
+  if let id = DRAFT_07_META_SCHEMA["$id"] as? String, urlEqual(schemaURI, id) {
     return Draft7Validator(schema: schema)
   }
 
-  if let id = DRAFT_06_META_SCHEMA["$id"] as? String, schemaURI == id {
+  if let id = DRAFT_06_META_SCHEMA["$id"] as? String, urlEqual(schemaURI, id) {
     return Draft6Validator(schema: schema)
   }
 
-  if let id = DRAFT_04_META_SCHEMA["id"] as? String, schemaURI == id {
+  if let id = DRAFT_04_META_SCHEMA["id"] as? String, urlEqual(schemaURI, id) {
     return Draft4Validator(schema: schema)
   }
 
