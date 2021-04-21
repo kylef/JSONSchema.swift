@@ -64,9 +64,10 @@ public struct Schema {
 
 
 func validator(for schema: [String: Any]) -> Validator {
-  guard let schemaURI = schema["$schema"] as? String else {
+  guard var schemaURI = schema["$schema"] as? String else {
     return Draft4Validator(schema: schema)
   }
+  schemaURI = schemaURI.replacingOccurrences(of: "http://", with: "https://").trimmingCharacters(in: ["#", "/"])
 
   if let id = DRAFT_2020_12_META_SCHEMA["$id"] as? String, schemaURI == id {
     return Draft202012Validator(schema: schema)
