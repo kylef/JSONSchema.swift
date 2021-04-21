@@ -196,10 +196,7 @@ class JSONSchemaCases: XCTestCase {
       "id.json",
 
       "ref.json",
-      "uniqueItems.json",
-      "prefixItems.json",
       "dynamicRef.json",
-      "items.json",
 
       // unsupported
       "unevaluatedProperties.json",

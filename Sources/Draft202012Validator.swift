@@ -36,7 +36,7 @@ public class Draft202012Validator: Validator {
     "minProperties": minProperties,
     "maxProperties": maxProperties,
     "items": items,
-    "additionalItems": additionalItems,
+    "prefixItems": prefixItems,
     "patternProperties": patternProperties,
     "additionalProperties": additionalProperties,
     "$ref": ref,
