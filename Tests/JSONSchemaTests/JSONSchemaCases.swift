@@ -117,7 +117,6 @@ class JSONSchemaCases: XCTestCase {
       "infinite-loop-detection.json",
 
       // optional formats
-      "date-time.json",
       "email.json",
       "hostname.json",
       "uri-reference.json",
@@ -137,8 +136,6 @@ class JSONSchemaCases: XCTestCase {
       "infinite-loop-detection.json",
 
       // optional, format
-      "date-time.json",
-      "date.json",
       "email.json",
       "hostname.json",
       "idn-email.json",
@@ -146,7 +143,6 @@ class JSONSchemaCases: XCTestCase {
       "iri-reference.json",
       "iri.json",
       "relative-json-pointer.json",
-      "time.json",
       "uri-reference.json",
       "uri-template.json",
     ] + additionalExclusions)
@@ -173,8 +169,6 @@ class JSONSchemaCases: XCTestCase {
 
       // optional, format
       "format.json",
-      "date-time.json",
-      "date.json",
       "duration.json",
       "email.json",
       "hostname.json",
@@ -183,7 +177,6 @@ class JSONSchemaCases: XCTestCase {
       "iri-reference.json",
       "iri.json",
       "relative-json-pointer.json",
-      "time.json",
       "uri-reference.json",
       "uri-template.json",
     ] + additionalExclusions)
@@ -212,8 +205,6 @@ class JSONSchemaCases: XCTestCase {
 
       // optional, format
       "format.json",
-      "date-time.json",
-      "date.json",
       "duration.json",
       "email.json",
       "hostname.json",
@@ -222,7 +213,6 @@ class JSONSchemaCases: XCTestCase {
       "iri-reference.json",
       "iri.json",
       "relative-json-pointer.json",
-      "time.json",
       "uri-reference.json",
       "uri-template.json",
     ] + additionalExclusions)
@@ -245,7 +235,7 @@ class JSONSchemaCases: XCTestCase {
         return cases.filter {
           if let schema = $0.schema as? [String: Any] {
             let format = schema["format"] as! String
-            return !["date-time", "email", "hostname"].contains(format)
+            return !["email", "hostname"].contains(format)
           }
 
           return true
