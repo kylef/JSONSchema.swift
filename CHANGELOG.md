@@ -1,5 +1,13 @@
 # JSONSchema Changelog
 
+## TBD
+
+### Breaking Changes
+
+- When a schema references an unknown meta schema via `$schema`, a reference
+  error will now be thrown instead of the schema being silently treated as a
+  draft 4 schema.
+
 ## 0.6.0
 
 ### Breaking Changes
