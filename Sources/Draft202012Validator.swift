@@ -63,6 +63,7 @@ public class Draft202012Validator: Validator {
     "regex": validateRegex,
     "json-pointer": validateJSONPointer,
     "duration": validateDuration,
+    "time": validateTime,
   ]
 
   public required init(schema: Bool) {

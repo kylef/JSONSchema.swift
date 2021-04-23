@@ -50,6 +50,7 @@ public class Draft7Validator: Validator {
     "uri": validateURI,
     "json-pointer": validateJSONPointer,
     "regex": validateRegex,
+    "time": validateTime,
   ]
 
   public required init(schema: Bool) {
