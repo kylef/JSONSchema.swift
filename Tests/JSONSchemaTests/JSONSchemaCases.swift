@@ -146,7 +146,6 @@ class JSONSchemaCases: XCTestCase {
       "iri-reference.json",
       "iri.json",
       "relative-json-pointer.json",
-      "time.json",
       "uri-reference.json",
       "uri-template.json",
     ] + additionalExclusions)
@@ -182,7 +181,6 @@ class JSONSchemaCases: XCTestCase {
       "iri-reference.json",
       "iri.json",
       "relative-json-pointer.json",
-      "time.json",
       "uri-reference.json",
       "uri-template.json",
     ] + additionalExclusions)
@@ -217,7 +215,6 @@ class JSONSchemaCases: XCTestCase {
       "iri-reference.json",
       "iri.json",
       "relative-json-pointer.json",
-      "time.json",
       "uri-reference.json",
       "uri-template.json",
     ] + additionalExclusions)
