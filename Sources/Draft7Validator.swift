@@ -51,6 +51,7 @@ public class Draft7Validator: Validator {
     "json-pointer": validateJSONPointer,
     "regex": validateRegex,
     "time": validateTime,
+    "date": validateDate,
   ]
 
   public required init(schema: Bool) {

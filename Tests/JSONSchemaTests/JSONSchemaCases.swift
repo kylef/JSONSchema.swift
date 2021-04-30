@@ -138,7 +138,6 @@ class JSONSchemaCases: XCTestCase {
 
       // optional, format
       "date-time.json",
-      "date.json",
       "email.json",
       "hostname.json",
       "idn-email.json",
@@ -173,7 +172,6 @@ class JSONSchemaCases: XCTestCase {
       // optional, format
       "format.json",
       "date-time.json",
-      "date.json",
       "email.json",
       "hostname.json",
       "idn-email.json",
@@ -207,7 +205,6 @@ class JSONSchemaCases: XCTestCase {
       // optional, format
       "format.json",
       "date-time.json",
-      "date.json",
       "email.json",
       "hostname.json",
       "idn-email.json",
