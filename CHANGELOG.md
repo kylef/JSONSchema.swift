@@ -1,5 +1,23 @@
 # JSONSchema Changelog
 
+## TBD
+
+### Breaking Changes
+
+- By default, the _latest_ version of JSON Schema will be used when a meta
+  schema is not provided in the `$schema` property. The default schema will be
+  2020-12 for this release.
+
+- When a schema references an unknown meta schema via `$schema`, a reference
+  error will now be thrown instead of the schema being silently treated as a
+  draft 4 schema.
+
+### Enhancements
+
+- `$schema` matching will now operate on normalise URIs and thus will handle
+  cases when the meta spec or the `$schema` URI both contain and don't contain
+  empty trailing fragments as the same meta schema.
+
 ## 0.6.0
 
 ### Breaking Changes

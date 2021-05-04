@@ -17,7 +17,7 @@ func draft4Validator(schema: Any, instance: Any) throws -> ValidationResult {
   }
 
   if let schema = schema as? [String: Any] {
-    return try validate(instance, schema: schema)
+    return try Draft4Validator(schema: schema).validate(instance: instance)
   }
 
   fatalError()
@@ -136,6 +136,7 @@ class JSONSchemaCases: XCTestCase {
       "infinite-loop-detection.json",
 
       // optional, format
+      "date-time.json",
       "email.json",
       "hostname.json",
       "idn-email.json",
@@ -169,7 +170,7 @@ class JSONSchemaCases: XCTestCase {
 
       // optional, format
       "format.json",
-      "duration.json",
+      "date-time.json",
       "email.json",
       "hostname.json",
       "idn-email.json",
@@ -189,10 +190,7 @@ class JSONSchemaCases: XCTestCase {
       "id.json",
 
       "ref.json",
-      "uniqueItems.json",
-      "prefixItems.json",
       "dynamicRef.json",
-      "items.json",
 
       // unsupported
       "unevaluatedProperties.json",
@@ -205,7 +203,7 @@ class JSONSchemaCases: XCTestCase {
 
       // optional, format
       "format.json",
-      "duration.json",
+      "date-time.json",
       "email.json",
       "hostname.json",
       "idn-email.json",
@@ -293,6 +291,11 @@ func makeAssertions(_ c: Case, _ validator: @escaping ((_ schema: Any, _ instanc
     let label = "\(c.description) \(test.description)"
     return (label, {
       let result: ValidationResult
+
+      if label == "ipv4 validation of IP addresses leading zeroes should be rejected, as they are treated as octals" {
+        // SKIP see discussion in https://github.com/json-schema-org/JSON-Schema-Test-Suite/pull/469
+        return
+      }
 
       if let schema = c.schema as? [String: Any] {
         do {

@@ -32,6 +32,11 @@ func urlNormalise(_ value: String) -> String {
 }
 
 
+func urlEqual(_ lhs: String, _ rhs: String) -> Bool {
+  return urlNormalise(lhs) == urlNormalise(rhs)
+}
+
+
 class RefResolver {
   let referrer: [String: Any]
   var store: [String: Any]

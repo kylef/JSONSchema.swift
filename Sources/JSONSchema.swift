@@ -52,43 +52,48 @@ public struct Schema {
   }
 
   public func validate(_ data: Any) throws -> ValidationResult {
-    let validator = JSONSchema.validator(for: schema)
+    let validator = try JSONSchema.validator(for: schema)
     return try validator.validate(instance: data)
   }
 
   public func validate(_ data: Any) throws -> AnySequence<ValidationError> {
-    let validator = JSONSchema.validator(for: schema)
+    let validator = try JSONSchema.validator(for: schema)
     return try validator.validate(instance: data)
   }
 }
 
 
-func validator(for schema: [String: Any]) -> Validator {
-  guard let schemaURI = schema["$schema"] as? String else {
-    return Draft4Validator(schema: schema)
-  }
-
-  if let id = DRAFT_2020_12_META_SCHEMA["$id"] as? String, schemaURI == id {
+func validator(for schema: [String: Any]) throws -> Validator {
+  guard schema.keys.contains("$schema") else {
+    // Default schema
     return Draft202012Validator(schema: schema)
   }
 
-  if let id = DRAFT_2019_09_META_SCHEMA["$id"] as? String, schemaURI == id {
+  guard let schemaURI = schema["$schema"] as? String else {
+    throw ReferenceError.notFound
+  }
+
+  if let id = DRAFT_2020_12_META_SCHEMA["$id"] as? String, urlEqual(schemaURI, id) {
+    return Draft202012Validator(schema: schema)
+  }
+
+  if let id = DRAFT_2019_09_META_SCHEMA["$id"] as? String, urlEqual(schemaURI, id) {
     return Draft201909Validator(schema: schema)
   }
 
-  if let id = DRAFT_07_META_SCHEMA["$id"] as? String, schemaURI == id {
+  if let id = DRAFT_07_META_SCHEMA["$id"] as? String, urlEqual(schemaURI, id) {
     return Draft7Validator(schema: schema)
   }
 
-  if let id = DRAFT_06_META_SCHEMA["$id"] as? String, schemaURI == id {
+  if let id = DRAFT_06_META_SCHEMA["$id"] as? String, urlEqual(schemaURI, id) {
     return Draft6Validator(schema: schema)
   }
 
-  if let id = DRAFT_04_META_SCHEMA["$id"] as? String, schemaURI == id {
+  if let id = DRAFT_04_META_SCHEMA["id"] as? String, urlEqual(schemaURI, id) {
     return Draft4Validator(schema: schema)
   }
 
-  return Draft4Validator(schema: schema)
+  throw ReferenceError.notFound
 }
 
 

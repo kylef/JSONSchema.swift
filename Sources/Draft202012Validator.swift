@@ -36,7 +36,7 @@ public class Draft202012Validator: Validator {
     "minProperties": minProperties,
     "maxProperties": maxProperties,
     "items": items,
-    "additionalItems": additionalItems,
+    "prefixItems": prefixItems,
     "patternProperties": patternProperties,
     "additionalProperties": additionalProperties,
     "$ref": ref,
@@ -65,6 +65,9 @@ public class Draft202012Validator: Validator {
     "regex": validateRegex,
     "time": validateTime,
     "json-pointer": validateJSONPointer,
+    "duration": validateDuration,
+    "time": validateTime,
+    "date": validateDate,
   ]
 
   public required init(schema: Bool) {

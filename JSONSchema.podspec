@@ -8,7 +8,7 @@ Pod::Spec.new do |spec|
   spec.social_media_url = 'http://twitter.com/kylefuller'
   spec.source = { :git => 'https://github.com/kylef/JSONSchema.swift.git', :tag => "#{spec.version}" }
   spec.ios.deployment_target = '8.0'
-  spec.osx.deployment_target = '10.9'
+  spec.osx.deployment_target = '10.13'
   spec.requires_arc = true
   spec.source_files = ['Sources/**/*.swift', 'Sources/*.swift']
   spec.swift_versions = ['5.0', '5.1']

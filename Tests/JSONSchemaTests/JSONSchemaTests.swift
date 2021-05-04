@@ -108,9 +108,65 @@ class ValidateTests: XCTestCase {
     try XCTAssertFalse(validate(["price": 34.99], schema: schema).valid)
   }
 
-  func testDraft6ValidatorIsAvailable() {
-    let result = validator(for: ["$schema": "http://json-schema.org/draft-06/schema#"])
+  func testDefaultValidator() throws {
+    let result = try validator(for: [:])
+    XCTAssertTrue(result is Draft202012Validator, "Unexpected type of validator \(result)")
+  }
+
+  func testDraft4ValidatorIsAvailable() throws {
+    let result = try validator(for: ["$schema": "http://json-schema.org/draft-04/schema#"])
+    XCTAssertTrue(result is Draft4Validator, "Unexpected type of validator \(result)")
+  }
+
+  func testDraft4ValidatorIsAvailableWithoutFragment() throws {
+    let result = try validator(for: ["$schema": "http://json-schema.org/draft-04/schema"])
+    XCTAssertTrue(result is Draft4Validator, "Unexpected type of validator \(result)")
+  }
+
+  func testDraft6ValidatorIsAvailable() throws {
+    let result = try validator(for: ["$schema": "http://json-schema.org/draft-06/schema#"])
     XCTAssertTrue(result is Draft6Validator, "Unexpected type of validator \(result)")
+  }
+
+  func testDraft6ValidatorIsAvailableWithoutFragment() throws {
+    let result = try validator(for: ["$schema": "http://json-schema.org/draft-06/schema"])
+    XCTAssertTrue(result is Draft6Validator, "Unexpected type of validator \(result)")
+  }
+
+  func testDraft7ValidatorIsAvailable() throws {
+    let result = try validator(for: ["$schema": "http://json-schema.org/draft-07/schema#"])
+    XCTAssertTrue(result is Draft7Validator, "Unexpected type of validator \(result)")
+  }
+
+  func testDraft7ValidatorIsAvailableWithoutFragment() throws {
+    let result = try validator(for: ["$schema": "http://json-schema.org/draft-07/schema"])
+    XCTAssertTrue(result is Draft7Validator, "Unexpected type of validator \(result)")
+  }
+
+  func testDraft201909ValidatorIsAvailable() throws {
+    let result = try validator(for: ["$schema": "https://json-schema.org/draft/2019-09/schema"])
+    XCTAssertTrue(result is Draft201909Validator, "Unexpected type of validator \(result)")
+  }
+
+  func testDraft201909ValidatorIsAvailableWithTrailingFragment() throws {
+    let result = try validator(for: ["$schema": "https://json-schema.org/draft/2019-09/schema#"])
+    XCTAssertTrue(result is Draft201909Validator, "Unexpected type of validator \(result)")
+  }
+
+  func testDraft202012ValidatorIsAvailable() throws {
+    let result = try validator(for: ["$schema": "https://json-schema.org/draft/2020-12/schema"])
+    XCTAssertTrue(result is Draft202012Validator, "Unexpected type of validator \(result)")
+  }
+
+  func testDraft202012ValidatorIsAvailableWithTrailingFragment() throws {
+    let result = try validator(for: ["$schema": "https://json-schema.org/draft/2020-12/schema#"])
+    XCTAssertTrue(result is Draft202012Validator, "Unexpected type of validator \(result)")
+  }
+
+  func testUnknownValidator() throws {
+    XCTAssertThrowsError(
+      try validator(for: ["$schema": "https://example.com/schema"])
+    )
   }
 
   func testValidateDraft7() throws {
