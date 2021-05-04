@@ -59,8 +59,6 @@ public class Draft201909Validator: Validator {
     "ipv6": validateIPv6,
     "uri": validateURI,
     "date-time": validateDateTime,
-    "date": validateDate,
-    "time": validateTime,
     "uuid": validateUUID,
     "regex": validateRegex,
     "json-pointer": validateJSONPointer,

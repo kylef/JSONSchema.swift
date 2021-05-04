@@ -49,8 +49,6 @@ public class Draft7Validator: Validator {
     "ipv6": validateIPv6,
     "uri": validateURI,
     "date-time": validateDateTime,
-    "date": validateDate,
-    "time": validateTime,
     "json-pointer": validateJSONPointer,
     "regex": validateRegex,
     "time": validateTime,
