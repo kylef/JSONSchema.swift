@@ -1,40 +1,44 @@
-import XCTest
 import Foundation
+import Spectre
 @testable import JSONSchema
 
 
-class ValidationResultsTests: XCTestCase {
-  func testValidEncodableAsJSON() throws {
-    let result = ValidationResult.valid
+public let testValidationResult: ((ContextType) -> Void) = {
+  $0.describe("valid result") {
+    $0.it("can be converted to JSON") {
+      let result = ValidationResult.valid
 
-    let jsonData = try JSONEncoder().encode(result)
-    let json = try! JSONSerialization.jsonObject(with: jsonData)
+      let jsonData = try JSONEncoder().encode(result)
+      let json = try! JSONSerialization.jsonObject(with: jsonData) as! NSDictionary
 
-    XCTAssertEqual(json as! NSDictionary, [
-      "valid": true,
-    ])
+      try expect(json) == [
+        "valid": true,
+      ]
+    }
   }
 
-  func testInvalidEncodableAsJSON() throws {
-    let error = ValidationError(
-      "example description",
-      instanceLocation: JSONPointer(path: "/test/1"),
-      keywordLocation: JSONPointer(path: "#/example")
-    )
-    let result = ValidationResult.invalid([error])
+  $0.describe("invalid result") {
+    $0.it("can be converted to JSON") {
+      let error = ValidationError(
+        "example description",
+        instanceLocation: JSONPointer(path: "/test/1"),
+        keywordLocation: JSONPointer(path: "#/example")
+      )
+      let result = ValidationResult.invalid([error])
 
-    let jsonData = try JSONEncoder().encode(result)
-    let json = try! JSONSerialization.jsonObject(with: jsonData)
+      let jsonData = try JSONEncoder().encode(result)
+      let json = try! JSONSerialization.jsonObject(with: jsonData) as! NSDictionary
 
-    XCTAssertEqual(json as! NSDictionary, [
-      "valid": false,
-      "errors": [
-        [
-          "error": "example description",
-          "instanceLocation": "/test/1",
-          "keywordLocation": "#/example",
+      try expect(json) == [
+        "valid": false,
+        "errors": [
+          [
+            "error": "example description",
+            "instanceLocation": "/test/1",
+            "keywordLocation": "#/example",
+          ],
         ],
-      ],
-    ])
+      ]
+    }
   }
 }

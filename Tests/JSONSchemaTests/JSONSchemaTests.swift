@@ -1,14 +1,12 @@
-import Foundation
+import Spectre
 import XCTest
 @testable import JSONSchema
 
 
-class JSONSchemaTests: XCTestCase {
+public let testSchema: ((ContextType) -> Void) = {
   var schema: Schema!
 
-  override func setUp() {
-    super.setUp()
-
+  $0.before {
     schema = Schema([
       "title": "Product",
       "description": "A product from Acme's catalog",
@@ -16,41 +14,27 @@ class JSONSchemaTests: XCTestCase {
     ])
   }
 
-  func testTitle() {
-    XCTAssertEqual(schema.title, "Product")
+  $0.it("contains title accessor") {
+    try expect(schema.title) == "Product"
   }
 
-  func testDescription() {
-    XCTAssertEqual(schema.description, "A product from Acme's catalog")
+  $0.it("contains description accessor") {
+    try expect(schema.description) == "A product from Acme's catalog"
   }
 
-  func testType() {
-    XCTAssertEqual(schema.type, [Type.object])
+  $0.it("contains type accessor") {
+    try expect(schema.type) == [Type.object]
   }
 
-  func testSuccessfulValidation() {
-    try XCTAssertTrue(schema.validate([String: Any]()).valid)
+  $0.it("can validate with matching value") {
+    try expect(try schema.validate([String: Any]()).valid).to.beTrue()
   }
 
-  func testUnsuccessfulValidation() {
-    try XCTAssertFalse(schema.validate([String]()).valid)
+  $0.it("can validate with mismatching value") {
+    try expect(try schema.validate([String]()).valid).to.beFalse()
   }
 
-  func testReadme() throws {
-    let schema = Schema([
-      "type": "object",
-      "properties": [
-        "name": ["type": "string"],
-        "price": ["type": "number"],
-      ],
-      "required": ["name"],
-    ])
-
-    try XCTAssertTrue(schema.validate(["name": "Eggs", "price": 34.99]).valid)
-    try XCTAssertFalse(schema.validate(["price": 34.99]).valid)
-  }
-
-  func testIterableInterface() throws {
+  $0.it("can be validated with iterable interface") {
     let schema = Schema([
       "type": "object",
       "properties": [
@@ -62,179 +46,102 @@ class JSONSchemaTests: XCTestCase {
 
     var counter = 0
     for error in try schema.validate(["price": 34.99]) {
-      XCTAssertEqual(error.description, "Required property 'name' is missing")
+      try expect(error.description) == "Required property 'name' is missing"
       counter += 1
     }
 
-    XCTAssertEqual(counter, 1)
+    try expect(counter) == 1
 
     let result = try Array(schema.validate(["price": 34.99]))
 
-    XCTAssertEqual(result.map(\.description), [
+    try expect(result.map(\.description)) == [
       "Required property 'name' is missing"
+    ]
+  }
+
+  $0.it("tests the readme example") {
+    let schema = Schema([
+      "type": "object",
+      "properties": [
+        "name": ["type": "string"],
+        "price": ["type": "number"],
+      ],
+      "required": ["name"],
     ])
+
+    try expect(schema.validate(["name": "Eggs", "price": 34.99]).valid).to.beTrue()
+    try expect(schema.validate(["price": 34.99]).valid).to.beFalse()
   }
 }
 
 
-class ValidateTests: XCTestCase {
-  func testValidateDraft4() {
-    let schema: [String: Any]  = [
-      "$schema": "http://json-schema.org/draft-04/schema#",
-      "type": "object",
-      "properties": [
-        "name": ["type": "string"],
-        "price": ["type": "number"],
-      ],
-      "required": ["name"],
-    ]
-
-    try XCTAssertTrue(validate(["name": "Eggs", "price": 34.99], schema: schema).valid)
-    try XCTAssertFalse(validate(["price": 34.99], schema: schema).valid)
-  }
-
-  func testValidateDraft6() {
-    let schema: [String: Any]  = [
-      "$schema": "http://json-schema.org/draft-06/schema#",
-      "type": "object",
-      "properties": [
-        "name": ["type": "string"],
-        "price": ["type": "number"],
-      ],
-      "required": ["name"],
-    ]
-
-    try XCTAssertTrue(validate(["name": "Eggs", "price": 34.99], schema: schema).valid)
-    try XCTAssertFalse(validate(["price": 34.99], schema: schema).valid)
-  }
-
-  func testDefaultValidator() throws {
+public let testSchemaDetection: ((ContextType) -> Void) = {
+  $0.it("uses draft 2020-12 by default") {
     let result = try validator(for: [:])
-    XCTAssertTrue(result is Draft202012Validator, "Unexpected type of validator \(result)")
+    try expect(result).beOfType(Draft202012Validator.self)
   }
 
-  func testDraft4ValidatorIsAvailable() throws {
-    let result = try validator(for: ["$schema": "http://json-schema.org/draft-04/schema#"])
-    XCTAssertTrue(result is Draft4Validator, "Unexpected type of validator \(result)")
+  $0.it("throws an error for an unknown metaschema") {
+    try expect(try validator(for: ["$schema": "https://example.com/schema"])).toThrow()
   }
 
-  func testDraft4ValidatorIsAvailableWithoutFragment() throws {
-    let result = try validator(for: ["$schema": "http://json-schema.org/draft-04/schema"])
-    XCTAssertTrue(result is Draft4Validator, "Unexpected type of validator \(result)")
-  }
+  $0.describe("draft-04 detection") {
+    $0.it("detects metaschema with fragment") {
+      let result = try validator(for: ["$schema": "http://json-schema.org/draft-04/schema#"])
+      try expect(result).beOfType(Draft4Validator.self)
+    }
 
-  func testDraft6ValidatorIsAvailable() throws {
-    let result = try validator(for: ["$schema": "http://json-schema.org/draft-06/schema#"])
-    XCTAssertTrue(result is Draft6Validator, "Unexpected type of validator \(result)")
-  }
-
-  func testDraft6ValidatorIsAvailableWithoutFragment() throws {
-    let result = try validator(for: ["$schema": "http://json-schema.org/draft-06/schema"])
-    XCTAssertTrue(result is Draft6Validator, "Unexpected type of validator \(result)")
-  }
-
-  func testDraft7ValidatorIsAvailable() throws {
-    let result = try validator(for: ["$schema": "http://json-schema.org/draft-07/schema#"])
-    XCTAssertTrue(result is Draft7Validator, "Unexpected type of validator \(result)")
-  }
-
-  func testDraft7ValidatorIsAvailableWithoutFragment() throws {
-    let result = try validator(for: ["$schema": "http://json-schema.org/draft-07/schema"])
-    XCTAssertTrue(result is Draft7Validator, "Unexpected type of validator \(result)")
-  }
-
-  func testDraft201909ValidatorIsAvailable() throws {
-    let result = try validator(for: ["$schema": "https://json-schema.org/draft/2019-09/schema"])
-    XCTAssertTrue(result is Draft201909Validator, "Unexpected type of validator \(result)")
-  }
-
-  func testDraft201909ValidatorIsAvailableWithTrailingFragment() throws {
-    let result = try validator(for: ["$schema": "https://json-schema.org/draft/2019-09/schema#"])
-    XCTAssertTrue(result is Draft201909Validator, "Unexpected type of validator \(result)")
-  }
-
-  func testDraft202012ValidatorIsAvailable() throws {
-    let result = try validator(for: ["$schema": "https://json-schema.org/draft/2020-12/schema"])
-    XCTAssertTrue(result is Draft202012Validator, "Unexpected type of validator \(result)")
-  }
-
-  func testDraft202012ValidatorIsAvailableWithTrailingFragment() throws {
-    let result = try validator(for: ["$schema": "https://json-schema.org/draft/2020-12/schema#"])
-    XCTAssertTrue(result is Draft202012Validator, "Unexpected type of validator \(result)")
-  }
-
-  func testUnknownValidator() throws {
-    XCTAssertThrowsError(
-      try validator(for: ["$schema": "https://example.com/schema"])
-    )
-  }
-
-  func testValidateDraft7() throws {
-    let schema: [String: Any]  = [
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "type": "object",
-      "properties": [
-        "name": ["type": "string"],
-        "price": ["type": "number"],
-      ],
-      "required": ["name"],
-    ]
-
-    try XCTAssertTrue(validate(["name": "Eggs", "price": 34.99], schema: schema).valid)
-    try XCTAssertFalse(validate(["price": 34.99], schema: schema).valid)
-  }
-
-  func testValidatesRequired() throws {
-    let schema: [String: Any] = [
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "required": ["one", "two", "three"],
-    ]
-
-    let result = try validate(["one": true, "three": true], schema: schema)
-
-    switch result {
-    case .valid:
-      XCTFail("Validation should fail")
-    case .invalid(let errors):
-      XCTAssertEqual(errors.map(\.description), [
-        "Required property 'two' is missing",
-      ])
+    $0.it("detects metaschema without fragment") {
+      let result = try validator(for: ["$schema": "http://json-schema.org/draft-04/schema"])
+      try expect(result).beOfType(Draft4Validator.self)
     }
   }
 
-  func testRequiredValidationLocation() throws {
-    let schema: [String: Any] = [
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "items": [
-        "required": ["test"],
-      ]
-    ]
+  $0.describe("draft-06 detection") {
+    $0.it("detects metaschema with fragment") {
+      let result = try validator(for: ["$schema": "http://json-schema.org/draft-06/schema#"])
+      try expect(result).beOfType(Draft6Validator.self)
+    }
 
-    let result = try validate([[:]], schema: schema)
-
-    switch result {
-    case .valid:
-      XCTFail("Validation should fail")
-    case .invalid(let errors):
-      XCTAssertEqual(errors.count, 1)
-      let error = errors[0]
-
-      XCTAssertEqual(error.description, "Required property 'test' is missing")
-      XCTAssertEqual(error.instanceLocation.path, "/0")
+    $0.it("detects metaschema without fragment") {
+      let result = try validator(for: ["$schema": "http://json-schema.org/draft-06/schema"])
+      try expect(result).beOfType(Draft6Validator.self)
     }
   }
 
-  func testReferenceNotFound() {
-    let schema: [String: Any] = [
-      "$ref": "#/unknown",
-    ]
-
-    do {
-      _ = try validate("anything", schema: schema)
-    } catch {
-      return
+  $0.describe("draft-07 detection") {
+    $0.it("detects metaschema with fragment") {
+      let result = try validator(for: ["$schema": "http://json-schema.org/draft-07/schema#"])
+      try expect(result).beOfType(Draft7Validator.self)
     }
 
-    XCTFail("Validation did not throw error")
+    $0.it("detects metaschema without fragment") {
+      let result = try validator(for: ["$schema": "http://json-schema.org/draft-07/schema"])
+      try expect(result).beOfType(Draft7Validator.self)
+    }
+  }
+
+  $0.describe("draft 2019-09 detection") {
+    $0.it("detects metaschema with fragment") {
+      let result = try validator(for: ["$schema": "https://json-schema.org/draft/2019-09/schema#"])
+      try expect(result).beOfType(Draft201909Validator.self)
+    }
+
+    $0.it("detects metaschema without fragment") {
+      let result = try validator(for: ["$schema": "https://json-schema.org/draft/2019-09/schema"])
+      try expect(result).beOfType(Draft201909Validator.self)
+    }
+  }
+
+  $0.describe("draft 2020-12 detection") {
+    $0.it("detects metaschema with fragment") {
+      let result = try validator(for: ["$schema": "https://json-schema.org/draft/2020-12/schema#"])
+      try expect(result).beOfType(Draft202012Validator.self)
+    }
+
+    $0.it("detects metaschema without fragment") {
+      let result = try validator(for: ["$schema": "https://json-schema.org/draft/2020-12/schema"])
+      try expect(result).beOfType(Draft202012Validator.self)
+    }
   }
 }

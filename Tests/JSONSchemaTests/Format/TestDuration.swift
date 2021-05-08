@@ -1,77 +1,75 @@
-import XCTest
+import Spectre
 @testable import JSONSchema
 
 
-class DurationTests: XCTestCase {
-  // dur-date
+public let testDurationFormat: ((ContextType) -> Void) = {
+  $0.describe("dur-date") {
+    $0.it("allows day duration") {
+      try expect(isValidDuration("P3D")).to.beTrue()
+    }
 
-  func testDay() {
-    XCTAssertTrue(isValidDuration("P3D"))
+    $0.it("allows month duration") {
+      try expect(isValidDuration("P2M")).to.beTrue()
+    }
+
+    $0.it("allows month and day duration") {
+      try expect(isValidDuration("P2M1D")).to.beTrue()
+    }
+
+    $0.it("allows year duration") {
+      try expect(isValidDuration("P5Y")).to.beTrue()
+    }
+
+    $0.it("allows year and month duration") {
+      try expect(isValidDuration("P5Y2M")).to.beTrue()
+    }
+
+    $0.it("allows year, month and day duration") {
+      try expect(isValidDuration("P5Y2M1D")).to.beTrue()
+    }
   }
 
-  func testMonth() {
-    XCTAssertTrue(isValidDuration("P2M"))
+  $0.describe("dur-time") {
+    $0.it("allows hour duration") {
+      try expect(isValidDuration("PT1H")).to.beTrue()
+    }
+
+    $0.it("allows hour duration with minutes") {
+      try expect(isValidDuration("PT1H5M")).to.beTrue()
+    }
+
+    $0.it("allows hour duration with minutes and seconds") {
+      try expect(isValidDuration("PT1H5M20S")).to.beTrue()
+    }
+
+    $0.it("allows minute duration") {
+      try expect(isValidDuration("PT1M")).to.beTrue()
+    }
+
+    $0.it("allows minute duration with seconds") {
+      try expect(isValidDuration("PT5M10S")).to.beTrue()
+    }
+
+    $0.it("allows second duration") {
+      try expect(isValidDuration("PT1S")).to.beTrue()
+    }
   }
 
-  func testMonthDay() {
-    XCTAssertTrue(isValidDuration("P2M1D"))
+  $0.describe("dur-week") {
+    $0.it("allows weeb duration") {
+      try expect(isValidDuration("P1W")).to.beTrue()
+    }
   }
 
-  func testYear() {
-    XCTAssertTrue(isValidDuration("P5Y"))
+  $0.it("allows date and time duration") {
+    try expect(isValidDuration("P1DT5M")).to.beTrue()
   }
 
-  func testYearMonth() {
-    XCTAssertTrue(isValidDuration("P5Y2M"))
+  $0.it("fails validation without duration") {
+    try expect(isValidDuration("P")).to.beFalse()
   }
 
-  func testYearMonthDay() {
-    XCTAssertTrue(isValidDuration("P5Y2M1D"))
-  }
-
-  func testDateTime() {
-    XCTAssertTrue(isValidDuration("P1DT5M"))
-  }
-
-  // dur-time
-
-  func testHour() {
-    XCTAssertTrue(isValidDuration("PT1H"))
-  }
-
-  func testHourMinute() {
-    XCTAssertTrue(isValidDuration("PT1H5M"))
-  }
-
-  func testHourMinuteSecond() {
-    XCTAssertTrue(isValidDuration("PT1H5M20S"))
-  }
-
-  func testMinute() {
-    XCTAssertTrue(isValidDuration("PT1M"))
-  }
-
-  func testMinuteSecond() {
-    XCTAssertTrue(isValidDuration("PT5M10S"))
-  }
-
-  func testSecond() {
-    XCTAssertTrue(isValidDuration("PT1S"))
-  }
-
-  // dur-week
-
-  func testWeek() {
-    XCTAssertTrue(isValidDuration("P1W"))
-  }
-
-  // Negative
-
-  func testMissingDuration() {
-    XCTAssertFalse(isValidDuration("P"))
-  }
-
-  func testMissingTime() {
-    XCTAssertFalse(isValidDuration("PT"))
+  $0.it("fails validation with empty time") {
+    try expect(isValidDuration("PT")).to.beFalse()
   }
 }
