@@ -27,6 +27,7 @@ public let testSchemaCases: ((ContextType) -> Void) = {
   $0.describe("draft6") { context in
     try! buildTests("draft6", excluding: [
       "refRemote.json",
+      "unknownKeyword.json",
 
       // optional
       "bignum.json",
@@ -47,6 +48,7 @@ public let testSchemaCases: ((ContextType) -> Void) = {
   $0.describe("draft7") { context in
     try! buildTests("draft7", excluding: [
       "refRemote.json",
+      "unknownKeyword.json",
 
       // optional
       "bignum.json",
