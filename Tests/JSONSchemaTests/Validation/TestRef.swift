@@ -1,9 +1,9 @@
-import XCTest
+import Spectre
 @testable import JSONSchema
 
 
-class RefTests: XCTestCase {
-  func testRefWithErrorInSubschema() throws {
+public let testRef: ((ContextType) -> Void) = {
+  $0.it("returns error for error in subschema") {
     let schema: [String: Any] = [
       "$schema": "http://json-schema.org/draft-07/schema#",
       "items": [
@@ -20,14 +20,22 @@ class RefTests: XCTestCase {
 
     switch result {
     case .valid:
-      XCTFail("Validation should fail")
+      throw failure("Validation should fail")
     case .invalid(let errors):
-      XCTAssertEqual(errors.count, 1)
+      try expect(errors.count) == 1
       let error = errors[0]
 
-      XCTAssertEqual(error.description, "'true' is not of type 'string'")
-      XCTAssertEqual(error.instanceLocation.path, "/0")
-      XCTAssertEqual(error.keywordLocation.path, "#/items/$ref/type")
+      try expect(error.description) == "'true' is not of type 'string'"
+      try expect(error.instanceLocation.path) == "/0"
+      try expect(error.keywordLocation.path) == "#/items/$ref/type"
     }
+  }
+
+  $0.it("throws an error when schema reference cannot be resolved") {
+    let schema: [String: Any] = [
+      "$ref": "#/unknown",
+    ]
+
+    try expect(try validate("anything", schema: schema)).toThrow()
   }
 }

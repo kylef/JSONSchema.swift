@@ -1,13 +1,142 @@
 import Foundation
-import XCTest
+import Spectre
 import PathKit
 
 @testable import JSONSchema
 
 
-func JSONFixture(_ path: Path) throws -> [[String: Any]] {
-  let object = try JSONSerialization.jsonObject(with: try path.read(), options: JSONSerialization.ReadingOptions(rawValue: 0))
-  return object as! [[String: Any]]
+public let testSchemaCases: ((ContextType) -> Void) = {
+  $0.describe("draft4") { context in
+    try! buildTests("draft4", excluding: [
+      "refRemote.json",
+
+      // optional
+      "bignum.json",
+      "ecmascript-regex.json",
+      "zeroTerminatedFloats.json",
+      "float-overflow.json",
+      "infinite-loop-detection.json",
+
+      // optional formats
+      "date-time.json",
+      "email.json",
+      "hostname.json",
+    ] + additionalExclusions, in: context, with: draft4Validator)
+  }
+
+  $0.describe("draft6") { context in
+    try! buildTests("draft6", excluding: [
+      "refRemote.json",
+      "unknownKeyword.json",
+
+      // optional
+      "bignum.json",
+      "format.json",
+      "ecmascript-regex.json",
+      "float-overflow.json",
+      "infinite-loop-detection.json",
+
+      // optional formats
+      "date-time.json",
+      "email.json",
+      "hostname.json",
+      "uri-reference.json",
+      "uri-template.json",
+    ] + additionalExclusions, in: context, with: draft6Validator)
+  }
+
+  $0.describe("draft7") { context in
+    try! buildTests("draft7", excluding: [
+      "refRemote.json",
+      "unknownKeyword.json",
+
+      // optional
+      "bignum.json",
+      "content.json",
+      "ecmascript-regex.json",
+      "float-overflow.json",
+      "infinite-loop-detection.json",
+
+      // optional, format
+      "date-time.json",
+      "email.json",
+      "hostname.json",
+      "idn-email.json",
+      "idn-hostname.json",
+      "iri-reference.json",
+      "iri.json",
+      "relative-json-pointer.json",
+      "uri-reference.json",
+      "uri-template.json",
+    ] + additionalExclusions, in: context, with: draft7Validator)
+  }
+
+  $0.describe("draft 2019-09") { context in
+    try! buildTests("draft2019-09", excluding: [
+      "defs.json",
+      "refRemote.json",
+      "id.json",
+      "recursiveRef.json",
+
+      // unsupported
+      "unevaluatedProperties.json",
+      "unevaluatedItems.json",
+
+      // optional
+      "bignum.json",
+      "content.json",
+      "ecmascript-regex.json",
+      "ecmascript-regex.json",
+      "float-overflow.json",
+      "infinite-loop-detection.json",
+
+      // optional, format
+      "format.json",
+      "date-time.json",
+      "email.json",
+      "hostname.json",
+      "idn-email.json",
+      "idn-hostname.json",
+      "iri-reference.json",
+      "iri.json",
+      "relative-json-pointer.json",
+      "uri-reference.json",
+      "uri-template.json",
+    ] + additionalExclusions, in: context, with: draft201909Validator)
+  }
+
+  $0.describe("draft 2020-12") { context in
+    try! buildTests("draft2020-12", excluding: [
+      "defs.json",
+      "refRemote.json",
+      "id.json",
+
+      "ref.json",
+      "dynamicRef.json",
+
+      // unsupported
+      "unevaluatedProperties.json",
+      "unevaluatedItems.json",
+
+      // optional
+      "bignum.json",
+      "ecmascript-regex.json",
+      "float-overflow.json",
+
+      // optional, format
+      "format.json",
+      "date-time.json",
+      "email.json",
+      "hostname.json",
+      "idn-email.json",
+      "idn-hostname.json",
+      "iri-reference.json",
+      "iri.json",
+      "relative-json-pointer.json",
+      "uri-reference.json",
+      "uri-template.json",
+    ] + additionalExclusions, in: context, with: draft202012Validator)
+  }
 }
 
 
@@ -86,168 +215,64 @@ func draft202012Validator(schema: Any, instance: Any) throws -> ValidationResult
 #endif
 
 
-class JSONSchemaCases: XCTestCase {
-  func testJSONSchemaDraft4() throws {
-    try test(name: "draft4", validator: draft4Validator, excluding: [
-      "refRemote.json",
+func buildTests(_ name: String, excluding: [String], in context: ContextType, with validator: @escaping ((_ schema: Any, _ instance: Any) throws -> (ValidationResult))) throws {
+  let filePath = #file
+  let path = Path(filePath) + ".." + ".." + "Cases" + "tests" + name
 
-      // optional
-      "bignum.json",
-      "ecmascript-regex.json",
-      "zeroTerminatedFloats.json",
-      "float-overflow.json",
-      "infinite-loop-detection.json",
+  let testCases = try path
+    .recursiveChildren()
+    .filter { $0.extension == "json" }
 
-      // optional formats
-      "date-time.json",
-      "email.json",
-      "hostname.json",
-    ] + additionalExclusions)
-  }
+  for file in testCases {
+    let (contentData, suite) = try JSONFixture(file)
+    let content = String(data: contentData, encoding: .utf8)!
+    let f = file.absolute().string
 
-  func testJSONSchemaDraft6() throws {
-    try test(name: "draft6", validator: draft6Validator, excluding: [
-      "refRemote.json",
+    context.describe(file.lastComponentWithoutExtension) {
+      let cases = suite.map(makeCase(file.lastComponent))
 
-      // optional
-      "bignum.json",
-      "format.json",
-      "ecmascript-regex.json",
-      "float-overflow.json",
-      "infinite-loop-detection.json",
+      for `case` in cases {
+        $0.describe(`case`.description) {
+          for test in `case`.tests {
+            $0.it(test.description, file: f, line: 1) {
+              if excluding.contains(file.lastComponent) {
+                throw skip()
+              }
 
-      // optional formats
-      "email.json",
-      "hostname.json",
-      "uri-reference.json",
-      "uri-template.json",
-    ] + additionalExclusions)
-  }
+              if test.description == "leading zeroes should be rejected, as they are treated as octals" {
+                // SKIP see discussion in https://github.com/json-schema-org/JSON-Schema-Test-Suite/pull/469
+                throw skip()
+              }
 
-  func testJSONSchemaDraft7() throws {
-    try test(name: "draft7", validator: draft7Validator, excluding: [
-      "refRemote.json",
+              let result: ValidationResult
 
-      // optional
-      "bignum.json",
-      "content.json",
-      "ecmascript-regex.json",
-      "float-overflow.json",
-      "infinite-loop-detection.json",
+              if let schema = `case`.schema as? [String: Any] {
+                result = try validator(schema, test.data)
+              } else if let schema = `case`.schema as? Bool {
+                result = try validator(schema, test.data)
+              } else {
+                throw failure("schema is not object or bool", file: f)
+              }
 
-      // optional, format
-      "date-time.json",
-      "email.json",
-      "hostname.json",
-      "idn-email.json",
-      "idn-hostname.json",
-      "iri-reference.json",
-      "iri.json",
-      "relative-json-pointer.json",
-      "uri-reference.json",
-      "uri-template.json",
-    ] + additionalExclusions)
-  }
+              // vaugly find the relevant source line for source maps in tests
+              var l = 1
+              if let range = content.range(of: test.description) {
+                let part = content.prefix(upTo: range.lowerBound)
+                l = part.filter { $0 == "\n" }.count + 2
+              }
 
-  func testJSONSchemaDraft2019_09() throws {
-    try test(name: "draft2019-09", validator: draft201909Validator, excluding: [
-      "defs.json",
-      "refRemote.json",
-      "id.json",
-      "recursiveRef.json",
-
-      // unsupported
-      "unevaluatedProperties.json",
-      "unevaluatedItems.json",
-
-      // optional
-      "bignum.json",
-      "content.json",
-      "ecmascript-regex.json",
-      "ecmascript-regex.json",
-      "float-overflow.json",
-      "infinite-loop-detection.json",
-
-      // optional, format
-      "format.json",
-      "date-time.json",
-      "email.json",
-      "hostname.json",
-      "idn-email.json",
-      "idn-hostname.json",
-      "iri-reference.json",
-      "iri.json",
-      "relative-json-pointer.json",
-      "uri-reference.json",
-      "uri-template.json",
-    ] + additionalExclusions)
-  }
-
-  func testJSONSchemaDraft2020_12() throws {
-    try test(name: "draft2020-12", validator: draft202012Validator, excluding: [
-      "defs.json",
-      "refRemote.json",
-      "id.json",
-
-      "ref.json",
-      "dynamicRef.json",
-
-      // unsupported
-      "unevaluatedProperties.json",
-      "unevaluatedItems.json",
-
-      // optional
-      "bignum.json",
-      "ecmascript-regex.json",
-      "float-overflow.json",
-
-      // optional, format
-      "format.json",
-      "date-time.json",
-      "email.json",
-      "hostname.json",
-      "idn-email.json",
-      "idn-hostname.json",
-      "iri-reference.json",
-      "iri.json",
-      "relative-json-pointer.json",
-      "uri-reference.json",
-      "uri-template.json",
-    ] + additionalExclusions)
-  }
-
-  func test(name: String, validator: @escaping ((_ schema: Any, _ instance: Any) throws -> (ValidationResult)), excluding: [String]) throws {
-    let filePath = #file
-    let path = Path(filePath) + ".." + ".." + "Cases" + "tests" + name
-
-    let testCases = try path
-      .recursiveChildren()
-      .filter { $0.extension == "json" }
-      .filter { !excluding.contains($0.lastComponent) }
-
-    let cases = try testCases.map { (file) -> [Case] in
-      let suite = try JSONFixture(file)
-
-      if file.lastComponent == "format.json" {
-        let cases = suite.map(makeCase(file.lastComponent))
-        return cases.filter {
-          if let schema = $0.schema as? [String: Any] {
-            let format = schema["format"] as! String
-            return !["email", "hostname"].contains(format)
+              if result.valid != test.value {
+                switch result {
+                case .valid:
+                  try expect(result.valid, file: f, line: l) == test.value
+                case .invalid(let errors):
+                  let error = errors.map { "  " + $0.description }.joined(separator: "\n")
+                  throw failure("encountered unexpected errors:\n\n\(error)", file: f, line: l)
+                }
+              }
+            }
           }
-
-          return true
         }
-      }
-
-      return suite.map(makeCase(file.lastComponent))
-    }
-
-    let flatCases = cases.reduce([Case](), +)
-    for c in flatCases {
-      for (_, assertion) in makeAssertions(c, validator) {
-        // TODO: Improve testing
-        assertion()
       }
     }
   }
@@ -272,6 +297,13 @@ struct Case {
 }
 
 
+func JSONFixture(_ path: Path) throws -> (content: Data, fixture: [[String: Any]]) {
+  let content: Data = try path.read()
+  let object = try JSONSerialization.jsonObject(with: content, options: JSONSerialization.ReadingOptions(rawValue: 0))
+  return (content, object as! [[String: Any]])
+}
+
+
 func makeCase(_ filename: String) -> (_ object: [String: Any]) -> Case {
   return { object in
     let description = object["description"] as! String
@@ -279,48 +311,5 @@ func makeCase(_ filename: String) -> (_ object: [String: Any]) -> Case {
     let tests = (object["tests"] as! [[String: Any]]).map(makeTest)
     let caseName = (filename as NSString).deletingPathExtension
     return Case(description: "\(caseName) \(description)", schema: schema, tests: tests)
-  }
-}
-
-
-typealias Assertion = (String, () -> ())
-
-
-func makeAssertions(_ c: Case, _ validator: @escaping ((_ schema: Any, _ instance: Any) throws -> (ValidationResult))) -> ([Assertion]) {
-  return c.tests.map { test -> Assertion in
-    let label = "\(c.description) \(test.description)"
-    return (label, {
-      let result: ValidationResult
-
-      if label == "ipv4 validation of IP addresses leading zeroes should be rejected, as they are treated as octals" {
-        // SKIP see discussion in https://github.com/json-schema-org/JSON-Schema-Test-Suite/pull/469
-        return
-      }
-
-      if let schema = c.schema as? [String: Any] {
-        do {
-          result = try validator(schema, test.data)
-        } catch {
-          XCTFail(error.localizedDescription)
-          return
-        }
-      } else if let schema = c.schema as? Bool {
-        do {
-          result = try validator(schema, test.data)
-        } catch {
-          XCTFail(error.localizedDescription)
-          return
-        }
-      } else {
-        fatalError()
-      }
-
-      switch result {
-      case .valid:
-        XCTAssertEqual(result.valid, test.value, "\(label) -- Result is valid")
-      case .invalid(let errors):
-        XCTAssertEqual(result.valid, test.value, "\(label) -- Failed validation: \(errors)")
-      }
-    })
   }
 }

@@ -1,9 +1,9 @@
-import XCTest
+import Spectre
 @testable import JSONSchema
 
 
-class EnumTests: XCTestCase {
-  func testEnumValidationFailure() throws {
+public let testEnum: ((ContextType) -> Void) = {
+  $0.it("returns error when validating value not found in enum") {
     let schema: [String: Any] = [
       "$schema": "http://json-schema.org/draft-07/schema#",
       "enum": ["one"],
@@ -13,14 +13,14 @@ class EnumTests: XCTestCase {
 
     switch result {
     case .valid:
-      XCTFail("Validation should fail")
+      throw failure("Validation should fail")
     case .invalid(let errors):
-      XCTAssertEqual(errors.count, 1)
+      try expect(errors.count) == 1
       let error = errors[0]
 
-      //XCTAssertEqual(error.description, "is not a valid enumeration value of '[\"one\"]'")
-      XCTAssertEqual(error.instanceLocation.path, "")
-      XCTAssertEqual(error.keywordLocation.path, "#/enum")
+      // FIXME try expect(error.description) == ""
+      try expect(error.instanceLocation.path) == ""
+      try expect(error.keywordLocation.path) == "#/enum"
     }
   }
 }
