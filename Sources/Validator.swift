@@ -18,9 +18,10 @@ class Context {
         return AnySequence(EmptyCollection())
       }
 
+      let message = NSLocalizedString("Falsy schema", comment: "")
       return AnySequence([
         ValidationError(
-          "Falsy schema",
+          message,
           instanceLocation: instanceLocation,
           keywordLocation: keywordLocation
         )

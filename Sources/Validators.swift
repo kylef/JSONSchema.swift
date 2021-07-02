@@ -43,9 +43,10 @@ func type(context: Context, type: Any, instance: Any, schema: [String: Any]) -> 
   }
 
   let types = type.map { "'\($0)'" }.joined(separator: ", ")
+  let message = String(format: NSLocalizedString("'%@' is not of type %@", comment: ""), "\(instance)", "\(types)")
   return AnySequence([
     ValidationError(
-      "'\(instance)' is not of type \(types)",
+      message,
       instanceLocation: context.instanceLocation,
       keywordLocation: context.keywordLocation
     )
@@ -164,9 +165,10 @@ extension Sequence where Iterator.Element == ValidationError {
 
 func unsupported(_ keyword: String) -> (_ context: Context, _ value: Any, _ instance: Any, _ schema: [String: Any]) -> AnySequence<ValidationError> {
   return { (context, _, _, _) in
+    let message = String(format: NSLocalizedString("'%@' is not supported.", comment: ""), keyword)
     return AnySequence([
       ValidationError(
-        "'\(keyword)' is not supported.",
+        message,
         instanceLocation: context.instanceLocation,
         keywordLocation: context.keywordLocation
       ),

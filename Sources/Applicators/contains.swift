@@ -1,3 +1,6 @@
+import Foundation
+
+
 func contains(context: Context, contains: Any, instance: Any, schema: [String: Any]) throws -> AnySequence<ValidationError> {
   guard let instance = instance as? [Any] else {
     return AnySequence(EmptyCollection())
@@ -28,9 +31,10 @@ func contains(context: Context, contains: Any, instance: Any, schema: [String: A
     return try context.descend(instance: subinstance, subschema: contains).isValid
   }).count
   if let max = max, containsCount > max {
+    let message = String(format: NSLocalizedString("%@ does not match contains + maxContains %@.", comment: ""), "\(instance)", "\(max)")
     return AnySequence([
       ValidationError(
-        "\(instance) does not match contains + maxContains \(max)",
+        message,
         instanceLocation: context.instanceLocation,
         keywordLocation: context.keywordLocation
       )
@@ -41,9 +45,10 @@ func contains(context: Context, contains: Any, instance: Any, schema: [String: A
     return AnySequence(EmptyCollection())
   }
 
+  let message = String(format: NSLocalizedString("%@ does not match contains.", comment: ""), "\(instance)")
   return AnySequence([
     ValidationError(
-      "'\(instance) does not match contains",
+      message,
       instanceLocation: context.instanceLocation,
       keywordLocation: context.keywordLocation
     )

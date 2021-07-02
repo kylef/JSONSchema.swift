@@ -1,3 +1,6 @@
+import Foundation
+
+
 func validatePropertiesLength(_ context: Context, _ length: Int, comparitor: @escaping ((Int, Int) -> (Bool)), error: String) -> (_ value: Any) -> AnySequence<ValidationError> {
   return { value in
     if let value = value as? [String: Any] {
@@ -21,8 +24,9 @@ func minProperties(context: Context, minProperties: Any, instance: Any, schema: 
   guard let minProperties = minProperties as? Int else {
     return AnySequence(EmptyCollection())
   }
-
-  return validatePropertiesLength(context, minProperties, comparitor: <=, error: "Amount of properties is less than the required amount")(instance)
+  
+  let message = NSLocalizedString("Amount of properties is less than the required amount", comment: "")
+  return validatePropertiesLength(context, minProperties, comparitor: <=, error: message)(instance)
 }
 
 
@@ -31,5 +35,6 @@ func maxProperties(context: Context, maxProperties: Any, instance: Any, schema: 
     return AnySequence(EmptyCollection())
   }
 
-  return validatePropertiesLength(context, maxProperties, comparitor: >=, error: "Amount of properties is greater than maximum permitted")(instance)
+  let message = NSLocalizedString("Amount of properties is greater than maximum permitted", comment: "")
+  return validatePropertiesLength(context, maxProperties, comparitor: >=, error: message)(instance)
 }

@@ -1,3 +1,6 @@
+import Foundation
+
+
 func required(context: Context, required: Any, instance: Any, schema: [String: Any]) throws -> AnySequence<ValidationError> {
   guard let instance = instance as? [String: Any] else {
     return AnySequence(EmptyCollection())
@@ -10,8 +13,9 @@ func required(context: Context, required: Any, instance: Any, schema: [String: A
 
   return AnySequence(required.compactMap { key -> ValidationError? in
     guard !instance.keys.contains(key) else { return nil }
+    let message = String(format: NSLocalizedString("Required property '%@' is missing", comment: ""), key)
     return ValidationError(
-      "Required property '\(key)' is missing",
+      message,
       instanceLocation: context.instanceLocation,
       keywordLocation: context.keywordLocation
     )
