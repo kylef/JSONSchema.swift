@@ -1,9 +1,15 @@
 import Foundation
 
 func urlSplitFragment(url: String) -> (String, String) {
+  #if swift(>=5.0)
+  guard let hashIndex = url.firstIndex(of: "#") else {
+    return (url, "")
+  }
+  #else
   guard let hashIndex = url.index(of: "#") else {
     return (url, "")
   }
+  #endif
 
   return (
     String(url.prefix(upTo: hashIndex)),
