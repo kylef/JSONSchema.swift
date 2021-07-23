@@ -12,9 +12,10 @@ func multipleOf(context: Context, multipleOf: Any, instance: Any, schema: [Strin
 
   let result = instance / multipleOf
   if result != floor(result) {
+    let message = String(format: NSLocalizedString("%@ is not a multiple of %@", comment: ""), "\(instance)", "\(multipleOf)")
     return AnySequence([
       ValidationError(
-        "\(instance) is not a multiple of \(multipleOf)",
+        message,
         instanceLocation: context.instanceLocation,
         keywordLocation: context.keywordLocation
       )

@@ -5,10 +5,11 @@ func validateDate(_ context: Context, _ value: String) -> AnySequence<Validation
   if let regularExpression = try? NSRegularExpression(pattern: "^\\d{4}-\\d{2}-\\d{2}$", options: []) {
     let range = NSRange(location: 0, length: value.utf16.count)
     let result = regularExpression.matches(in: value, options: [], range: range)
-    if result.isEmpty  {
+    if result.isEmpty {
+      let message = String(format: NSLocalizedString("'%@' is not a valid RFC 3339 formatted date.", comment: ""), value)
       return AnySequence([
         ValidationError(
-          "'\(value)' is not a valid RFC 3339 formatted date.",
+          message,
           instanceLocation: context.instanceLocation,
           keywordLocation: context.keywordLocation
         )
@@ -23,9 +24,10 @@ func validateDate(_ context: Context, _ value: String) -> AnySequence<Validation
     return AnySequence(EmptyCollection())
   }
 
+  let message = String(format: NSLocalizedString("'%@' is not a valid RFC 3339 formatted date.", comment: ""), value)
   return AnySequence([
     ValidationError(
-      "'\(value)' is not a valid RFC 3339 formatted date.",
+      message,
       instanceLocation: context.instanceLocation,
       keywordLocation: context.keywordLocation
     )

@@ -1,5 +1,6 @@
 import Foundation
 
+
 /*
 https://tools.ietf.org/html/rfc3339
 
@@ -17,6 +18,8 @@ Durations:
 
    duration          = "P" (dur-date / dur-time / dur-week)
 */
+
+
 var durationExpression: NSRegularExpression = {
   let second = "(\\d+S)"
   let minute = "((\\d+M)\(second)?)"
@@ -41,9 +44,10 @@ func isValidDuration(_ value: String) -> Bool {
 
 func validateDuration(_ context: Context, _ value: String) -> AnySequence<ValidationError> {
   guard isValidDuration(value) else {
+    let message = String(format: NSLocalizedString("'%@' is not a valid duration.", comment: ""), value)
     return AnySequence([
       ValidationError(
-        "'\(value)' is not a valid duration.",
+        message,
         instanceLocation: context.instanceLocation,
         keywordLocation: context.keywordLocation
       )

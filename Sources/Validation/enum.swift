@@ -11,9 +11,10 @@ func `enum`(context: Context, enum: Any, instance: Any, schema: [String: Any]) -
     return AnySequence(EmptyCollection())
   }
 
+  let message = String(format: NSLocalizedString("'%@' is not a valid enumeration value of '%@'", comment: ""), "\(instance)", "\(`enum`)")
   return AnySequence([
     ValidationError(
-      "'\(instance)' is not a valid enumeration value of '\(`enum`)'",
+      message,
       instanceLocation: context.instanceLocation,
       keywordLocation: context.keywordLocation
     )

@@ -25,9 +25,10 @@ func patternProperties(context: Context, patternProperties: Any, instance: Any, 
         results.append(try context.descend(instance: instance[key]!, subschema: schema))
       }
     } catch {
+      let message = String(format: NSLocalizedString("'%@' is not a valid regex pattern for patternProperties.", comment: ""), pattern)
       return AnySequence([
         ValidationError(
-          "[Schema] '\(pattern)' is not a valid regex pattern for patternProperties",
+          message,
           instanceLocation: context.instanceLocation,
           keywordLocation: context.keywordLocation
         ),

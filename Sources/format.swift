@@ -11,9 +11,10 @@ func format(context: Context, format: Any, instance: Any, schema: [String: Any])
   }
 
   guard let validator = context.validator.formats[format] else {
+    let message = String(format: NSLocalizedString("'format' validation of '%@' is not yet supported.", comment: ""), format)
     return AnySequence([
       ValidationError(
-        "'format' validation of '\(format)' is not yet supported.",
+        message,
         instanceLocation: context.instanceLocation,
         keywordLocation: context.keywordLocation
       )
@@ -31,9 +32,10 @@ func validateIPv4(_ context: Context, _ value: String) -> AnySequence<Validation
     }
   }
 
+  let message = String(format: NSLocalizedString("'%@' is not a IPv4 address.", comment: ""), value)
   return AnySequence([
     ValidationError(
-      "'\(value)' is not a IPv4 address.",
+      message,
       instanceLocation: context.instanceLocation,
       keywordLocation: context.keywordLocation
     )
@@ -49,9 +51,10 @@ func validateIPv6(_ context: Context, _ value: String) -> AnySequence<Validation
     }
   }
 
+  let message = String(format: NSLocalizedString("'%@' is not a value address.", comment: ""), value)
   return AnySequence([
     ValidationError(
-      "'\(value)' is not a value address.",
+      message,
       instanceLocation: context.instanceLocation,
       keywordLocation: context.keywordLocation
     )
@@ -72,9 +75,10 @@ func validateURI(_ context: Context, _ value: String) -> AnySequence<ValidationE
     }
   }
 
+  let message = String(format: NSLocalizedString("'%@' is not a valid uri.", comment: ""), value)
   return AnySequence([
     ValidationError(
-      "'\(value)' is not a valid uri.",
+      message,
       instanceLocation: context.instanceLocation,
       keywordLocation: context.keywordLocation
     )
@@ -84,9 +88,10 @@ func validateURI(_ context: Context, _ value: String) -> AnySequence<ValidationE
 
 func validateUUID(_ context: Context, _ value: String) -> AnySequence<ValidationError> {
   if UUID(uuidString: value) == nil {
+    let message = String(format: NSLocalizedString("'%@' is not a valid uuid.", comment: ""), value)
     return AnySequence([
       ValidationError(
-        "'\(value)' is not a valid uuid.",
+        message,
         instanceLocation: context.instanceLocation,
         keywordLocation: context.keywordLocation
       )
@@ -101,9 +106,10 @@ func validateRegex(_ context: Context, _ value: String) -> AnySequence<Validatio
   do {
     _ = try NSRegularExpression(pattern: value)
   } catch {
+    let message = String(format: NSLocalizedString("'%@' is not a valid regex.", comment: ""), value)
     return AnySequence([
       ValidationError(
-        "'\(value)' is not a valid regex.",
+        message,
         instanceLocation: context.instanceLocation,
         keywordLocation: context.keywordLocation
       )
@@ -120,9 +126,10 @@ func validateJSONPointer(_ context: Context, _ value: String) -> AnySequence<Val
   }
 
   if !value.hasPrefix("/") {
+    let message = String(format: NSLocalizedString("'%@' is not a valid json-pointer.", comment: ""), value)
     return AnySequence([
       ValidationError(
-        "'\(value)' is not a valid json-pointer.",
+        message,
         instanceLocation: context.instanceLocation,
         keywordLocation: context.keywordLocation
       )
@@ -135,9 +142,10 @@ func validateJSONPointer(_ context: Context, _ value: String) -> AnySequence<Val
       .contains("~")
   {
     // unescaped ~
+    let message = String(format: NSLocalizedString("'%@' is not a valid json-pointer.", comment: ""), value)
     return AnySequence([
       ValidationError(
-        "'\(value)' is not a valid json-pointer.",
+        message,
         instanceLocation: context.instanceLocation,
         keywordLocation: context.keywordLocation
       )

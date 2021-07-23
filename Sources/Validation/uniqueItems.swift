@@ -13,9 +13,10 @@ func uniqueItems(context: Context, uniqueItems: Any, instance: Any, schema: [Str
   var items: [Any] = []
   for item in instance {
     if items.contains(where: { isEqual(item as! NSObject, $0 as! NSObject) }) {
+      let message = String(format: NSLocalizedString("%@ does not have unique items", comment: ""), "\(instance)")
       return AnySequence([
         ValidationError(
-          "\(instance) does not have unique items",
+          message,
           instanceLocation: context.instanceLocation,
           keywordLocation: context.keywordLocation
         )

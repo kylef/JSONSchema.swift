@@ -136,9 +136,10 @@ func validateTime(_ context: Context, _ value: String) -> AnySequence<Validation
     return AnySequence(EmptyCollection())
   }
 
+  let message = String(format: NSLocalizedString("'%@' is not a valid RFC 3339 formatted time.", comment: ""), value)
   return AnySequence([
     ValidationError(
-      "'\(value)' is not a valid RFC 3339 formatted time.",
+      message,
       instanceLocation: context.instanceLocation,
       keywordLocation: context.keywordLocation
     )

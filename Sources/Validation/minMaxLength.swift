@@ -1,3 +1,6 @@
+import Foundation
+
+
 func validateLength(_ context: Context, _ comparitor: @escaping ((Int, Int) -> (Bool)), length: Int, error: String) -> (_ value: Any) -> AnySequence<ValidationError> {
   return { value in
     if let value = value as? String {
@@ -22,7 +25,8 @@ func minLength(context: Context, minLength: Any, instance: Any, schema: [String:
     return AnySequence(EmptyCollection())
   }
 
-  return validateLength(context, >=, length: minLength, error: "Length of string is smaller than minimum length \(minLength)")(instance)
+  let message = String(format: NSLocalizedString("Length of string is smaller than minimum length %@", comment: ""), "\(minLength)")
+  return validateLength(context, >=, length: minLength, error: message)(instance)
 }
 
 
@@ -31,5 +35,6 @@ func maxLength(context: Context, maxLength: Any, instance: Any, schema: [String:
     return AnySequence(EmptyCollection())
   }
 
-  return validateLength(context, <=, length: maxLength, error: "Length of string is larger than max length \(maxLength)")(instance)
+  let message = String(format: NSLocalizedString("Length of string is larger than max length %@", comment: ""), "\(maxLength)")
+  return validateLength(context, <=, length: maxLength, error: message)(instance)
 }

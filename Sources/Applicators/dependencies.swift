@@ -1,3 +1,6 @@
+import Foundation
+
+
 func dependencies(context: Context, dependencies: Any, instance: Any, schema: [String: Any]) throws -> AnySequence<ValidationError> {
   guard let dependencies = dependencies as? [String: Any] else {
     return AnySequence(EmptyCollection())
@@ -13,9 +16,10 @@ func dependencies(context: Context, dependencies: Any, instance: Any, schema: [S
     if let dependency = dependency as? [String] {
       for key in dependency {
         if !instance.keys.contains(key) {
+          let message = String(format: NSLocalizedString("'%@' is a dependency for '%@'.", comment: ""), key, property)
           results.append(AnySequence([
             ValidationError(
-              "'\(key)' is a dependency for '\(property)'",
+              message,
               instanceLocation: context.instanceLocation,
               keywordLocation: context.keywordLocation
             ),

@@ -11,9 +11,10 @@ func pattern(context: Context, pattern: Any, instance: Any, schema: [String: Any
   }
 
   guard let expression = try? NSRegularExpression(pattern: pattern, options: NSRegularExpression.Options(rawValue: 0)) else {
+    let message = String(format: NSLocalizedString("Regex pattern '%@' is not valid", comment: ""), pattern)
     return AnySequence([
       ValidationError(
-        "[Schema] Regex pattern '\(pattern)' is not valid",
+        message,
         instanceLocation: context.instanceLocation,
         keywordLocation: context.keywordLocation
       )
@@ -22,9 +23,10 @@ func pattern(context: Context, pattern: Any, instance: Any, schema: [String: Any
 
   let range = NSMakeRange(0, instance.count)
   if expression.matches(in: instance, options: NSRegularExpression.MatchingOptions(rawValue: 0), range: range).count == 0 {
+    let message = String(format: NSLocalizedString("'%@' does not match pattern: '%@'", comment: ""), instance, pattern)
     return AnySequence([
       ValidationError(
-        "'\(instance)' does not match pattern: '\(pattern)'",
+        message,
         instanceLocation: context.instanceLocation,
         keywordLocation: context.keywordLocation
       )
