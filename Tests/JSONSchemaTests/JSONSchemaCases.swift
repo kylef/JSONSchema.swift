@@ -18,7 +18,6 @@ public let testSchemaCases: ((ContextType) -> Void) = {
       "infinite-loop-detection.json",
 
       // optional formats
-      "date-time.json",
       "email.json",
       "hostname.json",
     ] + additionalExclusions, in: context, with: draft4Validator)
@@ -125,7 +124,6 @@ public let testSchemaCases: ((ContextType) -> Void) = {
 
       // optional, format
       "format.json",
-      "date-time.json",
       "email.json",
       "hostname.json",
       "idn-email.json",
