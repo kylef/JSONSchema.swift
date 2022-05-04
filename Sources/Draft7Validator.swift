@@ -52,6 +52,7 @@ public class Draft7Validator: Validator {
     "regex": validateRegex,
     "time": validateTime,
     "date": validateDate,
+    "date-time": validateDateTime,
   ]
 
   public required init(schema: Bool) {

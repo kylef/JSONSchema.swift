@@ -65,6 +65,7 @@ public class Draft202012Validator: Validator {
     "duration": validateDuration,
     "time": validateTime,
     "date": validateDate,
+    "date-time": validateDateTime,
   ]
 
   public required init(schema: Bool) {
