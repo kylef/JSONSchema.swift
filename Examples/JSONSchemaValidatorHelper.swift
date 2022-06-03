@@ -1,41 +1,13 @@
-# JSON Schema
+//
+//  JSONSchemaValidatorHelper.swift
+//
+//  Created by Geert Michiels on 24/01/2021.
+//
 
-An implementation of [JSON Schema](http://json-schema.org/) in Swift.
-Supporting JSON Schema Draft 4, 6, 7, 2019-09, 2020-12.
-
-The JSON Schema 2019-09 and 2020-12 support are incomplete and have gaps with
-some of the newer keywords.
-
-JSONSchema.swift does not support remote referencing [#9](https://github.com/kylef/JSONSchema.swift/issues/9).
-
-## Installation
-
-JSONSchema can be installed via [CocoaPods](http://cocoapods.org/).
-
-```ruby
-pod 'JSONSchema'
-```
-
-## Usage
-### Basic
-
-```swift
+import Foundation
 import JSONSchema
+import Combine
 
-try JSONSchema.validate(["name": "Eggs", "price": 34.99], schema: [
-  "type": "object",
-  "properties": [
-    "name": ["type": "string"],
-    "price": ["type": "number"],
-  ],
-  "required": ["name"],
-])
-```
-### JSONSchemaValidatorHelper.swift example
-Inside the `Example` folder you can find `JSONSchemaValidatorHelper.swift`.
-It shows how to load a json schema from a url and then validate it agains an object that confirms to the [Codable](https://developer.apple.com/documentation/swift/codable) protocol.
-
-```swift
 struct JSONSchemaValidatorHelper {
     
     private var fetchSchemaCancellable : AnyCancellable?
@@ -76,29 +48,3 @@ struct JSONSchemaValidatorHelper {
     }
     
 }
-```
-
-This is how to use it:
-
-```swift
-        let schemaUrl = URL(string: "https://path.to.your.schema.json")!
-        jsonSchema.validate(encodableObject: snookerTable, againstSchemaUrl: schemaUrl) { result in
-            print(result)
-        }
-```
-
-## Error handling
-
-Validate returns an enumeration `ValidationResult` which contains all
-validation errors.
-
-```python
-print(try validate(["price": 34.99], schema: ["required": ["name"]]).errors)
->>> "Required property 'name' is missing."
-```
-
-## License
-
-JSONSchema is licensed under the BSD license. See [LICENSE](LICENSE) for more
-info.
-
