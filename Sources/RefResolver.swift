@@ -1,7 +1,7 @@
 import Foundation
 
 func urlSplitFragment(url: String) -> (String, String) {
-  guard let hashIndex = url.index(of: "#") else {
+  guard let hashIndex = url.firstIndex(of: "#") else {
     return (url, "")
   }
 
