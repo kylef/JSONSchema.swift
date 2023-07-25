@@ -10,6 +10,8 @@ func required(context: Context, required: Any, instance: Any, schema: [String: A
 
   return AnySequence(required.compactMap { key -> ValidationError? in
     guard !instance.keys.contains(key) else { return nil }
+    context.instanceLocation.push(key)
+    defer { context.instanceLocation.pop() }
     return ValidationError(
       "Required property '\(key)' is missing",
       instanceLocation: context.instanceLocation,

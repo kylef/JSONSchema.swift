@@ -21,7 +21,7 @@ public let testRequired: ((ContextType) -> Void) = {
       let error = errors[0]
 
       try expect(error.description) == "Required property 'test' is missing"
-      try expect(error.instanceLocation.path) == "/0"
+      try expect(error.instanceLocation.path) == "/0/test"
       try expect(error.keywordLocation.path) == "#/items/required"
     }
   }
